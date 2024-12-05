@@ -77,7 +77,7 @@ ignore-signatures = "yes"
 disallow_untyped_defs = true
 warn_unused_ignores = true
 exclude = [
-    "doceraptor-\\d+", # Ignore temporary folder created by setuptools when building an sdist
+    "vdoc-\\d+", # Ignore temporary folder created by setuptools when building an sdist
     "venv.*/",
     "log/",
     "build/",
@@ -89,9 +89,9 @@ addopts = """
     -vv
     --doctest-modules
     --import-mode=append
-    --ignore-glob=doceraptor-[0-9]*
+    --ignore-glob=vdoc-[0-9]*
     --ignore="docs/_scripts"
-    --cov=doceraptor
+    --cov=vdoc
     --cov-config=pyproject.toml
     --cov-report=
     """
