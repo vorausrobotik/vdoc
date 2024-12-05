@@ -1,0 +1,28 @@
+{
+  "template": "git@github.com:vorausrobotik/voraus-cookiecutter-pypackage.git",
+  "commit": "5a518fdfdcdf9db123bd1fc2ccf9953ee3df7e9a",
+  "checkout": "development",
+  "context": {
+    "cookiecutter": {
+      "full_name": "Jan-Frederik Schmidt",
+      "email": "jan-frederik.schmidt@vorausrobotik.com",
+      "github_user": "g3n35i5",
+      "project_name": "vdoc",
+      "repo_name": "vdoc",
+      "package_name": "vdoc",
+      "import_name": "vdoc",
+      "project_short_description": "Multi version documentation hosting.",
+      "url": "https://github.com/vorausrobotik/vdoc",
+      "_debug": "False",
+      "_extensions": [
+        "extensions.git_extension.GitExtension"
+      ],
+      "_copy_without_render": [
+        "docs/_templates/license_compliance.rst.j2",
+        "jreleaser.yml"
+      ],
+      "_template": "git@github.com:vorausrobotik/voraus-cookiecutter-pypackage.git"
+    }
+  },
+  "directory": null
+}
