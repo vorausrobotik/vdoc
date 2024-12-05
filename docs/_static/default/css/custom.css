@@ -1,0 +1,138 @@
+:root {
+    --border-radius: 3px;
+    --admonition-title-border-radius: var(--border-radius) var(--border-radius) 0px 0px;
+    --admonition-border-radius: var(--border-radius) var(--border-radius) var(--border-radius) var(--border-radius);
+    --font-family: "Roboto",sans-serif;
+}
+
+@font-face {
+  font-family: "NB Architekt R Neue";
+  src: url('../fonts/nb_architekt_r_neue_bold-webfont.woff2') format('woff2'),
+       url('../fonts/nb_architekt_r_neue_bold-webfont.ttf') format('truetype');
+
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../fonts/Roboto-Regular.ttf");
+}
+
+h1, h2, h3 {
+    font-family: "Nb Architekt R Neue",sans-serif;
+}
+
+td {
+    min-width: 70px;
+}
+
+.bg-gray-dark {
+    background-color: black;
+}
+
+.inline-image {
+    display: inline-block;
+    margin: 0;
+}
+
+
+#content p > img {
+    margin-top: 0;
+}
+
+.num-ref {
+    font-size: 22px;
+    vertical-align: -3px;
+    color: #4A568F;
+}
+
+/* Dark mode */
+.dark .inline-image {
+    filter: invert(1) brightness(2) contrast(1);
+}
+
+.dark .num-ref {
+    color: #fff
+}
+
+.danger-admonition {
+    background-color: #F7F7F7;
+}
+
+.danger-admonition .admonition-title {
+    background: #da3939;
+    color: #F7F7F7;
+}
+
+.danger-admonition .admonition-title:before {
+    content: url("../../icons/error-triangle-white.png");
+}
+
+
+.warning-admonition {
+    background-color: #F7F7F7;
+}
+
+.warning-admonition .admonition-title {
+    background: #f38a2b;
+    color: #000000;
+}
+
+.warning-admonition .admonition-title:before {
+    content: url("../../icons/error-triangle-dark.png");
+}
+
+
+.caution-admonition {
+    background-color: #F7F7F7;
+}
+
+.caution-admonition .admonition-title {
+    background: #ffee00;
+    color: #000000;
+}
+
+.caution-admonition .admonition-title:before {
+    content: url("../../icons/error-triangle-dark.png");
+}
+
+
+.note-admonition {
+    background-color: #F7F7F7;
+}
+
+.note-admonition .admonition-title {
+    background: #72afcd;
+    color: #ffffff;
+}
+
+.note-admonition .admonition-title:before {
+    content: url("../../icons/note-circle-white.png");
+}
+
+
+.info-admonition {
+    background-color: #F7F7F7;
+}
+
+.info-admonition .admonition-title {
+    background: #78838F;
+}
+
+.info-admonition .admonition-title:before {
+    content: url("../../icons/note-circle-white.png");
+}
+
+
+.subtitle {
+    color: #78838F;
+}
+
+/* Fixes: right sidebar does not scroll */
+#right-sidebar > div:first-of-type {
+    max-height: calc(100vh - 5rem)
+}
+
+/* Fixes: tocdepth settings of rst_prolog not working for optional subchapters inside of commands */
+#right-sidebar ul ul ul {
+    display: none
+}
