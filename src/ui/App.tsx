@@ -1,5 +1,15 @@
+import MenuBar from './MenuBar'
+import DocuCanvas from './DocuCanvas'
+
+import { Box } from '@mui/material'
+
 function App() {
-  return <>Hello, vdoc!</>
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <MenuBar />
+      <DocuCanvas />
+    </Box>
+  )
 }
 
 export default App
