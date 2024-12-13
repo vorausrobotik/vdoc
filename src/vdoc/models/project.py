@@ -61,8 +61,9 @@ class Project(BaseModel):
         """
         search_path = search_path or VDocSettings().docs_dir
         paths = search_path.glob("[!.]*")
+        projects = [Project(name=path.name) for path in paths if path.is_dir()]
 
-        return [Project(name=path.name) for path in paths if path.is_dir()]
+        return sorted(projects, key=lambda project: project.name)
 
     @classmethod
     def get_version_and_docs_path(cls, name: str, version: str) -> tuple[Version, Path]:
@@ -107,7 +108,7 @@ class Project(BaseModel):
             A list of all versions of the project.
         """
         versions = self._base_path.glob("[!.]*")  # Path existence is validated at object construction
-        return [Version(path.name) for path in versions if path.is_dir()]
+        return sorted([Version(path.name) for path in versions if path.is_dir()])
 
     @property
     def latest(self) -> Version:
