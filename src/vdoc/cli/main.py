@@ -1,9 +1,10 @@
 """Contains the main CLI entry point."""
 
 import logging
+from enum import Enum
 
 import typer
-from voraus_logging_lib.logging import LogLevel, configure_logger
+from rich.logging import RichHandler
 
 from vdoc import get_app_name, get_app_version
 from vdoc.cli.run import _cli_run
@@ -13,6 +14,23 @@ _logger = logging.getLogger(__name__)
 
 app = typer.Typer()
 app.command(name="run", help="Runs the application")(_cli_run)
+
+
+class LogLevel(str, Enum):
+    """Enum for log levels for typer."""
+
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+
+    def __str__(self) -> str:
+        """String representation of the log level.
+
+        Returns:
+            The log level as string.
+        """
+        return self.value
 
 
 def print_version(do_print: bool) -> None:
@@ -40,7 +58,7 @@ def _common(
     ),
     log_level: LogLevel = typer.Option(LogLevel.INFO, help="The log level"),
 ) -> None:
-    configure_logger(log_level=log_level.value)
+    logging.basicConfig(level=log_level.value, format="%(message)s", handlers=[RichHandler()])
     _logger.info(f"Starting {get_app_name()}@{get_app_version()}")
 
 
