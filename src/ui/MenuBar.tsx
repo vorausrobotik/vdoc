@@ -1,18 +1,29 @@
 import AppBar from '@mui/material/AppBar'
-import Box from '@mui/material/Box'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
+import { Container } from '@mui/material'
 
 export default function MenuBar() {
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
+    <AppBar position="static">
+      <Container maxWidth="xl">
+        <Toolbar disableGutters variant="dense">
+          <Typography
+            variant="h6"
+            noWrap
+            component="a"
+            href={'/'}
+            sx={{
+              mr: 2,
+              textDecoration: 'none',
+              color: 'inherit',
+              display: { xs: 'none', md: 'flex' },
+            }}
+          >
             VDoc
           </Typography>
         </Toolbar>
-      </AppBar>
-    </Box>
+      </Container>
+    </AppBar>
   )
 }

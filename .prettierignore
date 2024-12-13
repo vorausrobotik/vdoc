@@ -1,0 +1,8 @@
+# Ignore folders:
+venv/**
+.tox/**
+docs/**
+reports/**
+.cruft.json
+.devcontainer/**
+.github/**
