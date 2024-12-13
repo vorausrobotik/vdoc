@@ -1,13 +1,29 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    TanStackRouterVite({ routesDirectory: 'src/ui/routes/', generatedRouteTree: 'src/ui/routeTree.gen.ts' }),
+    react(),
+  ],
   root: 'src/ui',
   base: process.env.USE_VITE_PROXY ? '' : '/app/',
   build: {
     outDir: '../vdoc/webapp',
     emptyOutDir: true,
+  },
+  server: {
+    proxy: process.env.USE_VITE_PROXY
+      ? {
+          '/api': {
+            target: 'http://localhost:8080',
+            changeOrigin: false,
+            secure: false,
+          },
+        }
+      : {},
+    host: '0.0.0.0',
   },
 })
