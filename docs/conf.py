@@ -128,6 +128,7 @@ html_theme_options = {
     "logo_dark": "_static/default/logos/voraus_logo_small.svg",
 }
 
+
 html_permalinks_icon = Icons.permalinks_icon
 
 # Shared style options for all files
@@ -170,7 +171,7 @@ html_favicon = "_static/default/logos/voraus_logo_small.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_css_files = ["default/css/custom.css"]
+html_css_files = ["default/css/custom.css", "custom.css"]
 
 # If not "", a "Last updated on:" timestamp is inserted at every page bottom,
 # using the given strftime format.
