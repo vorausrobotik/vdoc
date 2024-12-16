@@ -1,14 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import DocuCanvas from '../../../DocuCanvas'
-import axios from 'axios'
 import QueryStateHandler from '../../../helpers/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
-
-const fetchDocumentation = async (projectName: string, version: string): Promise<[string, string]> => {
-  const response = await axios.get(`/api/projects/${projectName}/versions/${version}`)
-  return response.data
-}
+import { fetchProjectVersionAndLatestVersion, fetchProjectVersions } from '../../../helpers/APIFunctions'
 
 export const Route = createFileRoute('/$projectName/versions/$version')({
   component: DocumentationComponent,
@@ -21,8 +16,8 @@ function DocumentationComponent() {
     error: versionsError,
     isLoading: versionsLoading,
   } = useQuery({
-    queryKey: ['project', projectName, version],
-    queryFn: () => fetchDocumentation(projectName, version),
+    queryKey: ['projects', projectName, version],
+    queryFn: () => fetchProjectVersionAndLatestVersion(projectName, version),
   })
 
   return (
