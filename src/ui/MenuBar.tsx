@@ -47,8 +47,14 @@ export default function MenuBar() {
           <FormControl size="small" variant="outlined" sx={{ minWidth: 120 }}>
             <InputLabel>Version</InputLabel>
             <Select value={versionDropdownValue} onChange={handleVersionSelectChange} label="Version">
-              <MenuItem value="latest">latest</MenuItem>
-              {projectVersions?.map((projectVersion) => <MenuItem value={projectVersion}>{projectVersion}</MenuItem>)}
+              <MenuItem key="latest" value="latest">
+                latest
+              </MenuItem>
+              {projectVersions?.map((projectVersion) => (
+                <MenuItem key={projectVersion} value={projectVersion}>
+                  {projectVersion}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Box>
