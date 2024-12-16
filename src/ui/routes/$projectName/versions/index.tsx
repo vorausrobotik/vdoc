@@ -1,19 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
 import { createFileRoute } from '@tanstack/react-router'
 import QueryStateHandler from '../../../helpers/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
+import { fetchProjectVersions } from '../../../helpers/APIFunctions'
 
 export const Route = createFileRoute('/$projectName/versions/')({
   component: ProjectVersionsOverview,
 })
-
-const fetchProjectVersions = async (projectName: string): Promise<string[]> => {
-  const response = await axios.get(`/api/projects/${projectName}/versions/`)
-  return response.data
-}
 
 function ProjectVersionsOverview() {
   const { projectName } = Route.useParams()

@@ -1,25 +1,19 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import axios from 'axios'
 import QueryStateHandler from '../helpers/QueryStateHandler'
 import { useQuery } from '@tanstack/react-query'
 import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
 import Grid from '@mui/material/Grid2'
-import { Project } from '../interfacesAndTypes/Project'
 import { Box, Container } from '@mui/material'
 import Card from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
+import { fetchProjects } from '../helpers/APIFunctions'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
 })
-
-const fetchProjects = async (): Promise<Project[]> => {
-  const response = await axios.get(`/api/projects/`)
-  return response.data
-}
 
 function Index() {
   const {
