@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios'
 
 export interface FastAPIErrorResponse {
-  detail: string
+  message: string
 }
 export type FastAPIAxiosErrorT = AxiosError<FastAPIErrorResponse>

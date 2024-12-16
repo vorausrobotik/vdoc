@@ -23,12 +23,8 @@ const QueryStateHandler = <T,>({ loading, error, data, children, loadingComponen
   }
 
   if (error) {
-    let errorMessage
-    try {
-      errorMessage = error.response!.data!.detail!
-    } catch {
-      errorMessage = 'An unknown error occurred.'
-    }
+    const errorMessage = error.response?.data?.message ?? 'An unknown error occurred.'
+
     return (
       <Box display="flex" justifyContent="center" alignItems="center">
         <Alert severity="error" sx={{ minWidth: '100%' }}>
