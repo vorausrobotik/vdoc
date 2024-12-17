@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Generator
 from unittest.mock import patch
+from zipfile import ZipFile
 
 import pytest
 from fastapi.testclient import TestClient
@@ -44,3 +45,14 @@ def dummy_projects_dir_fixture(tmp_path: Path) -> Generator[Path, None, None]:
         (tmp_path / ".dummy_hidden").mkdir()
 
         yield tmp_path
+
+
+@pytest.fixture(scope="function", name="example_docs_zip")
+def example_docs_zip_fixture(tmp_path: Path) -> Generator[Path, None, None]:
+    zip_file_path = tmp_path / "test_file.zip"
+    html_file_content = b"<html><body>Test File</body></html>"
+
+    with ZipFile(file=zip_file_path, mode="w") as archive:
+        archive.writestr("index.html", html_file_content)
+
+    yield zip_file_path

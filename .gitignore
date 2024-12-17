@@ -66,4 +66,4 @@ src/vdoc/webapp/
 src/vdoc/docs/
 
 # Local development files and documentation
-./vdoc-docs
+vdoc-docs
