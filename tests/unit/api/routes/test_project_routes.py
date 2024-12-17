@@ -1,5 +1,6 @@
 """Contains all unit tests for the projects REST API."""
 
+import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -8,6 +9,7 @@ from packaging.version import Version
 
 from vdoc.exceptions import ProjectVersionNotFound
 from vdoc.models.project import Project
+from tests.utils import assert_api_response, ensure_project_dir_not_created
 
 
 @patch("vdoc.api.routes.projects.list_projects_impl")
@@ -36,7 +38,86 @@ def test_get_project_version_route(
         name="foo", version=Version("42")
     )
     response = api.get("/api/projects/foo/versions/42")
-    assert response.status_code == 404
-    assert response.json() == {
-        "message": "Project 'foo' doesn't have a documentation for version '42'.",
-    }
+    assert_api_response(
+        response=response, status_code=404, message="Project 'foo' doesn't have a documentation for version '42'."
+    )
+
+
+def test_upload_project_version_route(dummy_projects_dir: Path, api: TestClient, example_docs_zip: Path) -> None:
+    project_version_dir = dummy_projects_dir / "dummy-project-01" / "1.0.0"
+    assert not project_version_dir.is_dir()
+    response = api.post(
+        "/api/projects/dummy-project-01/versions/1.0.0",
+        files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
+    )
+    assert_api_response(
+        response=response,
+        status_code=201,
+        message="Version '1.0.0' of project 'dummy-project-01' uploaded successfully.",
+    )
+    assert (project_version_dir).is_dir()
+    index_file = project_version_dir / "index.html"
+    assert index_file.is_file()
+    assert index_file.read_text() == "<html><body>Test File</body></html>"
+
+
+def test_upload_project_version_route_invalid_version(dummy_projects_dir: Path, api: TestClient) -> None:
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+        response = api.post(
+            "/api/projects/dummy-project-01/versions/abcd", files={"file": ("foo", b"", "application/zip")}
+        )
+        assert_api_response(
+            response=response,
+            status_code=400,
+            message="'abcd' is not a valid version identifier.",
+        )
+
+
+def test_upload_project_version_route_invalid_project_name(dummy_projects_dir: Path, api: TestClient) -> None:
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+        response = api.post("/api/projects/äüö/versions/1.0.0", files={"file": ("foo", b"", "application/zip")})
+        assert_api_response(
+            response=response,
+            status_code=400,
+            message="'äüö' is not a valid project name.",
+        )
+
+
+def test_upload_project_version_route_invalid_content_type(dummy_projects_dir: Path, api: TestClient) -> None:
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+        response = api.post(
+            "/api/projects/dummy-project-01/versions/1.0.0", files={"file": ("foo", b"", "application/invalid")}
+        )
+        assert_api_response(
+            response=response,
+            status_code=400,
+            message="The uploaded file is invalid: Content type is not 'application/zip'.",
+        )
+
+
+def test_upload_project_version_route_invalid_zip(dummy_projects_dir: Path, api: TestClient) -> None:
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+        response = api.post(
+            "/api/projects/dummy-project-01/versions/1.0.0", files={"file": ("foo", b"", "application/zip")}
+        )
+        assert_api_response(
+            response=response,
+            status_code=400,
+            message="The uploaded file is invalid: File is not a zip file.",
+        )
+
+
+def test_upload_project_version_route_no_index_html(dummy_projects_dir: Path, api: TestClient, tmp_path: Path) -> None:
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+        invalid_zip_path = tmp_path / "invalid.zip"
+        with zipfile.ZipFile(file=invalid_zip_path, mode="w") as archive:
+            archive.writestr("noindex.html", "Shit happens...")
+        response = api.post(
+            "/api/projects/dummy-project-01/versions/1.0.0",
+            files={"file": (invalid_zip_path.name, invalid_zip_path.read_bytes(), "application/zip")},
+        )
+        assert_api_response(
+            response=response,
+            status_code=400,
+            message="The uploaded file is invalid: The archive doesn't contain an index.html file.",
+        )

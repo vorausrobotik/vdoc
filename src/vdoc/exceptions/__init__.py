@@ -21,9 +21,15 @@ class InvalidVersion(VDocException):
 
     def __init__(self, version: str):  # noqa: D107
         super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"'{version}' is not a valid version identifier.",
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"'{version}' is not a valid version identifier."
         )
+
+
+class InvalidProjectName(VDocException):
+    """Exception when a requested project name is invalid."""
+
+    def __init__(self, name: str):  # noqa: D107
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=f"'{name}' is not a valid project name.")
 
 
 class ProjectVersionNotFound(VDocException):
@@ -34,3 +40,19 @@ class ProjectVersionNotFound(VDocException):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project '{name}' doesn't have a documentation for version '{version}'.",
         )
+
+
+class ProjectVersionAlreadyExists(VDocException):
+    """Exception when a project version already exist."""
+
+    def __init__(self, name: str, version: Version | str) -> None:  # noqa: D107
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Version '{version}' of project '{name}' already exists."
+        )
+
+
+class UploadedFileInvalid(VDocException):
+    """Exception when the uploaded file is invalid."""
+
+    def __init__(self, reason: str) -> None:  # noqa: D107
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=f"The uploaded file is invalid: {reason}.")
