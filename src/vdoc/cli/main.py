@@ -8,6 +8,8 @@ from rich.logging import RichHandler
 
 from vdoc import get_app_name, get_app_version
 from vdoc.cli.run import _cli_run
+from vdoc.constants import DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
+from vdoc.settings import VDocSettings
 
 _logger = logging.getLogger(__name__)
 
@@ -47,6 +49,15 @@ def print_version(do_print: bool) -> None:
         raise typer.Exit()
 
 
+def check_for_default_credentials() -> None:
+    """Checks the configured API credentials and warns if the default credentials are used."""
+    settings = VDocSettings()
+    if settings.api_password == DEFAULT_API_PASSWORD and settings.api_username == DEFAULT_API_USERNAME:
+        _logger.warning(
+            "The application is running using the default credentials. Update them according to the documentation!"
+        )
+
+
 @app.callback()
 def _common(
     _: bool = typer.Option(
@@ -64,6 +75,7 @@ def _common(
     logger.handlers = [rich_handler]
     logger.setLevel(log_level)
     _logger.info(f"Starting {get_app_name()}@{get_app_version()}")
+    check_for_default_credentials()
 
 
 typer_click_object = typer.main.get_command(app)
