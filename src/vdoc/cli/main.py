@@ -58,7 +58,11 @@ def _common(
     ),
     log_level: LogLevel = typer.Option(LogLevel.INFO, help="The log level"),
 ) -> None:
-    logging.basicConfig(level=log_level.value, format="%(message)s", handlers=[RichHandler()])
+    rich_handler = RichHandler()
+    rich_handler.setFormatter(logging.Formatter("%(message)s"))
+    logger = logging.getLogger()
+    logger.handlers = [rich_handler]
+    logger.setLevel(log_level)
     _logger.info(f"Starting {get_app_name()}@{get_app_version()}")
 
 
