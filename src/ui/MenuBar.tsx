@@ -5,26 +5,30 @@ import { Box } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
-import MenuItem from '@mui/material/MenuItem'
-import Select, { SelectChangeEvent } from '@mui/material/Select'
+import { SelectChangeEvent } from '@mui/material/Select'
 import { useState } from 'react'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
 import IconButton from '@mui/material/IconButton'
 import { useNavigate } from '@tanstack/react-router'
+import VersionDropdown from './components/VersionDropdown'
 
 export default function MenuBar() {
   const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
   const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
-  const [versionDropdownValue, setVersionDropdownValue] = useState(currentVersion)
+  const [versionDropdownValue, setVersionDropdownValue] = useState(currentVersion ?? 'latest')
   const navigate = useNavigate({ from: '/$projectName/versions/$version' })
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
-    setVersionDropdownValue(selectedVersion)
-    navigate({
-      to: `/$projectName/versions/${selectedVersion}`,
-    })
+    if (selectedVersion === 'more') {
+      navigate({
+        to: `/$projectName/versions`,
+      })
+    } else {
+      setVersionDropdownValue(selectedVersion)
+      navigate({
+        to: `/$projectName/versions/${selectedVersion}`,
+      })
+    }
   }
 
   return (
@@ -42,21 +46,13 @@ export default function MenuBar() {
         </Box>
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
 
-        {/* Dropdown Menu */}
+        {/* Version Dropdown Menu */}
         <Box sx={{ flexGrow: 0, display: { xs: projectVersions ? 'flex' : 'none' } }}>
-          <FormControl size="small" variant="outlined" sx={{ minWidth: 120 }}>
-            <InputLabel>Version</InputLabel>
-            <Select value={versionDropdownValue} onChange={handleVersionSelectChange} label="Version">
-              <MenuItem key="latest" value="latest">
-                latest
-              </MenuItem>
-              {projectVersions?.map((projectVersion) => (
-                <MenuItem key={projectVersion} value={projectVersion}>
-                  {projectVersion}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <VersionDropdown
+            selectedVersion={versionDropdownValue}
+            versions={projectVersions}
+            onVersionChange={handleVersionSelectChange}
+          />
         </Box>
       </Toolbar>
     </AppBar>

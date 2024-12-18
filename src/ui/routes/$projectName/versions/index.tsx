@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import QueryStateHandler from '../../../helpers/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../../helpers/APIFunctions'
+import globalStore from '../../../helpers/GlobalStore'
 
 export const Route = createFileRoute('/$projectName/versions/')({
   component: ProjectVersionsOverview,
@@ -12,6 +13,13 @@ export const Route = createFileRoute('/$projectName/versions/')({
 
 function ProjectVersionsOverview() {
   const { projectName } = Route.useParams()
+  globalStore.setState((state) => {
+    return {
+      ...state,
+      projectVersions: null,
+      currentVersion: null,
+    }
+  })
 
   const {
     data: versions,
