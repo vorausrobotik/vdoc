@@ -8,6 +8,7 @@ from zipfile import ZipFile
 
 import pytest
 from fastapi.testclient import TestClient
+from typer.testing import CliRunner
 
 from vdoc.api import app
 
@@ -31,6 +32,16 @@ def resource_dir_fixture() -> Path:
 @pytest.fixture(scope="function", name="api")
 def api_client_fixture() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture(scope="session", name="cli_runner")
+def cli_runner_fixture() -> CliRunner:
+    """Returns a typer/click CliRunner with increased terminal width.
+
+    Returns:
+        The CliRunner object for testing the CLI.
+    """
+    return CliRunner(mix_stderr=False, env={"COLUMNS": "120"})
 
 
 @pytest.fixture(scope="function", name="dummy_projects_dir")
