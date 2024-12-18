@@ -43,10 +43,21 @@ def test_get_project_version_route(
     )
 
 
-def test_upload_project_version_route(dummy_projects_dir: Path, api: TestClient, example_docs_zip: Path) -> None:
+def test_upload_project_version_route_unauthenticated(api: TestClient, example_docs_zip: Path) -> None:
+    response = api.post(
+        "/api/projects/dummy-project-01/versions/1.0.0",
+        files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
+    )
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+def test_upload_project_version_route(
+    dummy_projects_dir: Path, authenticated_api: TestClient, example_docs_zip: Path
+) -> None:
     project_version_dir = dummy_projects_dir / "dummy-project-01" / "1.0.0"
     assert not project_version_dir.is_dir()
-    response = api.post(
+    response = authenticated_api.post(
         "/api/projects/dummy-project-01/versions/1.0.0",
         files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
     )
@@ -61,9 +72,9 @@ def test_upload_project_version_route(dummy_projects_dir: Path, api: TestClient,
     assert index_file.read_text() == "<html><body>Test File</body></html>"
 
 
-def test_upload_project_version_route_invalid_version(dummy_projects_dir: Path, api: TestClient) -> None:
+def test_upload_project_version_route_invalid_version(dummy_projects_dir: Path, authenticated_api: TestClient) -> None:
     with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
-        response = api.post(
+        response = authenticated_api.post(
             "/api/projects/dummy-project-01/versions/abcd", files={"file": ("foo", b"", "application/zip")}
         )
         assert_api_response(
@@ -73,9 +84,13 @@ def test_upload_project_version_route_invalid_version(dummy_projects_dir: Path, 
         )
 
 
-def test_upload_project_version_route_invalid_project_name(dummy_projects_dir: Path, api: TestClient) -> None:
+def test_upload_project_version_route_invalid_project_name(
+    dummy_projects_dir: Path, authenticated_api: TestClient
+) -> None:
     with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
-        response = api.post("/api/projects/äüö/versions/1.0.0", files={"file": ("foo", b"", "application/zip")})
+        response = authenticated_api.post(
+            "/api/projects/äüö/versions/1.0.0", files={"file": ("foo", b"", "application/zip")}
+        )
         assert_api_response(
             response=response,
             status_code=400,
@@ -83,9 +98,11 @@ def test_upload_project_version_route_invalid_project_name(dummy_projects_dir: P
         )
 
 
-def test_upload_project_version_route_invalid_content_type(dummy_projects_dir: Path, api: TestClient) -> None:
+def test_upload_project_version_route_invalid_content_type(
+    dummy_projects_dir: Path, authenticated_api: TestClient
+) -> None:
     with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
-        response = api.post(
+        response = authenticated_api.post(
             "/api/projects/dummy-project-01/versions/1.0.0", files={"file": ("foo", b"", "application/invalid")}
         )
         assert_api_response(
@@ -95,9 +112,9 @@ def test_upload_project_version_route_invalid_content_type(dummy_projects_dir: P
         )
 
 
-def test_upload_project_version_route_invalid_zip(dummy_projects_dir: Path, api: TestClient) -> None:
+def test_upload_project_version_route_invalid_zip(dummy_projects_dir: Path, authenticated_api: TestClient) -> None:
     with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
-        response = api.post(
+        response = authenticated_api.post(
             "/api/projects/dummy-project-01/versions/1.0.0", files={"file": ("foo", b"", "application/zip")}
         )
         assert_api_response(
@@ -107,12 +124,14 @@ def test_upload_project_version_route_invalid_zip(dummy_projects_dir: Path, api:
         )
 
 
-def test_upload_project_version_route_no_index_html(dummy_projects_dir: Path, api: TestClient, tmp_path: Path) -> None:
+def test_upload_project_version_route_no_index_html(
+    dummy_projects_dir: Path, authenticated_api: TestClient, tmp_path: Path
+) -> None:
     with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
         invalid_zip_path = tmp_path / "invalid.zip"
         with zipfile.ZipFile(file=invalid_zip_path, mode="w") as archive:
             archive.writestr("noindex.html", "Shit happens...")
-        response = api.post(
+        response = authenticated_api.post(
             "/api/projects/dummy-project-01/versions/1.0.0",
             files={"file": (invalid_zip_path.name, invalid_zip_path.read_bytes(), "application/zip")},
         )
