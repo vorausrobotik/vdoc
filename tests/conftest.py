@@ -8,9 +8,11 @@ from zipfile import ZipFile
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx import BasicAuth
 from typer.testing import CliRunner
 
 from vdoc.api import app
+from vdoc.constants import DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
 
 DUMMY_DOCS_STRUCTURE = {
     "dummy-project-01": ["0.0.1", "0.0.2", "0.1.0", "0.2.0"],
@@ -32,6 +34,12 @@ def resource_dir_fixture() -> Path:
 @pytest.fixture(scope="function", name="api")
 def api_client_fixture() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture(scope="function", name="authenticated_api")
+def authenticated_api_client_fixture(api: TestClient) -> TestClient:
+    api.auth = BasicAuth(username=DEFAULT_API_USERNAME, password=DEFAULT_API_PASSWORD)
+    return api
 
 
 @pytest.fixture(scope="session", name="cli_runner")

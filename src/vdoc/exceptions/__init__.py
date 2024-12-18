@@ -9,6 +9,17 @@ class VDocException(HTTPException):
     """Base exception class for all vdoc exceptions."""
 
 
+class InvalidCredentials(VDocException):
+    """Exception when the provided credentials are invalid."""
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__(
+            status_code=status.HTTP_401_NOT_FOUND,
+            detail="Invalid username and/or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+
 class ProjectNotFound(VDocException):
     """Exception when a project doesn't exist."""
 
