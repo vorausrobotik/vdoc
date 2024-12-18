@@ -6,7 +6,6 @@ import VDocLogo from './icons/VDocLogo'
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
 import { SelectChangeEvent } from '@mui/material/Select'
-import { useState } from 'react'
 import IconButton from '@mui/material/IconButton'
 import { useNavigate } from '@tanstack/react-router'
 import VersionDropdown from './components/VersionDropdown'
@@ -14,7 +13,6 @@ import VersionDropdown from './components/VersionDropdown'
 export default function MenuBar() {
   const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
   const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
-  const [versionDropdownValue, setVersionDropdownValue] = useState(currentVersion ?? 'latest')
   const navigate = useNavigate({ from: '/$projectName/versions/$version' })
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
@@ -24,7 +22,6 @@ export default function MenuBar() {
         to: `/$projectName/versions`,
       })
     } else {
-      setVersionDropdownValue(selectedVersion)
       navigate({
         to: `/$projectName/versions/${selectedVersion}`,
       })
@@ -49,7 +46,7 @@ export default function MenuBar() {
         {/* Version Dropdown Menu */}
         <Box sx={{ flexGrow: 0, display: { xs: projectVersions ? 'flex' : 'none' } }}>
           <VersionDropdown
-            selectedVersion={versionDropdownValue}
+            selectedVersion={currentVersion ?? 'latest'}
             versions={projectVersions}
             onVersionChange={handleVersionSelectChange}
           />
