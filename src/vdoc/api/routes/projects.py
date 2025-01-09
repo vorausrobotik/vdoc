@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 from vdoc.api.dependencies.auth import require_authentication
 from vdoc.methods.api.projects import (
-    get_project_version_and_latest_version_impl,
+    get_project_version_impl,
     list_project_versions_impl,
     list_projects_impl,
     upload_project_version_impl,
@@ -41,17 +41,17 @@ def list_project_versions(name: str) -> list[str]:
 
 
 @router.get("/{name}/versions/{version}")
-def get_project_versions(name: str, version: str) -> tuple[str, str]:
-    """Returns the requested project version and the latest version of the project.
+def get_project_versions(name: str, version: str) -> str:
+    """Returns the requested project version.
 
     Args:
         name: The name of the project.
         version: The requested version.
 
     Returns:
-        The requested project version and the latest version of the project.
+        The requested project version.
     """
-    return get_project_version_and_latest_version_impl(name=name, version=version)
+    return get_project_version_impl(name=name, version=version)
 
 
 @router.post("/{name}/versions/{version}")

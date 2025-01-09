@@ -30,13 +30,9 @@ def test_get_project_versions_route(list_project_versions_impl_mock: MagicMock, 
     list_project_versions_impl_mock.assert_called_once_with(name="foo")
 
 
-@patch("vdoc.api.routes.projects.get_project_version_and_latest_version_impl")
-def test_get_project_version_route(
-    get_project_version_and_latest_version_impl_mock: MagicMock, api: TestClient
-) -> None:
-    get_project_version_and_latest_version_impl_mock.side_effect = ProjectVersionNotFound(
-        name="foo", version=Version("42")
-    )
+@patch("vdoc.api.routes.projects.get_project_version_impl")
+def test_get_project_version_route(get_project_version_impl_mock: MagicMock, api: TestClient) -> None:
+    get_project_version_impl_mock.side_effect = ProjectVersionNotFound(name="foo", version=Version("42"))
     response = api.get("/api/projects/foo/versions/42")
     assert_api_response(
         response=response, status_code=404, message="Project 'foo' doesn't have a documentation for version '42'."

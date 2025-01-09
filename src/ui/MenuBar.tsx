@@ -13,6 +13,7 @@ import VersionDropdown from './components/VersionDropdown'
 export default function MenuBar() {
   const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
   const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
+  const latestVersion = useStore(globalStore, (state) => state['latestVersion'])
   const navigate = useNavigate({ from: '/projects/$projectName/versions/$version' })
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
@@ -44,13 +45,16 @@ export default function MenuBar() {
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
 
         {/* Version Dropdown Menu */}
-        <Box sx={{ flexGrow: 0, display: { xs: projectVersions ? 'flex' : 'none' } }}>
-          <VersionDropdown
-            selectedVersion={currentVersion ?? 'latest'}
-            versions={projectVersions}
-            onVersionChange={handleVersionSelectChange}
-          />
-        </Box>
+        {projectVersions && latestVersion && projectVersions && (
+          <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
+            <VersionDropdown
+              selectedVersion={currentVersion ?? 'latest'}
+              latestVersion={latestVersion}
+              versions={projectVersions}
+              onVersionChange={handleVersionSelectChange}
+            />
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   )
