@@ -6,3 +6,4 @@ reports/**
 .cruft.json
 .devcontainer/**
 .github/**
+src/ui/routeTree.gen.ts
