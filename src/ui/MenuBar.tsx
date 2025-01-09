@@ -13,17 +13,17 @@ import VersionDropdown from './components/VersionDropdown'
 export default function MenuBar() {
   const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
   const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
-  const navigate = useNavigate({ from: '/$projectName/versions/$version' })
+  const navigate = useNavigate({ from: '/projects/$projectName/versions/$version' })
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
     if (selectedVersion === 'more') {
       navigate({
-        to: `/$projectName/versions`,
+        to: `/projects/$projectName/versions`,
       })
     } else {
       navigate({
-        to: `/$projectName/versions/${selectedVersion}`,
+        to: `/projects/$projectName/versions/${selectedVersion}`,
       })
     }
   }

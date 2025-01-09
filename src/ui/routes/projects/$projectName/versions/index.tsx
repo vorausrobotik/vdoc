@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import QueryStateHandler from '../../../helpers/QueryStateHandler'
-import { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
-import { fetchProjectVersions } from '../../../helpers/APIFunctions'
-import globalStore from '../../../helpers/GlobalStore'
+import QueryStateHandler from '../../../../helpers/QueryStateHandler'
+import { FastAPIAxiosErrorT } from '../../../../interfacesAndTypes/Error'
+import { fetchProjectVersions } from '../../../../helpers/APIFunctions'
+import globalStore from '../../../../helpers/GlobalStore'
 import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
-import { groupVersionsByMajorVersion } from '../../../helpers/Versions'
+import { groupVersionsByMajorVersion } from '../../../../helpers/Versions'
 import { Typography } from '@mui/material'
 import { Container } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
@@ -16,7 +16,7 @@ import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 import CardContent from '@mui/material/CardContent'
 
-export const Route = createFileRoute('/$projectName/versions/')({
+export const Route = createFileRoute('/projects/$projectName/versions/')({
   component: ProjectVersionsOverview,
 })
 

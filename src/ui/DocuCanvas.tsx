@@ -12,12 +12,12 @@ interface DocuCanvasProps extends React.ComponentProps<'iframe'> {
 
 function DocuCanvas(props: DocuCanvasProps) {
   const theme = useTheme()
-  const baseUrl = `http://localhost:8080/projects/${props.name}/`
+  const baseUrl = `/projects/${props.name}/`
   return (
     <Fragment>
       {props.version !== props.latestVersion && (
         <Link
-          to="/$projectName/versions/$version"
+          to="/projects/$projectName/versions/$version"
           params={{ projectName: props.name, version: 'latest' }}
           style={{ textDecoration: 'none' }}
         >
@@ -37,7 +37,7 @@ function DocuCanvas(props: DocuCanvasProps) {
           </Grid>
         </Link>
       )}
-      <iframe style={{ border: 0, width: '100%', height: '100%' }} src={`${baseUrl}/${props.version}`} />
+      <iframe style={{ border: 0, width: '100%', height: '100%' }} src={`${baseUrl}${props.version}`} />
     </Fragment>
   )
 }

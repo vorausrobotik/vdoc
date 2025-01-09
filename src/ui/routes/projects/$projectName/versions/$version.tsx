@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import DocuCanvas from '../../../DocuCanvas'
-import QueryStateHandler from '../../../helpers/QueryStateHandler'
-import { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
-import { fetchProjectVersionAndLatestVersion, fetchProjectVersions } from '../../../helpers/APIFunctions'
-import globalStore from '../../../helpers/GlobalStore'
+import DocuCanvas from '../../../../DocuCanvas'
+import QueryStateHandler from '../../../../helpers/QueryStateHandler'
+import { FastAPIAxiosErrorT } from '../../../../interfacesAndTypes/Error'
+import { fetchProjectVersionAndLatestVersion, fetchProjectVersions } from '../../../../helpers/APIFunctions'
+import globalStore from '../../../../helpers/GlobalStore'
 
-export const Route = createFileRoute('/$projectName/versions/$version')({
+export const Route = createFileRoute('/projects/$projectName/versions/$version')({
   component: DocumentationComponent,
 })
 
