@@ -1,8 +1,6 @@
 """Contains the Rest API."""
 
-import logging
 from pathlib import Path
-from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import FileResponse, RedirectResponse
 from starlette.routing import BaseRoute
 
 from vdoc.api.routes import projects as DOCUMENTATION_MODULE
@@ -34,13 +32,13 @@ routes: list[BaseRoute] = [
         name="vdoc-docs",
     ),
     Mount(
-        "/projects/",
+        "/projects",
         app=StaticFiles(directory=VDocSettings().docs_dir.as_posix(), html=True, check_dir=False),
         name="projects",
     ),
 ]
 
-app = FastAPI(routes=routes, docs_url="/apidoc")
+app = FastAPI(docs_url="/apidoc")
 
 
 app.add_middleware(
@@ -78,3 +76,20 @@ def redirect_root_to_app(request: Request) -> RedirectResponse:
         RedirectResponse: Redirection to the app route.
     """
     return RedirectResponse(f"app/?{request.query_params}")
+
+
+@app.get("/app/projects/{file_path:path}")
+def redirect_foo(file_path: str) -> FileResponse:  # pylint: disable=unused-argument
+    """Basic redirect for the web UI.
+
+    Args:
+        file_path (str): The requested project file path.
+
+    Returns:
+        FileResponse: The index.html.
+    """
+    return FileResponse(path=webapp_path / "index.html")
+
+
+for route in routes:
+    app.routes.append(route)
