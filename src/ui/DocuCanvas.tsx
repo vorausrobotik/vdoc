@@ -3,22 +3,21 @@ import { Fragment } from 'react/jsx-runtime'
 import { Link } from '@tanstack/react-router'
 import useTheme from '@mui/material/styles/useTheme'
 import Typography from '@mui/material/Typography'
+import { useStore } from '@tanstack/react-store'
+import globalStore from './helpers/GlobalStore'
 
-interface DocuCanvasProps extends React.ComponentProps<'iframe'> {
-  name: string
-  version: string
-  latestVersion: string
-}
-
-function DocuCanvas(props: DocuCanvasProps) {
+function DocuCanvas() {
   const theme = useTheme()
-  const baseUrl = `/projects/${props.name}/`
+  const projectName = useStore(globalStore, (state) => state['projectName'])
+  const version = useStore(globalStore, (state) => state['currentVersion'])
+  const latestVersion = useStore(globalStore, (state) => state['latestVersion'])
+  const displayVersion = version === 'latest' ? latestVersion : version
   return (
     <Fragment>
-      {props.version !== props.latestVersion && (
+      {projectName && displayVersion !== latestVersion && (
         <Link
           to="/projects/$projectName/versions/$version"
-          params={{ projectName: props.name, version: 'latest' }}
+          params={{ projectName: projectName, version: 'latest' }}
           style={{ textDecoration: 'none' }}
         >
           <Grid
@@ -31,13 +30,13 @@ function DocuCanvas(props: DocuCanvasProps) {
             }}
           >
             <Typography variant="body1" color="black">
-              You're currently reading an <b>old version</b> ({props.version}) of {props.name}! To view the latest
-              version of the documentation, click this banner.
+              You're currently reading an <b>old version</b> ({version}) of {projectName}! To view the latest version of
+              the documentation, click this banner.
             </Typography>
           </Grid>
         </Link>
       )}
-      <iframe style={{ border: 0, width: '100%', height: '100%' }} src={`${baseUrl}${props.version}`} />
+      <iframe style={{ border: 0, width: '100%', height: '100%' }} src={`/projects/${projectName}/${displayVersion}`} />
     </Fragment>
   )
 }

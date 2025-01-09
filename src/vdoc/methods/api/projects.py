@@ -35,19 +35,18 @@ def list_project_versions_impl(name: str) -> list[str]:
     return [str(version) for version in Project(name=name).versions]
 
 
-def get_project_version_and_latest_version_impl(name: str, version: str) -> tuple[str, str]:
-    """Returns the requested version of the project as well as the latest version.
+def get_project_version_impl(name: str, version: str) -> str:
+    """Returns the requested version of the project.
 
     Args:
         name: The project name.
         version: The requested version of the project.
 
     Returns:
-        The requested version of the project as well as the latest version.
+        The requested version of the project.
     """
     parsed_version, _ = Project.get_version_and_docs_path(name=name, version=version)
-    latest_version = Project(name=name).latest
-    return str(parsed_version), str(latest_version)
+    return str(parsed_version)
 
 
 def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JSONResponse:
