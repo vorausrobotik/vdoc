@@ -7,12 +7,15 @@ import {
 } from '../../../../helpers/APIFunctions'
 import globalStore from '../../../../helpers/GlobalStore'
 
-export const Route = createFileRoute('/projects/$projectName/versions/$version')({
+export const Route = createFileRoute('/projects/$projectName/versions/$version/$')({
   component: DocumentationComponent,
 })
 
 function DocumentationComponent() {
-  const { projectName, version } = Route.useParams()
+  const { projectName, version, _splat } = Route.useParams()
+  const searchParams = Route.useSearch()
+  console.log('DocumentationComponent: Splat is', _splat)
+  console.log('DocumentationComponent: searchParams are', JSON.stringify(searchParams))
   useEffect(() => {
     const fetchData = async () => {
       const [versions, latestVersion] = await Promise.all([
@@ -32,5 +35,5 @@ function DocumentationComponent() {
     fetchData()
   }, [projectName, version])
 
-  return <DocuCanvas />
+  return <DocuCanvas remainingPath={_splat} />
 }
