@@ -15,7 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as ProjectsProjectNameIndexImport } from './routes/projects/$projectName/index'
 import { Route as ProjectsProjectNameVersionsIndexImport } from './routes/projects/$projectName/versions/index'
-import { Route as ProjectsProjectNameVersionsVersionImport } from './routes/projects/$projectName/versions/$version'
+import { Route as ProjectsProjectNameVersionsVersionSplatImport } from './routes/projects/$projectName/versions/$version.$'
 
 // Create Virtual Routes
 
@@ -42,10 +42,10 @@ const ProjectsProjectNameVersionsIndexRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
-const ProjectsProjectNameVersionsVersionRoute =
-  ProjectsProjectNameVersionsVersionImport.update({
-    id: '/projects/$projectName/versions/$version',
-    path: '/projects/$projectName/versions/$version',
+const ProjectsProjectNameVersionsVersionSplatRoute =
+  ProjectsProjectNameVersionsVersionSplatImport.update({
+    id: '/projects/$projectName/versions/$version/$',
+    path: '/projects/$projectName/versions/$version/$',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -67,18 +67,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectNameIndexImport
       parentRoute: typeof rootRoute
     }
-    '/projects/$projectName/versions/$version': {
-      id: '/projects/$projectName/versions/$version'
-      path: '/projects/$projectName/versions/$version'
-      fullPath: '/projects/$projectName/versions/$version'
-      preLoaderRoute: typeof ProjectsProjectNameVersionsVersionImport
-      parentRoute: typeof rootRoute
-    }
     '/projects/$projectName/versions/': {
       id: '/projects/$projectName/versions/'
       path: '/projects/$projectName/versions'
       fullPath: '/projects/$projectName/versions'
       preLoaderRoute: typeof ProjectsProjectNameVersionsIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/projects/$projectName/versions/$version/$': {
+      id: '/projects/$projectName/versions/$version/$'
+      path: '/projects/$projectName/versions/$version/$'
+      fullPath: '/projects/$projectName/versions/$version/$'
+      preLoaderRoute: typeof ProjectsProjectNameVersionsVersionSplatImport
       parentRoute: typeof rootRoute
     }
   }
@@ -89,23 +89,23 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/projects/$projectName': typeof ProjectsProjectNameIndexRoute
-  '/projects/$projectName/versions/$version': typeof ProjectsProjectNameVersionsVersionRoute
   '/projects/$projectName/versions': typeof ProjectsProjectNameVersionsIndexRoute
+  '/projects/$projectName/versions/$version/$': typeof ProjectsProjectNameVersionsVersionSplatRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/projects/$projectName': typeof ProjectsProjectNameIndexRoute
-  '/projects/$projectName/versions/$version': typeof ProjectsProjectNameVersionsVersionRoute
   '/projects/$projectName/versions': typeof ProjectsProjectNameVersionsIndexRoute
+  '/projects/$projectName/versions/$version/$': typeof ProjectsProjectNameVersionsVersionSplatRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/projects/$projectName/': typeof ProjectsProjectNameIndexRoute
-  '/projects/$projectName/versions/$version': typeof ProjectsProjectNameVersionsVersionRoute
   '/projects/$projectName/versions/': typeof ProjectsProjectNameVersionsIndexRoute
+  '/projects/$projectName/versions/$version/$': typeof ProjectsProjectNameVersionsVersionSplatRoute
 }
 
 export interface FileRouteTypes {
@@ -113,36 +113,36 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/projects/$projectName'
-    | '/projects/$projectName/versions/$version'
     | '/projects/$projectName/versions'
+    | '/projects/$projectName/versions/$version/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/projects/$projectName'
-    | '/projects/$projectName/versions/$version'
     | '/projects/$projectName/versions'
+    | '/projects/$projectName/versions/$version/$'
   id:
     | '__root__'
     | '/'
     | '/projects/$projectName/'
-    | '/projects/$projectName/versions/$version'
     | '/projects/$projectName/versions/'
+    | '/projects/$projectName/versions/$version/$'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   ProjectsProjectNameIndexRoute: typeof ProjectsProjectNameIndexRoute
-  ProjectsProjectNameVersionsVersionRoute: typeof ProjectsProjectNameVersionsVersionRoute
   ProjectsProjectNameVersionsIndexRoute: typeof ProjectsProjectNameVersionsIndexRoute
+  ProjectsProjectNameVersionsVersionSplatRoute: typeof ProjectsProjectNameVersionsVersionSplatRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   ProjectsProjectNameIndexRoute: ProjectsProjectNameIndexRoute,
-  ProjectsProjectNameVersionsVersionRoute:
-    ProjectsProjectNameVersionsVersionRoute,
   ProjectsProjectNameVersionsIndexRoute: ProjectsProjectNameVersionsIndexRoute,
+  ProjectsProjectNameVersionsVersionSplatRoute:
+    ProjectsProjectNameVersionsVersionSplatRoute,
 }
 
 export const routeTree = rootRoute
@@ -157,8 +157,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/projects/$projectName/",
-        "/projects/$projectName/versions/$version",
-        "/projects/$projectName/versions/"
+        "/projects/$projectName/versions/",
+        "/projects/$projectName/versions/$version/$"
       ]
     },
     "/": {
@@ -167,11 +167,11 @@ export const routeTree = rootRoute
     "/projects/$projectName/": {
       "filePath": "projects/$projectName/index.tsx"
     },
-    "/projects/$projectName/versions/$version": {
-      "filePath": "projects/$projectName/versions/$version.tsx"
-    },
     "/projects/$projectName/versions/": {
       "filePath": "projects/$projectName/versions/index.tsx"
+    },
+    "/projects/$projectName/versions/$version/$": {
+      "filePath": "projects/$projectName/versions/$version.$.tsx"
     }
   }
 }

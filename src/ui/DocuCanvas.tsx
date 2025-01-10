@@ -4,13 +4,42 @@ import { Link, useRouter } from '@tanstack/react-router'
 import { useTheme, Typography, Grid2 } from '@mui/material'
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
+import { sanitizeDocuUri } from './helpers/RouteHelpers'
 
-function DocuCanvas() {
+interface DocuCanvasProps extends React.ComponentProps<'div'> {
+  remainingPath?: string
+}
+
+function DocuCanvas(props: DocuCanvasProps) {
   const theme = useTheme()
+  const router = useRouter()
   const projectName = useStore(globalStore, (state) => state['projectName'])
   const version = useStore(globalStore, (state) => state['currentVersion'])
   const latestVersion = useStore(globalStore, (state) => state['latestVersion'])
   const displayVersion = version === 'latest' ? latestVersion : version
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  function handleIframe() {
+    if (iframeRef.current) {
+      const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
+      const currentOrigin = window.location.origin
+      if (iframeDocument) {
+        const anchorElements = iframeDocument.querySelectorAll('a')
+        anchorElements.forEach((anchor) => {
+          const href = anchor.getAttribute('href')
+          if (href && href.startsWith(currentOrigin)) {
+            const sanitizedPath = sanitizeDocuUri(href, currentOrigin)
+            console.log(`Sanitized path ${href} to ${sanitizedPath}`)
+            anchor.addEventListener('click', (event) => {
+              // Intercept anchor click and use tanstack router navigation
+              event.preventDefault()
+              router.navigate({ to: sanitizedPath })
+            })
+          }
+        })
+      }
+    }
+  }
   return (
     <Fragment>
       {projectName && displayVersion !== latestVersion && (
@@ -35,7 +64,12 @@ function DocuCanvas() {
           </Grid2>
         </Link>
       )}
-      <iframe style={{ border: 0, width: '100%', height: '100%' }} src={`/projects/${projectName}/${displayVersion}`} />
+      <iframe
+        ref={iframeRef}
+        onLoad={handleIframe}
+        style={{ border: 0, width: '100%', height: '100%' }}
+        src={`/projects/${projectName}/${displayVersion}/${props.remainingPath}${window.location.hash}`}
+      />
     </Fragment>
   )
 }
