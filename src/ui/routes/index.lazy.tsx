@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import QueryStateHandler from '../helpers/QueryStateHandler'
+import QueryStateHandler from '../components/QueryStateHandler'
 import { useQuery } from '@tanstack/react-query'
 import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
@@ -10,7 +10,7 @@ import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 import { fetchProjects } from '../helpers/APIFunctions'
-import EmptyState from '../helpers/EmptyState'
+import EmptyState from '../components/EmptyState'
 import { SentimentDissatisfied } from '@mui/icons-material'
 
 export const Route = createLazyFileRoute('/')({
