@@ -13,6 +13,7 @@ from starlette.routing import BaseRoute
 
 from vdoc.api.routes import projects as DOCUMENTATION_MODULE
 from vdoc.exceptions import VDocException
+from vdoc.methods.api.projects import get_project_version_impl
 from vdoc.settings import VDocSettings
 
 _PACKAGE_PATH = Path(__file__).parent.parent
@@ -76,6 +77,22 @@ def redirect_root_to_app(request: Request) -> RedirectResponse:
         RedirectResponse: Redirection to the app route.
     """
     return RedirectResponse(f"app/?{request.query_params}")
+
+
+@app.get("/app/projects/{project_name}/versions/{version}/objects.inv")
+def serve_sphinx_objects_inventory(project_name: str, version: str) -> FileResponse:  # pylint: disable=unused-argument
+    """Serves the objects.inv sphinx file for intersphinx mappings.
+
+    Args:
+        project_name: The requested project name.
+        version: The requested project version.
+
+    Returns:
+        FileResponse: The objects.inv file.
+    """
+    served_version = get_project_version_impl(name=project_name, version=version)
+
+    return FileResponse(path=VDocSettings().docs_dir / project_name / served_version / "objects.inv")
 
 
 @app.get("/app/projects/{file_path:path}")
