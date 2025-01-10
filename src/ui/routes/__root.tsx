@@ -1,7 +1,6 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
 import MenuBar from '../MenuBar'
-import { Box, CssBaseline } from '@mui/material'
+import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 
 const darkTheme = createTheme({

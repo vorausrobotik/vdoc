@@ -1,12 +1,7 @@
-import AppBar from '@mui/material/AppBar'
-import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
-import { Box } from '@mui/material'
+import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, Typography } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
-import { SelectChangeEvent } from '@mui/material/Select'
-import IconButton from '@mui/material/IconButton'
 import { useNavigate } from '@tanstack/react-router'
 import VersionDropdown from './components/VersionDropdown'
 

@@ -1,8 +1,7 @@
-import Grid from '@mui/material/Grid2'
+import { useRef } from 'react'
 import { Fragment } from 'react/jsx-runtime'
-import { Link } from '@tanstack/react-router'
-import useTheme from '@mui/material/styles/useTheme'
-import Typography from '@mui/material/Typography'
+import { Link, useRouter } from '@tanstack/react-router'
+import { useTheme, Typography, Grid2 } from '@mui/material'
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
 
@@ -20,7 +19,7 @@ function DocuCanvas() {
           params={{ projectName: projectName, version: 'latest' }}
           style={{ textDecoration: 'none' }}
         >
-          <Grid
+          <Grid2
             container
             direction="row"
             sx={{
@@ -33,7 +32,7 @@ function DocuCanvas() {
               You're currently reading an <b>old version</b> ({version}) of {projectName}! To view the latest version of
               the documentation, click this banner.
             </Typography>
-          </Grid>
+          </Grid2>
         </Link>
       )}
       <iframe style={{ border: 0, width: '100%', height: '100%' }} src={`/projects/${projectName}/${displayVersion}`} />
