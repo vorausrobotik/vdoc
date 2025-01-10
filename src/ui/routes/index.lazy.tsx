@@ -3,12 +3,7 @@ import QueryStateHandler from '../components/QueryStateHandler'
 import { useQuery } from '@tanstack/react-query'
 import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
-import Grid from '@mui/material/Grid2'
-import { Box, Container } from '@mui/material'
-import Card from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
-import CardContent from '@mui/material/CardContent'
-import Typography from '@mui/material/Typography'
+import { Box, Container, Card, CardActions, CardContent, Grid2, Typography } from '@mui/material'
 import { fetchProjects } from '../helpers/APIFunctions'
 import EmptyState from '../components/EmptyState'
 import { SentimentDissatisfied } from '@mui/icons-material'
@@ -34,7 +29,7 @@ function Index() {
         <Container sx={{ mt: 2 }}>
           {projects.length > 0 ? (
             <Box sx={{ flexGrow: 1 }}>
-              <Grid
+              <Grid2
                 container
                 direction="row"
                 sx={{
@@ -44,7 +39,7 @@ function Index() {
                 spacing={2}
               >
                 {projects.map((project) => (
-                  <Grid key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
+                  <Grid2 key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
                     <Card sx={{ minHeight: 140 }}>
                       <CardContent>
                         <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
@@ -61,9 +56,9 @@ function Index() {
                         </LinkButton>
                       </CardActions>
                     </Card>
-                  </Grid>
+                  </Grid2>
                 ))}
-              </Grid>
+              </Grid2>
             </Box>
           ) : (
             <EmptyState

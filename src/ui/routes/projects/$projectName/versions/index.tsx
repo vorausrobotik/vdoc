@@ -5,16 +5,9 @@ import QueryStateHandler from '../../../../components/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../../../helpers/APIFunctions'
 import globalStore from '../../../../helpers/GlobalStore'
-import Chip from '@mui/material/Chip'
-import Stack from '@mui/material/Stack'
 import { groupVersionsByMajorVersion } from '../../../../helpers/Versions'
-import { Typography } from '@mui/material'
-import { Container } from '@mui/material'
+import { Typography, Container, Chip, Stack, Card, Grid2, Box, CardContent } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid2'
-import Box from '@mui/material/Box'
-import CardContent from '@mui/material/CardContent'
 
 export const Route = createFileRoute('/projects/$projectName/versions/')({
   component: ProjectVersionsOverview,
@@ -51,11 +44,11 @@ function ProjectVersionsOverview() {
             Version index of {projectName}
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {Object.keys(groupedVersions)
                 .reverse()
                 .map((major) => (
-                  <Grid size={6}>
+                  <Grid2 size={6}>
                     <Card key={major}>
                       <CardContent>
                         <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
@@ -76,9 +69,9 @@ function ProjectVersionsOverview() {
                         </Stack>
                       </CardContent>
                     </Card>
-                  </Grid>
+                  </Grid2>
                 ))}
-            </Grid>
+            </Grid2>
           </Box>
         </Container>
       )}
