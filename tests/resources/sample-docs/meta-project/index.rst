@@ -1,0 +1,10 @@
+Meta documentation
+==================
+
+Documentation version: |injected_version|.
+
+This project depends on :ref:`project-one <project-one>` and :ref:`project-two <project-two>`.
+
+There are some examples on how to use :ref:`project-one <project-one:examples>`.
+
+You can see the usage page of project two :ref:`here <project-two:usage>`.

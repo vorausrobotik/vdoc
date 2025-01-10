@@ -7,9 +7,9 @@ from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from packaging.version import Version
 
+from tests.utils import assert_api_response, ensure_project_dir_not_created
 from vdoc.exceptions import ProjectVersionNotFound
 from vdoc.models.project import Project
-from tests.utils import assert_api_response, ensure_project_dir_not_created
 
 
 @patch("vdoc.api.routes.projects.list_projects_impl")

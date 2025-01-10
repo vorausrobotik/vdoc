@@ -16,13 +16,13 @@ extend_skip_glob = ["venv*/*", "log/*"]
 
 [tool.black]
 line_length = 120
-extend-exclude = "venv.*"
+extend-exclude = "venv.*|tests/resources/sample-docs/.*"
 
 [tool.ruff]
 line-length = 120
 src = ["src"]
 lint.select = ["C901", "D"]
-extend-exclude = ["log"]
+extend-exclude = ["log", "tests/resources/sample-docs/"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = [
@@ -77,11 +77,12 @@ ignore-signatures = "yes"
 disallow_untyped_defs = true
 warn_unused_ignores = true
 exclude = [
-    "vdoc-\\d+", # Ignore temporary folder created by setuptools when building an sdist
+    "vdoc-\\d+",                 # Ignore temporary folder created by setuptools when building an sdist
     "venv.*/",
     "log/",
     "build/",
     "dist/",
+    "tests/resources/sample-docs/",
 ]
 
 [tool.pytest.ini_options]
@@ -91,6 +92,7 @@ addopts = """
     --import-mode=append
     --ignore-glob=vdoc-[0-9]*
     --ignore="docs/_scripts"
+    --ignore="tests/resources/sample-docs/"
     --cov=vdoc
     --cov-config=pyproject.toml
     --cov-report=

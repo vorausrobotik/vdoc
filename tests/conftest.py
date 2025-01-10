@@ -1,7 +1,10 @@
 """This module contains pytest fixtures."""
 
 import os
+import sys
 from pathlib import Path
+from subprocess import check_output
+from tempfile import TemporaryDirectory
 from typing import Generator
 from unittest.mock import patch
 from zipfile import ZipFile
@@ -11,13 +14,20 @@ from fastapi.testclient import TestClient
 from httpx import BasicAuth
 from typer.testing import CliRunner
 
+from tests.utils import start_vdoc_server_and_get_uri
 from vdoc.api import app
-from vdoc.constants import DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
+from vdoc.constants import CONFIG_ENV_PREFIX, DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
+
+DUMMY_VERSIONS = (
+    ("0.0.1", "0.0.2", "0.1.0", "0.2.0"),
+    ("6.0", "1.0", "3.6", "5.9.9"),
+    ("1.0.0", "1.3.0"),
+)
 
 DUMMY_DOCS_STRUCTURE = {
-    "dummy-project-01": ["0.0.1", "0.0.2", "0.1.0", "0.2.0"],
-    "dummy-project-02": ["6.0", "1.0", "3.6", "5.9.9"],
-    "dummy-project-03": ["1.0.0", "1.3.0"],
+    "dummy-project-01": DUMMY_VERSIONS[0],
+    "dummy-project-02": DUMMY_VERSIONS[1],
+    "dummy-project-03": DUMMY_VERSIONS[2],
 }
 
 
@@ -54,7 +64,7 @@ def cli_runner_fixture() -> CliRunner:
 
 @pytest.fixture(scope="function", name="dummy_projects_dir")
 def dummy_projects_dir_fixture(tmp_path: Path) -> Generator[Path, None, None]:
-    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path)}):
+    with patch.dict(os.environ, {f"{CONFIG_ENV_PREFIX}DOCS_DIR": str(tmp_path)}):
         for project_name, versions in DUMMY_DOCS_STRUCTURE.items():
             for version in versions:
                 path = tmp_path / project_name / version
@@ -75,3 +85,35 @@ def example_docs_zip_fixture(tmp_path: Path) -> Generator[Path, None, None]:
         archive.writestr("index.html", html_file_content)
 
     yield zip_file_path
+
+
+@pytest.fixture(scope="session", name="sample_docs")
+def sample_docs_fixture(resource_dir: Path) -> Generator[Path, None, None]:
+
+    def build_project_docs(project_root: Path, target_root_dir: Path, version: str) -> None:
+        check_output(
+            args=[
+                f"{Path(sys.executable).parent}/sphinx-build",
+                "-b",
+                "html",
+                project_root.as_posix(),
+                (target_root_dir / version).as_posix(),
+            ],
+            env={"INJECTED_VERSION": version},
+        )
+
+    with TemporaryDirectory() as _tmp_dir:
+        tmp_dir = Path(_tmp_dir)
+        sample_docs_root = resource_dir / "sample-docs"
+        sample_doc_projects = list(sample_docs_root.glob("project*"))
+        assert len(sample_doc_projects) == 2, "Expected 2 sample projects"
+        for index, project_root in enumerate(sample_doc_projects):
+            project_name = project_root.name
+            for version in DUMMY_VERSIONS[index]:
+                build_project_docs(project_root, tmp_dir / project_name, version)
+
+        with start_vdoc_server_and_get_uri(env={f"{CONFIG_ENV_PREFIX}DOCS_DIR": str(tmp_dir)}):
+            for version in DUMMY_VERSIONS[2]:
+                build_project_docs(sample_docs_root / "meta-project", tmp_dir / "meta-project", version)
+
+        yield tmp_dir
