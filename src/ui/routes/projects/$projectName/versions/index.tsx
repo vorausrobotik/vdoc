@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import QueryStateHandler from '../../../../helpers/QueryStateHandler'
+import QueryStateHandler from '../../../../components/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../../../helpers/APIFunctions'
 import globalStore from '../../../../helpers/GlobalStore'
