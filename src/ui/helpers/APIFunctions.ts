@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Project } from '../interfacesAndTypes/Project'
 
-export const fetchProjectVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
+export const fetchProjectVersion = async (projectName: string, version: string): Promise<string> => {
   return (await axios.get(`/api/projects/${projectName}/versions/${version}`)).data
 }
 
