@@ -4,8 +4,8 @@ from pathlib import Path
 
 from packaging.version import Version
 
-from vdoc.models.project import Project
 from tests.conftest import DUMMY_DOCS_STRUCTURE
+from vdoc.models.project import Project
 
 
 def test_list_projects(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
