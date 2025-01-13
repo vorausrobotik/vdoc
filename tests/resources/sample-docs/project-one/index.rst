@@ -1,3 +1,5 @@
+.. _index:
+
 Test Project 1 documentation
 ============================
 
