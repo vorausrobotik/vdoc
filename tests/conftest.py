@@ -19,7 +19,7 @@ from vdoc.api import app
 from vdoc.constants import CONFIG_ENV_PREFIX, DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
 
 DUMMY_VERSIONS = (
-    ("0.0.1", "0.0.2", "0.1.0", "0.2.0"),
+    ("0.0.1", "0.0.2", "0.1.0", "1.0.0", "1.1.0", "2.0.0"),
     ("6.0", "1.0", "3.6", "5.9.9"),
     ("1.0.0", "1.3.0"),
 )
@@ -105,7 +105,7 @@ def sample_docs_fixture(resource_dir: Path) -> Generator[Path, None, None]:
     with TemporaryDirectory() as _tmp_dir:
         tmp_dir = Path(_tmp_dir)
         sample_docs_root = resource_dir / "sample-docs"
-        sample_doc_projects = list(sample_docs_root.glob("project*"))
+        sample_doc_projects = sorted(list(sample_docs_root.glob("project*")))
         assert len(sample_doc_projects) == 2, "Expected 2 sample projects"
         for index, project_root in enumerate(sample_doc_projects):
             project_name = project_root.name
