@@ -27,6 +27,6 @@ rst_prolog = f"""
 """
 
 intersphinx_mapping = {
-    "project-one": ("http://localhost:8080/app/projects/project-one/versions/latest", None),
-    "project-two": ("http://localhost:8080/app/projects/project-two/versions/latest", None),
+    "project-one": ("http://localhost:8080/project-one/latest", None),
+    "project-two": ("http://localhost:8080/project-two/latest", None),
 }

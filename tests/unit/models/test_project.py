@@ -18,7 +18,9 @@ def test_list_project_versions(dummy_projects_dir: Path) -> None:  # pylint: dis
         Version("0.0.1"),
         Version("0.0.2"),
         Version("0.1.0"),
-        Version("0.2.0"),
+        Version("1.0.0"),
+        Version("1.1.0"),
+        Version("2.0.0"),
     ]
 
 

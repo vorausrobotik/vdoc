@@ -6,7 +6,7 @@ export const fetchProjectVersion = async (projectName: string, version: string):
 }
 
 export const fetchProjectVersions = async (projectName: string): Promise<string[]> => {
-  return (await axios.get(`/api/projects/${projectName}/versions`)).data
+  return (await axios.get(`/api/projects/${projectName}/versions/`)).data
 }
 
 export const fetchProjects = async (): Promise<Project[]> => {

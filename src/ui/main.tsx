@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { routeTree } from './routeTree.gen'
 
-const router = createRouter({ routeTree, basepath: '/app/' })
+const router = createRouter({ routeTree })
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
 declare module '@tanstack/react-router' {
   interface Register {

@@ -1,4 +1,10 @@
-export const sanitizeDocuUri = (uri: string, basePath: string): string => {
+export interface SanitizeDocUriResI {
+  project?: string
+  version?: string
+  remainder?: string
+  isInternal: boolean
+}
+export const sanitizeDocuUri = (href: string, basePath: string): SanitizeDocUriResI => {
   const escapeRegExp = (str: string): string => {
     return str.replace(/[.*+?^=!:${}()|[\]/\\]/g, '\\$&')
   }
@@ -6,14 +12,15 @@ export const sanitizeDocuUri = (uri: string, basePath: string): string => {
   const escapedBasePath = escapeRegExp(basePath)
 
   const re = new RegExp(
-    String.raw`^${escapedBasePath}(\/app)?\/projects\/(?<name>[^\/]+)(\/versions)?\/(?<version>[^\/]+)(?:\/)?(?<remainder>[^$]+)?$`
+    String.raw`^${escapedBasePath}(?:\/static)?(?:\/projects)?\/(?<name>[^\/]+)\/(?<version>[^\/#?\n]+)(?:\/(?<remainder>.*?))?(?:\n|$)`
   )
-
-  const match = uri.match(re)
+  const match = href.match(re)
   if (match && match.groups) {
     const { name, version, remainder } = match.groups
-    return `/app/projects/${name}/versions/${version}/${remainder}`
+    return { project: name, version, remainder, isInternal: true }
+  } else if (!href.startsWith('http')) {
+    return { remainder: href, isInternal: true }
+  } else {
+    return { isInternal: false }
   }
-
-  throw new Error(`Unable to parse docu URI ${uri}`)
 }

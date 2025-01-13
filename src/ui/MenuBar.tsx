@@ -9,17 +9,17 @@ export default function MenuBar() {
   const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
   const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
   const latestVersion = useStore(globalStore, (state) => state['latestVersion'])
-  const navigate = useNavigate({ from: '/projects/$projectName/versions/$version/$' })
+  const navigate = useNavigate({ from: '/$projectName/$version/$' })
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
     if (selectedVersion === 'more') {
       navigate({
-        to: `/projects/$projectName/versions/$version/$`,
+        to: '/$projectName',
       })
     } else {
       navigate({
-        to: `/projects/$projectName/versions/${selectedVersion}/$`,
+        to: `/$projectName/${selectedVersion}/$`,
       })
     }
   }

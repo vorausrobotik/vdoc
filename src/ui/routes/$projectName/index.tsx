@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import QueryStateHandler from '../../../../components/QueryStateHandler'
-import { FastAPIAxiosErrorT } from '../../../../interfacesAndTypes/Error'
-import { fetchProjectVersions } from '../../../../helpers/APIFunctions'
-import globalStore from '../../../../helpers/GlobalStore'
-import { groupVersionsByMajorVersion } from '../../../../helpers/Versions'
+import QueryStateHandler from '../../components/QueryStateHandler'
+import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
+import { fetchProjectVersions } from '../../helpers/APIFunctions'
+import globalStore from '../../helpers/GlobalStore'
+import { groupVersionsByMajorVersion } from '../../helpers/Versions'
 import { Typography, Container, Chip, Stack, Card, Grid2, Box, CardContent } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
 
-export const Route = createFileRoute('/projects/$projectName/versions/')({
+export const Route = createFileRoute('/$projectName/')({
   component: ProjectVersionsOverview,
 })
 
@@ -61,7 +61,7 @@ function ProjectVersionsOverview() {
                               key={version}
                               label={version}
                               component="a"
-                              href={`versions/${version}`}
+                              href={`${projectName}/${version}`}
                               clickable
                               variant="outlined"
                             />

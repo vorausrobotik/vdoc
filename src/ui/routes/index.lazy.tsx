@@ -48,7 +48,7 @@ function Index() {
                       </CardContent>
                       <CardActions>
                         <LinkButton
-                          to={`/projects/$projectName/versions/$version/$`}
+                          to={`/$projectName/$version/$`}
                           params={{ projectName: project.name, version: 'latest' }}
                           size="small"
                         >

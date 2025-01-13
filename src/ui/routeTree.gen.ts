@@ -13,9 +13,8 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as ProjectsProjectNameIndexImport } from './routes/projects/$projectName/index'
-import { Route as ProjectsProjectNameVersionsIndexImport } from './routes/projects/$projectName/versions/index'
-import { Route as ProjectsProjectNameVersionsVersionSplatImport } from './routes/projects/$projectName/versions/$version.$'
+import { Route as ProjectNameIndexImport } from './routes/$projectName/index'
+import { Route as ProjectNameVersionSplatImport } from './routes/$projectName/$version.$'
 
 // Create Virtual Routes
 
@@ -29,25 +28,17 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
-const ProjectsProjectNameIndexRoute = ProjectsProjectNameIndexImport.update({
-  id: '/projects/$projectName/',
-  path: '/projects/$projectName/',
+const ProjectNameIndexRoute = ProjectNameIndexImport.update({
+  id: '/$projectName/',
+  path: '/$projectName/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProjectsProjectNameVersionsIndexRoute =
-  ProjectsProjectNameVersionsIndexImport.update({
-    id: '/projects/$projectName/versions/',
-    path: '/projects/$projectName/versions/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
-const ProjectsProjectNameVersionsVersionSplatRoute =
-  ProjectsProjectNameVersionsVersionSplatImport.update({
-    id: '/projects/$projectName/versions/$version/$',
-    path: '/projects/$projectName/versions/$version/$',
-    getParentRoute: () => rootRoute,
-  } as any)
+const ProjectNameVersionSplatRoute = ProjectNameVersionSplatImport.update({
+  id: '/$projectName/$version/$',
+  path: '/$projectName/$version/$',
+  getParentRoute: () => rootRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -60,25 +51,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/projects/$projectName/': {
-      id: '/projects/$projectName/'
-      path: '/projects/$projectName'
-      fullPath: '/projects/$projectName'
-      preLoaderRoute: typeof ProjectsProjectNameIndexImport
+    '/$projectName/': {
+      id: '/$projectName/'
+      path: '/$projectName'
+      fullPath: '/$projectName'
+      preLoaderRoute: typeof ProjectNameIndexImport
       parentRoute: typeof rootRoute
     }
-    '/projects/$projectName/versions/': {
-      id: '/projects/$projectName/versions/'
-      path: '/projects/$projectName/versions'
-      fullPath: '/projects/$projectName/versions'
-      preLoaderRoute: typeof ProjectsProjectNameVersionsIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/projects/$projectName/versions/$version/$': {
-      id: '/projects/$projectName/versions/$version/$'
-      path: '/projects/$projectName/versions/$version/$'
-      fullPath: '/projects/$projectName/versions/$version/$'
-      preLoaderRoute: typeof ProjectsProjectNameVersionsVersionSplatImport
+    '/$projectName/$version/$': {
+      id: '/$projectName/$version/$'
+      path: '/$projectName/$version/$'
+      fullPath: '/$projectName/$version/$'
+      preLoaderRoute: typeof ProjectNameVersionSplatImport
       parentRoute: typeof rootRoute
     }
   }
@@ -88,61 +72,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/projects/$projectName': typeof ProjectsProjectNameIndexRoute
-  '/projects/$projectName/versions': typeof ProjectsProjectNameVersionsIndexRoute
-  '/projects/$projectName/versions/$version/$': typeof ProjectsProjectNameVersionsVersionSplatRoute
+  '/$projectName': typeof ProjectNameIndexRoute
+  '/$projectName/$version/$': typeof ProjectNameVersionSplatRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/projects/$projectName': typeof ProjectsProjectNameIndexRoute
-  '/projects/$projectName/versions': typeof ProjectsProjectNameVersionsIndexRoute
-  '/projects/$projectName/versions/$version/$': typeof ProjectsProjectNameVersionsVersionSplatRoute
+  '/$projectName': typeof ProjectNameIndexRoute
+  '/$projectName/$version/$': typeof ProjectNameVersionSplatRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/projects/$projectName/': typeof ProjectsProjectNameIndexRoute
-  '/projects/$projectName/versions/': typeof ProjectsProjectNameVersionsIndexRoute
-  '/projects/$projectName/versions/$version/$': typeof ProjectsProjectNameVersionsVersionSplatRoute
+  '/$projectName/': typeof ProjectNameIndexRoute
+  '/$projectName/$version/$': typeof ProjectNameVersionSplatRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/projects/$projectName'
-    | '/projects/$projectName/versions'
-    | '/projects/$projectName/versions/$version/$'
+  fullPaths: '/' | '/$projectName' | '/$projectName/$version/$'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/projects/$projectName'
-    | '/projects/$projectName/versions'
-    | '/projects/$projectName/versions/$version/$'
-  id:
-    | '__root__'
-    | '/'
-    | '/projects/$projectName/'
-    | '/projects/$projectName/versions/'
-    | '/projects/$projectName/versions/$version/$'
+  to: '/' | '/$projectName' | '/$projectName/$version/$'
+  id: '__root__' | '/' | '/$projectName/' | '/$projectName/$version/$'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  ProjectsProjectNameIndexRoute: typeof ProjectsProjectNameIndexRoute
-  ProjectsProjectNameVersionsIndexRoute: typeof ProjectsProjectNameVersionsIndexRoute
-  ProjectsProjectNameVersionsVersionSplatRoute: typeof ProjectsProjectNameVersionsVersionSplatRoute
+  ProjectNameIndexRoute: typeof ProjectNameIndexRoute
+  ProjectNameVersionSplatRoute: typeof ProjectNameVersionSplatRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  ProjectsProjectNameIndexRoute: ProjectsProjectNameIndexRoute,
-  ProjectsProjectNameVersionsIndexRoute: ProjectsProjectNameVersionsIndexRoute,
-  ProjectsProjectNameVersionsVersionSplatRoute:
-    ProjectsProjectNameVersionsVersionSplatRoute,
+  ProjectNameIndexRoute: ProjectNameIndexRoute,
+  ProjectNameVersionSplatRoute: ProjectNameVersionSplatRoute,
 }
 
 export const routeTree = rootRoute
@@ -156,22 +121,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/projects/$projectName/",
-        "/projects/$projectName/versions/",
-        "/projects/$projectName/versions/$version/$"
+        "/$projectName/",
+        "/$projectName/$version/$"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
     },
-    "/projects/$projectName/": {
-      "filePath": "projects/$projectName/index.tsx"
+    "/$projectName/": {
+      "filePath": "$projectName/index.tsx"
     },
-    "/projects/$projectName/versions/": {
-      "filePath": "projects/$projectName/versions/index.tsx"
-    },
-    "/projects/$projectName/versions/$version/$": {
-      "filePath": "projects/$projectName/versions/$version.$.tsx"
+    "/$projectName/$version/$": {
+      "filePath": "$projectName/$version.$.tsx"
     }
   }
 }
