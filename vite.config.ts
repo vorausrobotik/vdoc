@@ -11,15 +11,20 @@ export default defineConfig({
     compression(),
   ],
   root: 'src/ui',
-  base: process.env.USE_VITE_PROXY ? '' : '/app/',
   build: {
     outDir: '../vdoc/webapp',
     emptyOutDir: true,
+    sourcemap: true,
   },
   server: {
     proxy: process.env.USE_VITE_PROXY
       ? {
           '/api': {
+            target: 'http://localhost:8080',
+            changeOrigin: false,
+            secure: false,
+          },
+          '/static': {
             target: 'http://localhost:8080',
             changeOrigin: false,
             secure: false,

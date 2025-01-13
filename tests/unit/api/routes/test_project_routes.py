@@ -25,7 +25,7 @@ def test_list_projects_route(list_projects_impl_mock: MagicMock, dummy_projects_
 def test_get_project_versions_route(list_project_versions_impl_mock: MagicMock, api: TestClient) -> None:
     mocked_versions = ["1", "2", "3", "4"]
     list_project_versions_impl_mock.return_value = mocked_versions
-    response = api.get("/api/projects/foo/versions")
+    response = api.get("/api/projects/foo/versions/")
     assert response.json() == mocked_versions
     list_project_versions_impl_mock.assert_called_once_with(name="foo")
 
@@ -51,16 +51,16 @@ def test_upload_project_version_route_unauthenticated(api: TestClient, example_d
 def test_upload_project_version_route(
     dummy_projects_dir: Path, authenticated_api: TestClient, example_docs_zip: Path
 ) -> None:
-    project_version_dir = dummy_projects_dir / "dummy-project-01" / "1.0.0"
+    project_version_dir = dummy_projects_dir / "dummy-project-01" / "3.0.0"
     assert not project_version_dir.is_dir()
     response = authenticated_api.post(
-        "/api/projects/dummy-project-01/versions/1.0.0",
+        "/api/projects/dummy-project-01/versions/3.0.0",
         files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
     )
     assert_api_response(
         response=response,
         status_code=201,
-        message="Version '1.0.0' of project 'dummy-project-01' uploaded successfully.",
+        message="Version '3.0.0' of project 'dummy-project-01' uploaded successfully.",
     )
     assert (project_version_dir).is_dir()
     index_file = project_version_dir / "index.html"
@@ -69,7 +69,7 @@ def test_upload_project_version_route(
 
 
 def test_upload_project_version_route_invalid_version(dummy_projects_dir: Path, authenticated_api: TestClient) -> None:
-    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "3.0.0"):
         response = authenticated_api.post(
             "/api/projects/dummy-project-01/versions/abcd", files={"file": ("foo", b"", "application/zip")}
         )
@@ -83,7 +83,7 @@ def test_upload_project_version_route_invalid_version(dummy_projects_dir: Path, 
 def test_upload_project_version_route_invalid_project_name(
     dummy_projects_dir: Path, authenticated_api: TestClient
 ) -> None:
-    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "3.0.0"):
         response = authenticated_api.post(
             "/api/projects/äüö/versions/1.0.0", files={"file": ("foo", b"", "application/zip")}
         )
@@ -97,9 +97,9 @@ def test_upload_project_version_route_invalid_project_name(
 def test_upload_project_version_route_invalid_content_type(
     dummy_projects_dir: Path, authenticated_api: TestClient
 ) -> None:
-    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "3.0.0"):
         response = authenticated_api.post(
-            "/api/projects/dummy-project-01/versions/1.0.0", files={"file": ("foo", b"", "application/invalid")}
+            "/api/projects/dummy-project-01/versions/3.0.0", files={"file": ("foo", b"", "application/invalid")}
         )
         assert_api_response(
             response=response,
@@ -109,9 +109,9 @@ def test_upload_project_version_route_invalid_content_type(
 
 
 def test_upload_project_version_route_invalid_zip(dummy_projects_dir: Path, authenticated_api: TestClient) -> None:
-    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "3.0.0"):
         response = authenticated_api.post(
-            "/api/projects/dummy-project-01/versions/1.0.0", files={"file": ("foo", b"", "application/zip")}
+            "/api/projects/dummy-project-01/versions/3.0.0", files={"file": ("foo", b"", "application/zip")}
         )
         assert_api_response(
             response=response,
@@ -123,12 +123,12 @@ def test_upload_project_version_route_invalid_zip(dummy_projects_dir: Path, auth
 def test_upload_project_version_route_no_index_html(
     dummy_projects_dir: Path, authenticated_api: TestClient, tmp_path: Path
 ) -> None:
-    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "1.0.0"):
+    with ensure_project_dir_not_created(dummy_projects_dir, "dummy-project-01", "3.0.0"):
         invalid_zip_path = tmp_path / "invalid.zip"
         with zipfile.ZipFile(file=invalid_zip_path, mode="w") as archive:
             archive.writestr("noindex.html", "Shit happens...")
         response = authenticated_api.post(
-            "/api/projects/dummy-project-01/versions/1.0.0",
+            "/api/projects/dummy-project-01/versions/3.0.0",
             files={"file": (invalid_zip_path.name, invalid_zip_path.read_bytes(), "application/zip")},
         )
         assert_api_response(
