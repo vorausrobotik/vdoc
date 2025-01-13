@@ -1,13 +1,14 @@
 """This module contains utility functions for tests."""
 
 import sys
-import time
 from contextlib import contextmanager
 from pathlib import Path
 from subprocess import Popen
 from typing import Generator
 
+import requests
 from httpx import Response
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from vdoc.constants import CONFIG_ENV_PREFIX, DEFAULT_BIND_ADDRESS, DEFAULT_BIND_PORT
 
@@ -39,6 +40,14 @@ def start_vdoc_server_and_get_uri(env: dict[str, str] | None = None) -> Generato
         }
     )
 
+    server_uri = f"http://{DEFAULT_BIND_ADDRESS}:{DEFAULT_BIND_PORT}"
+
+    @retry(wait=wait_fixed(0.5), stop=stop_after_attempt(5))
+    def wait_until_server_is_available() -> None:
+        result = requests.get(server_uri, timeout=1)
+        assert result.status_code == 200
+
     with Popen(args=[f"{Path(sys.executable).parent}/vdoc", "run"], env=env) as process:
-        yield f"http:{DEFAULT_BIND_ADDRESS}:{DEFAULT_BIND_PORT}"
+        wait_until_server_is_available()
+        yield server_uri
         process.kill()
