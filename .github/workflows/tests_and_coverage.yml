@@ -1,0 +1,67 @@
+name: Tests & Coverage
+
+on: [workflow_call]
+
+
+jobs:
+  test-python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install tox
+      run: python -m pip install --upgrade pip tox==4.23.2 tox-uv~=1.16.0 tox-gh-actions~=3.0
+
+    - name: Run tests
+      run: tox
+
+    - name: Upload coverage artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-${{ matrix.python-version }}
+        path: reports/.coverage.*test
+        include-hidden-files: true
+
+  coverage-python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: test-python
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: reports
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install tox
+        run: python -m pip install --upgrade pip tox
+
+      - name: Combine coverage results
+        run: tox run -e combine-test-reports
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: reports/coverage.xml
