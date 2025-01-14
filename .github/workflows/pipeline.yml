@@ -24,11 +24,52 @@ jobs:
       - tests-and-coverage
       - linting
       - build
+    env:
+      IMAGE_NAME: voraus/vdoc
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
 
-      - name: Publish project
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Determine Docker tags
+        id: set-tags
         run: |
-          echo "Publishing project..."
+          # Extract the tag name from the git ref
+          TAG="${{ github.ref_name }}"
+
+          # Determine if this is the latest tag
+          LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
+
+          TAGS="${IMAGE_NAME}:$TAG"
+          if [[ "$TAG" == "$LATEST_TAG" ]]; then
+            TAGS="$TAGS,${IMAGE_NAME}:latest"
+          fi
+
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ${{ steps.set-tags.outputs.tags }}
 
