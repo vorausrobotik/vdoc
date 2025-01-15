@@ -1,5 +1,9 @@
 name: CI pipeline
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   pull_request:
     branches:
@@ -25,8 +29,16 @@ jobs:
       - linting
       - build
     env:
-      IMAGE_NAME: voraus/vdoc
+      IMAGE_NAME: voraus.jfrog.io/docker-public/vdoc
+      JFROG_CLI_BUILD_NAME: vdoc/${{ github.ref_name }}
+      JFROG_CLI_BUILD_NUMBER: '1'
     steps:
+      - uses: jfrog/setup-jfrog-cli@v4
+        env:
+            JF_URL: https://voraus.jfrog.io
+        with:
+            oidc-provider-name: voraus-github-organization
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -38,12 +50,6 @@ jobs:
           name: dist
           path: dist
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -53,23 +59,31 @@ jobs:
       - name: Determine Docker tags
         id: set-tags
         run: |
-          # Extract the tag name from the git ref
           TAG="${{ github.ref_name }}"
-
-          # Determine if this is the latest tag
           LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
 
-          TAGS="${IMAGE_NAME}:$TAG"
+          TAGS="${IMAGE_NAME}:${TAG}"
           if [[ "$TAG" == "$LATEST_TAG" ]]; then
-            TAGS="$TAGS,${IMAGE_NAME}:latest"
+            TAGS="${TAGS},${IMAGE_NAME}:latest"
           fi
 
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
-      - name: Build and Push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          tags: ${{ steps.set-tags.outputs.tags }}
+      - name: Build Docker Image(s)
+        run: |
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.set-tags.outputs.tags }}"
+          TAG_OPTIONS=$(printf " -t %s" "${TAG_ARRAY[@]}")
+          jf docker build $TAG_OPTIONS .
+
+      - name: Push and scan Docker Image(s)
+        run: |
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.set-tags.outputs.tags }}"
+          for TAG in "${TAG_ARRAY[@]}"; do
+            jf docker push "$TAG"
+            jf docker scan "$TAG"
+          done
+
+      - name: Publish Build Info
+        run: |
+          jf rt build-publish
 
