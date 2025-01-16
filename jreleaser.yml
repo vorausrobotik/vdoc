@@ -1,0 +1,46 @@
+project:
+  name: vdoc
+  description: Multi version documentation hosting
+
+hooks:
+  condition: '"{{ Env.CI }}" == true'
+  script:
+    before:
+      - filter:
+          includes: ['session']
+        run: |
+          echo "### {{command}}" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Outcome |" >> $GITHUB_STEP_SUMMARY
+          echo "| ---- | ------- |" >> $GITHUB_STEP_SUMMARY
+    success:
+      - filter:
+          excludes: ['session']
+        run: 'echo "| {{event.name}} | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY'
+      - filter:
+          includes: ['session']
+        run: echo "" >> $GITHUB_STEP_SUMMARY
+    failure:
+      - filter:
+          excludes: ['session']
+        run: 'echo "| {{event.name}} | :x: |" >> $GITHUB_STEP_SUMMARY'
+      - filter:
+          includes: ['session']
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Failure" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "{{event.stacktrace}}\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+release:
+  github:
+    owner: vorausrobotik
+    tagName: '{{projectVersion}}'
+    skipTag: true
+    changelog:
+      formatted: ALWAYS
+      sort: ASC
+      preset: conventional-commits
+      extraProperties:
+        categorizeScopes: true
+      contributors:
+        format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
