@@ -136,3 +136,23 @@ def test_upload_project_version_route_no_index_html(
             status_code=400,
             message="The uploaded file is invalid: The archive doesn't contain an index.html file.",
         )
+
+
+def test_upload_existing_project_version_route(
+    dummy_projects_dir: Path, authenticated_api: TestClient, example_docs_zip: Path
+) -> None:
+    version: str = "0.0.1"
+    project_name: str = "dummy-project-01"
+    project_version_dir = dummy_projects_dir / project_name / version
+
+    assert (project_version_dir).is_dir()
+    response = authenticated_api.post(
+        f"/api/projects/{project_name}/versions/{version}",
+        files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
+    )
+    assert_api_response(
+        response=response,
+        status_code=403,
+        message=f"Version '{version}' of project '{project_name}' already exists.",
+    )
+    assert (project_version_dir / "index.html").read_text() == f"This is {version} of {project_name}"
