@@ -58,7 +58,7 @@ class ProjectVersionAlreadyExists(VDocException):
 
     def __init__(self, name: str, version: Version | str) -> None:  # noqa: D107
         super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Version '{version}' of project '{name}' already exists."
+            status_code=status.HTTP_403_FORBIDDEN, detail=f"Version '{version}' of project '{name}' already exists."
         )
 
 
