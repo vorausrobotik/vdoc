@@ -69,7 +69,6 @@ def dummy_projects_dir_fixture(tmp_path: Path) -> Generator[Path, None, None]:
             for version in versions:
                 path = tmp_path / project_name / version
                 path.mkdir(parents=True)
-                (path / "index.html").write_text(f"This is {version} of {project_name}")
 
         # Create dummy hidden directory to make sure listing ignores this
         (tmp_path / ".dummy_hidden").mkdir()
