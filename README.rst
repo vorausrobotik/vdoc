@@ -37,15 +37,10 @@ Run **vdoc** with python
 Run **vdoc** with docker
 ************************
 
-.. warning::
-
-   Make sure that you're building the python package and the docker image locally before running this command.
-   This can be removed as soon as vdoc is available on docker hub
-
 
 ..  code-block:: shell
 
-    docker run -p 8080:8080 -v ./vdoc-docs:/srv/vdoc/docs/ vdoc:latest
+    docker run -p 8080:8080 -v ./vdoc-docs:/srv/vdoc/docs/ voraus.jfrog.io/docker/vdoc:latest
 
 
 Building vdoc
