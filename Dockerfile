@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8080
 ENTRYPOINT [ "vdoc" ]
-CMD []
+CMD ["run"]
 
 RUN --mount=type=bind,source=./dist/,target=/pip-packages/ \
     pip install \
