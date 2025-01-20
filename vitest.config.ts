@@ -8,5 +8,7 @@ export default defineConfig({
       include: ['src/ui/helpers/'],
       reportsDirectory: 'coverage/ui/unit/',
     },
+    reporters: ['junit'],
+    outputFile: './reports/coverage-vitest.xml',
   },
 })

@@ -77,7 +77,7 @@ ignore-signatures = "yes"
 disallow_untyped_defs = true
 warn_unused_ignores = true
 exclude = [
-    "vdoc-\\d+",                 # Ignore temporary folder created by setuptools when building an sdist
+    "vdoc-\\d+",                    # Ignore temporary folder created by setuptools when building an sdist
     "venv.*/",
     "log/",
     "build/",
@@ -113,7 +113,7 @@ partial_branches = ["pragma: no branch", "if not TYPE_CHECKING:"]
 directory = "reports/coverage_html"
 
 [tool.coverage.xml]
-output = "reports/coverage.xml"
+output = "reports/coverage-python.xml"
 
 [[tool.mypy.overrides]]
 module = [
