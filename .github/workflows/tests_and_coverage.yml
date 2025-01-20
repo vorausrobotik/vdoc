@@ -60,11 +60,14 @@ jobs:
       - name: Combine coverage results
         run: tox run -e combine-test-reports
 
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          name: code-coverage-report
-          path: reports/coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: vorausrobotik/vdoc
+          files: reports/coverage.xml
+          flags: unittests
+          fail_ci_if_error: true
 
   test-ui:
     runs-on: ubuntu-latest
