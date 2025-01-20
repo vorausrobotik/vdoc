@@ -83,5 +83,17 @@ All configuration environment variables are prefixed with ``VDOC_``:
      - Explanation
      - Default
    * - ``VDOC_DOCS_DIR``
-     - The directory to which all project documentations will be uploaded to.
+     - The directory to which all project documentations will be uploaded.
      - ``/srv/vdoc/docs/``
+   * - ``VDOC_API_USERNAME``
+     - The username required for uploading documentations via the API.
+     - ``admin``
+   * - ``VDOC_API_PASSWORD``
+     - The password required for uploading documentations via the API.
+     - ``admin``
+   * - ``VDOC_BIND_ADDRESS``
+     - The application bind address.
+     - ``0.0.0.0``
+   * - ``VDOC_BIND_ADDRESS``
+     - The application bind port.
+     - ``8080``
