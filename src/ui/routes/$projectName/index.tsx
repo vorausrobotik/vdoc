@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import QueryStateHandler from '../../components/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../helpers/APIFunctions'
@@ -15,6 +15,7 @@ export const Route = createFileRoute('/$projectName/')({
 
 function ProjectVersionsOverview() {
   const { projectName } = Route.useParams()
+  const router = useRouter()
   globalStore.setState((state) => {
     return {
       ...state,
@@ -61,7 +62,16 @@ function ProjectVersionsOverview() {
                               key={version}
                               label={version}
                               component="a"
-                              href={`${projectName}/${version}`}
+                              onClick={() =>
+                                router.navigate({
+                                  to: '/$projectName/$version/$',
+                                  from: '/$projectName',
+                                  params: {
+                                    projectName: projectName,
+                                    version: version,
+                                  },
+                                })
+                              }
                               clickable
                               variant="outlined"
                             />
