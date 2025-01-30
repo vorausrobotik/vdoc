@@ -67,3 +67,9 @@ src/vdoc/docs/
 
 # Local development files and documentation
 vdoc-docs
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
