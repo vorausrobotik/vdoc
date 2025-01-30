@@ -14,7 +14,7 @@ class InvalidCredentials(VDocException):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__(
-            status_code=status.HTTP_401_NOT_FOUND,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username and/or password",
             headers={"WWW-Authenticate": "Basic"},
         )
