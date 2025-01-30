@@ -72,6 +72,7 @@ function DeprecatedVersionBanner({ name, version }: DeprecatedVersionBannerProps
       to="/$projectName/$version/$"
       params={{ projectName: name, version: 'latest' }}
       style={{ textDecoration: 'none' }}
+      data-testid={'latestVersionWarningBanner'}
     >
       <Grid2
         container
@@ -138,6 +139,7 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
     <Fragment>
       {name && version !== latestVersion && <DeprecatedVersionBanner name={name} version={version} />}
       <iframe
+        data-testid={'docIframe'}
         ref={iframeRef}
         onLoad={() => setLoaded(true)}
         style={{ border: 0, width: '100%', height: '100%' }}

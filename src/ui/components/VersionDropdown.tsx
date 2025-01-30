@@ -29,6 +29,7 @@ export default function VersionDropdown({
     <FormControl size="small" variant="outlined" sx={{ minWidth: 120 }}>
       <InputLabel>Version</InputLabel>
       <Select
+        data-testid={'versionDropdown'}
         id={divProps.id}
         value={selectedVersion === 'latest' ? latestVersion : selectedVersion}
         onChange={onVersionChange}
@@ -40,13 +41,13 @@ export default function VersionDropdown({
               .reverse()
               .slice(0, numVersionsPreview)
               .map((version) => (
-                <MenuItem key={version} value={version}>
+                <MenuItem key={version} value={version} data-testid={'versionDropdownItem'}>
                   {renderVersion(version)}
                 </MenuItem>
               ))
           : null}{' '}
         {numVersions && numVersions > numVersionsPreview && (
-          <MenuItem key="more" value="more">
+          <MenuItem key="more" value="more" data-testid={'versionDropdownItemMore'}>
             ...more
           </MenuItem>
         )}

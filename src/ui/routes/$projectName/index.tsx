@@ -50,7 +50,7 @@ function ProjectVersionsOverview() {
                 .reverse()
                 .map((major) => (
                   <Grid2 size={6}>
-                    <Card key={major}>
+                    <Card key={major} data-testid={'majorVersionCard'}>
                       <CardContent>
                         <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
                           <SellIcon />
@@ -59,6 +59,7 @@ function ProjectVersionsOverview() {
                         <Stack direction="row" spacing={1}>
                           {groupedVersions[Number(major)].map((version) => (
                             <Chip
+                              data-testid={'versionLink'}
                               key={version}
                               label={version}
                               component="a"

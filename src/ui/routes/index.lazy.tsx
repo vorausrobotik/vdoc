@@ -40,14 +40,15 @@ function Index() {
               >
                 {projects.map((project) => (
                   <Grid2 key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
-                    <Card sx={{ minHeight: 140 }}>
+                    <Card sx={{ minHeight: 140 }} data-testid={'projectCard'}>
                       <CardContent>
                         <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
                           {project.name}
                         </Typography>
                       </CardContent>
-                      <CardActions>
+                      <CardActions data-testid={'projectCardActions'}>
                         <LinkButton
+                          data-testid={'projectCardDocumentationButton'}
                           to={`/$projectName/$version/$`}
                           params={{ projectName: project.name, version: 'latest' }}
                           size="small"
