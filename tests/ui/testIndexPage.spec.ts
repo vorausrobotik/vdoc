@@ -22,6 +22,8 @@ test('Test navigation index to documentation to version overview', async ({ page
   await expect(page).toHaveURL(/.*example-project-01\/latest/)
 
   // Ensure documentation is rendered in the iframe
+  await expect(docIframe).toBeAttached()
+  await expect(docIframe.contentFrame().locator('html')).toBeAttached()
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
 
   // Test the version dropdown. The latest version is 3.2.0. There must be 5 options including a link to more
@@ -47,6 +49,7 @@ test('Test navigation index to documentation to version overview', async ({ page
   // Make sure that all variables have updated correctly
   await expect(page).toHaveURL(/.*example-project-01\/1.0.0/)
   await expect(latestVersionWarningBanner).toBeVisible()
+  await expect(docIframe.contentFrame().locator('html')).toBeAttached()
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
   await expect(versionDropdown).toContainText('1.0.0')
 })
