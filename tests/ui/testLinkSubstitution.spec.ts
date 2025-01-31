@@ -8,6 +8,8 @@ test('Test link substitution', async ({ page }) => {
 
   // Expect the documentation iframe to display the mocked documentation page
   await page.goto('/example-project-01/latest')
+  await expect(docIframe).toBeAttached()
+  await expect(docIframe.contentFrame().locator('html')).toBeAttached()
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
 
   // Ensure that all links have been substituted correctly
