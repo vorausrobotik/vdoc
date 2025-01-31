@@ -19,7 +19,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
     actionTimeout: 0,
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    trace: 'on',
   },
   webServer: {
     command: 'npm run dev -- --port 3000',

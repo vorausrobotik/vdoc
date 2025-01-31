@@ -2,13 +2,14 @@ import { expect } from '@playwright/test'
 import test from './base'
 
 test('Test link substitution', async ({ page }) => {
-  const docIframe = page.getByTestId('docIframe')
   const expectedDocumentationContent = 'Hello, this is a mocked documentation component.'
   const basePath = 'http://localhost:3000'
 
   // Expect the documentation iframe to display the mocked documentation page
   await page.goto('/example-project-01/latest')
+  const docIframe = page.getByTestId('docIframe')
   await expect(docIframe).toBeAttached()
+  await expect(docIframe).toBeVisible()
   await expect(docIframe.contentFrame().locator('html')).toBeAttached()
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
 
