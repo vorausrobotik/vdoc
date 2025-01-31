@@ -29,7 +29,7 @@ const fetchProjectDetailsAndSetStore = async (projectName: string, version: stri
     latestVersion,
   }))
 
-  return [version === 'latest' ? latestVersion : version, latestVersion]
+  return [version, latestVersion]
 }
 
 function DocumentationComponent() {
@@ -112,12 +112,13 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
         anchorElements.forEach((anchor) => {
           const href = anchor.getAttribute('href')
           if (href) {
-            const result = sanitizeDocuUri(href, currentOrigin)
+            const result = sanitizeDocuUri(href, currentOrigin, name, version)
             const params = {
               projectName: result.project ?? name,
               version: result.version ?? version,
               _splat: result.remainder,
             }
+            anchor.href = result.href
             anchor.addEventListener('click', (event) => {
               if (result.isInternal) {
                 event.preventDefault()
@@ -137,13 +138,15 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   }, [router, loaded, name, version])
   return (
     <Fragment>
-      {name && version !== latestVersion && <DeprecatedVersionBanner name={name} version={version} />}
+      {name && version !== 'latest' && version !== latestVersion && (
+        <DeprecatedVersionBanner name={name} version={version} />
+      )}
       <iframe
         data-testid={'docIframe'}
         ref={iframeRef}
         onLoad={() => setLoaded(true)}
         style={{ border: 0, width: '100%', height: '100%' }}
-        src={`/static/projects/${name}/${version}/${splat}${window.location.hash}`}
+        src={`/static/projects/${name}/${version === 'latest' ? latestVersion : version}/${splat}${window.location.hash}`}
       />
     </Fragment>
   )
