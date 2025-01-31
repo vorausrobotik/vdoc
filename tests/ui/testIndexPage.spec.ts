@@ -5,7 +5,7 @@ test('Test navigation index to documentation to version overview', async ({ page
   const projectCards = page.getByTestId('projectCard')
   const versionDropdown = page.getByTestId('versionDropdown')
   const docIframe = page.getByTestId('docIframe')
-  const expectedDocumentationContent = 'Hello, this is documentation content!'
+  const expectedDocumentationContent = 'Hello, this is a mocked documentation component.'
   const latestVersionWarningBanner = page.getByTestId('latestVersionWarningBanner')
 
   // Expect three projects on the main page with links to the docs
