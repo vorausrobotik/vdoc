@@ -1,6 +1,7 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, Typography } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
 import { useState } from 'react'
+import testIDs from './interfacesAndTypes/testIDs'
 
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
@@ -31,7 +32,7 @@ export default function MenuBar() {
   }
 
   return (
-    <AppBar position="static" data-testid="headerBar">
+    <AppBar position="static" data-testid={testIDs.header.main}>
       <Toolbar>
         {/* Logo with Text */}
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2 }}>
@@ -57,7 +58,11 @@ export default function MenuBar() {
           </Box>
         )}
         {/* Settings Button */}
-        <IconButton data-testid="openAppSettings" aria-label="Open App Settings" onClick={() => setSidebarOpen(true)}>
+        <IconButton
+          data-testid={testIDs.header.settingsButton}
+          aria-label="Open App Settings"
+          onClick={() => setSidebarOpen(true)}
+        >
           <SettingsOutlinedIcon />
         </IconButton>
       </Toolbar>

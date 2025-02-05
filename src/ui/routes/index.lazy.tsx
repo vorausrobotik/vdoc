@@ -7,6 +7,7 @@ import { Box, Container, Card, CardActions, CardContent, Grid2, Typography } fro
 import { fetchProjects } from '../helpers/APIFunctions'
 import EmptyState from '../components/EmptyState'
 import { SentimentDissatisfied } from '@mui/icons-material'
+import testIDs from '../interfacesAndTypes/testIDs'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
@@ -40,15 +41,15 @@ function Index() {
               >
                 {projects.map((project) => (
                   <Grid2 key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
-                    <Card sx={{ minHeight: 140 }} data-testid={'projectCard'}>
+                    <Card sx={{ minHeight: 140 }} data-testid={testIDs.landingPage.projectCard.main}>
                       <CardContent>
                         <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
                           {project.name}
                         </Typography>
                       </CardContent>
-                      <CardActions data-testid={'projectCardActions'}>
+                      <CardActions data-testid={testIDs.landingPage.projectCard.actions.main}>
                         <LinkButton
-                          data-testid={'projectCardDocumentationButton'}
+                          data-testid={testIDs.landingPage.projectCard.actions.documentationLink}
                           to={`/$projectName/$version/$`}
                           params={{ projectName: project.name, version: 'latest' }}
                           size="small"

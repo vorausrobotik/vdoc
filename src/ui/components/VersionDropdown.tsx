@@ -1,4 +1,5 @@
 import { Chip, MenuItem, Select, FormControl, InputLabel, SelectChangeEvent } from '@mui/material'
+import testIDs from '../interfacesAndTypes/testIDs'
 
 interface VersionDropdownProps extends React.ComponentProps<'div'> {
   selectedVersion: string
@@ -29,7 +30,7 @@ export default function VersionDropdown({
     <FormControl size="small" variant="outlined" sx={{ minWidth: 120 }}>
       <InputLabel>Version</InputLabel>
       <Select
-        data-testid={'versionDropdown'}
+        data-testid={testIDs.header.versionDropdown.main}
         id={divProps.id}
         value={selectedVersion === 'latest' ? latestVersion : selectedVersion}
         onChange={onVersionChange}
@@ -41,13 +42,13 @@ export default function VersionDropdown({
               .reverse()
               .slice(0, numVersionsPreview)
               .map((version) => (
-                <MenuItem key={version} value={version} data-testid={'versionDropdownItem'}>
+                <MenuItem key={version} value={version} data-testid={testIDs.header.versionDropdown.item}>
                   {renderVersion(version)}
                 </MenuItem>
               ))
           : null}{' '}
         {numVersions && numVersions > numVersionsPreview && (
-          <MenuItem key="more" value="more" data-testid={'versionDropdownItemMore'}>
+          <MenuItem key="more" value="more" data-testid={testIDs.header.versionDropdown.moreItem}>
             ...more
           </MenuItem>
         )}

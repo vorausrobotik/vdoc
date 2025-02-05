@@ -1,10 +1,11 @@
 import { expect } from '@playwright/test'
 import test from './base'
+import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 
 test('Test link substitution', async ({ page }) => {
   await page.goto('/')
 
-  const docIframe = page.getByTestId('docIframe')
+  const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
   const expectedDocumentationContent = 'Hello, this is a mocked documentation component.'
   const basePath = 'http://localhost:3000'
 
