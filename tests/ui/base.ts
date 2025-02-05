@@ -4,7 +4,7 @@ import { ColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import fs from 'fs'
 import path from 'path'
 
-const mockAPIRequests = async (page: Page) => {
+export const mockAPIRequests = async (page: Page) => {
   const routes = [
     {
       pattern: '*/**/static/projects/*/*/',
@@ -45,10 +45,6 @@ const mockAPIRequests = async (page: Page) => {
     await page.route(pattern, (route) => route.fulfill(response))
   }
 }
-
-test.beforeEach(async ({ page }) => {
-  await mockAPIRequests(page)
-})
 
 interface ColorModeProps {
   appBarColor: string
