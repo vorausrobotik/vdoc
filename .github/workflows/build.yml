@@ -29,6 +29,8 @@ jobs:
 
     - name: Build UI
       run: npm run build
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Build python app
       run: tox run -e build
