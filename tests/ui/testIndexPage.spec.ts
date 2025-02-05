@@ -1,20 +1,21 @@
 import { expect } from '@playwright/test'
 import test from './base'
+import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 
 test('Test navigation index to documentation to version overview', async ({ page }) => {
   await page.goto('/')
 
-  const projectCards = page.getByTestId('projectCard')
-  const versionDropdown = page.getByTestId('versionDropdown')
-  const docIframe = page.getByTestId('docIframe')
+  const projectCards = page.getByTestId(testIDs.landingPage.projectCard.main)
+  const versionDropdown = page.getByTestId(testIDs.header.versionDropdown.main)
+  const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
   const expectedDocumentationContent = 'Hello, this is a mocked documentation component.'
-  const latestVersionWarningBanner = page.getByTestId('latestVersionWarningBanner')
+  const latestVersionWarningBanner = page.getByTestId(testIDs.project.documentation.latestVersionWarningBanner)
 
   // Expect three projects on the main page with links to the docs
   await expect(projectCards).toHaveCount(3)
   await expect(versionDropdown).not.toBeVisible()
   await expect(docIframe).not.toBeVisible()
-  const documentationButton = projectCards.nth(0).getByTestId('projectCardDocumentationButton')
+  const documentationButton = projectCards.nth(0).getByTestId(testIDs.landingPage.projectCard.actions.documentationLink)
   await expect(documentationButton).toBeVisible()
   await expect(latestVersionWarningBanner).not.toBeVisible()
   await expect(documentationButton).toHaveText('Documentation')
@@ -41,7 +42,7 @@ test('Test navigation index to documentation to version overview', async ({ page
   await versionOptions.last().click()
   await expect(page).toHaveURL(/.*example-project-01/)
 
-  await expect(page.getByTestId('majorVersionCard')).toHaveCount(4)
+  await expect(page.getByTestId(testIDs.project.versionOverview.majorVersionCard.main)).toHaveCount(4)
 
   // Navigate to version 1.0.0 of the documentation
   await page.getByRole('button', { name: '1.0.0' }).click()

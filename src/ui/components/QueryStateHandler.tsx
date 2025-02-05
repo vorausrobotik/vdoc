@@ -1,4 +1,5 @@
 import { ReactElement, ReactNode } from 'react'
+import testIDs from '../interfacesAndTypes/testIDs'
 import { Box, CircularProgress, Alert, AlertTitle } from '@mui/material'
 
 import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
@@ -16,7 +17,13 @@ const QueryStateHandler = <T,>({ loading, error, data, children, loadingComponen
     return loadingComponent ? (
       <>{loadingComponent}</>
     ) : (
-      <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 2 }} data-testid="loadingIndicator">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        sx={{ mt: 2 }}
+        data-testid={testIDs.loadingIndicator}
+      >
         <CircularProgress />
       </Box>
     )

@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined'
 import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness'
+import testIDs from '../interfacesAndTypes/testIDs'
 
 const Heading = styled(Typography)(({ theme }) => ({
   margin: '16px 0 8px',
@@ -48,7 +49,7 @@ export default function SettingsSidebar(props: SettingsSidebarProps) {
 
   return (
     <Drawer
-      data-testid="settingsSidebar"
+      data-testid={testIDs.sidebar.main}
       anchor="right"
       onClose={() => props.setOpen(false)}
       open={props.open}
@@ -71,7 +72,12 @@ export default function SettingsSidebar(props: SettingsSidebarProps) {
         }}
       >
         <Typography>Settings</Typography>
-        <IconButton onClick={() => props.setOpen(false)} edge="end" aria-label="close" data-testid="closeSettingsBtn">
+        <IconButton
+          onClick={() => props.setOpen(false)}
+          edge="end"
+          aria-label="close"
+          data-testid={testIDs.sidebar.close}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
@@ -85,17 +91,29 @@ export default function SettingsSidebar(props: SettingsSidebarProps) {
           onChange={handleColorModeChange}
           aria-labelledby="settings-mode"
           fullWidth
-          data-testid="toggleColorModeGroup"
+          data-testid={testIDs.sidebar.settings.toggleColorModes.main}
         >
-          <IconToggleButton value="light" aria-label="light" data-testid="toggleButton-light">
+          <IconToggleButton
+            value="light"
+            aria-label="light"
+            data-testid={testIDs.sidebar.settings.toggleColorModes.buttons.light}
+          >
             <LightModeIcon fontSize="small" />
             Light
           </IconToggleButton>
-          <IconToggleButton value="system" aria-label="system" data-testid="toggleButton-system">
+          <IconToggleButton
+            value="system"
+            aria-label="system"
+            data-testid={testIDs.sidebar.settings.toggleColorModes.buttons.system}
+          >
             <SettingsBrightnessIcon fontSize="small" />
             System
           </IconToggleButton>
-          <IconToggleButton value="dark" aria-label="dark" data-testid="toggleButton-dark">
+          <IconToggleButton
+            value="dark"
+            aria-label="dark"
+            data-testid={testIDs.sidebar.settings.toggleColorModes.buttons.dark}
+          >
             <DarkModeOutlinedIcon fontSize="small" />
             Dark
           </IconToggleButton>

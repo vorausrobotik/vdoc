@@ -10,6 +10,7 @@ import globalStore from '../../helpers/GlobalStore'
 import QueryStateHandler from '../../components/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
+import testIDs from '../../interfacesAndTypes/testIDs'
 
 export const Route = createFileRoute('/$projectName/$version/$')({
   component: DocumentationComponent,
@@ -72,7 +73,7 @@ function DeprecatedVersionBanner({ name, version }: DeprecatedVersionBannerProps
       to="/$projectName/$version/$"
       params={{ projectName: name, version: 'latest' }}
       style={{ textDecoration: 'none' }}
-      data-testid={'latestVersionWarningBanner'}
+      data-testid={testIDs.project.documentation.latestVersionWarningBanner}
     >
       <Grid2
         container
@@ -147,13 +148,13 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   }, [mode, iframeRef, systemMode])
 
   return (
-    <Fragment>
+    <Fragment data-testid={testIDs.project.documentation.main}>
       {name && version !== 'latest' && version !== latestVersion && (
         <DeprecatedVersionBanner name={name} version={version} />
       )}
       <iframe
         key={iframeKey}
-        data-testid={'docIframe'}
+        data-testid={testIDs.project.documentation.documentationIframe}
         ref={iframeRef}
         onLoad={() => setLoaded(true)}
         style={{ border: 0, width: '100%', height: '100%' }}

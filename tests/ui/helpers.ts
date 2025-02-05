@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test'
 import { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
 
 /**
@@ -10,11 +11,10 @@ import { themes } from './base'
  */
 export const assertTheme = async (page: Page, mode: EffectiveColorMode) => {
   await closeSettingsSidebar(page)
-  await expect(page.getByTestId('headerBar')).toHaveCSS('background-color', themes[mode].appBarColor)
-  await expect(page.getByTestId('docIframe').contentFrame().locator('body')).toHaveCSS(
-    'background-color',
-    themes[mode].backgroundColor
-  )
+  await expect(page.getByTestId(testIDs.header.main)).toHaveCSS('background-color', themes[mode].appBarColor)
+  await expect(
+    page.getByTestId(testIDs.project.documentation.documentationIframe).contentFrame().locator('body')
+  ).toHaveCSS('background-color', themes[mode].backgroundColor)
 }
 
 /**
@@ -23,9 +23,9 @@ export const assertTheme = async (page: Page, mode: EffectiveColorMode) => {
  * @param page The playwright page object.
  */
 export const openSettingsSidebar = async (page: Page) => {
-  const sideBarElement = page.getByTestId('settingsSidebar')
+  const sideBarElement = page.getByTestId(testIDs.sidebar.main)
   if (!(await sideBarElement.isVisible())) {
-    await page.getByTestId('openAppSettings').click()
+    await page.getByTestId(testIDs.header.settingsButton).click()
   }
 
   await expect(sideBarElement).toBeVisible()
@@ -37,9 +37,9 @@ export const openSettingsSidebar = async (page: Page) => {
  * @param page The playwright page object.
  */
 export const closeSettingsSidebar = async (page: Page) => {
-  const sideBarElement = page.getByTestId('settingsSidebar')
+  const sideBarElement = page.getByTestId(testIDs.sidebar.main)
   if (await sideBarElement.isVisible()) {
-    await page.getByTestId('closeSettingsBtn').click()
+    await page.getByTestId(testIDs.sidebar.close).click()
   }
   await expect(sideBarElement).not.toBeVisible()
 }
@@ -52,8 +52,8 @@ export const closeSettingsSidebar = async (page: Page) => {
 export const assertCurrentColorModeButton = async (page: Page, mode: ColorMode) => {
   await openSettingsSidebar(page)
 
-  const toggleButtonGroup = page.getByTestId('toggleColorModeGroup')
-  const toggleButtons = toggleButtonGroup.locator('[data-testid^="toggleButton"]')
+  const toggleButtonGroup = page.getByTestId(testIDs.sidebar.settings.toggleColorModes.main)
+  const toggleButtons = toggleButtonGroup.getByRole('button')
   await expect(toggleButtons).toHaveCount(3)
   expect(await toggleButtons.allTextContents()).toStrictEqual(['Light', 'System', 'Dark'])
 
@@ -72,6 +72,6 @@ export const assertCurrentColorModeButton = async (page: Page, mode: ColorMode) 
  */
 export const switchColorMode = async (page: Page, mode: ColorMode) => {
   await openSettingsSidebar(page)
-  await page.getByTestId(`toggleButton-${mode}`).click()
+  await page.getByTestId(testIDs.sidebar.settings.toggleColorModes.buttons[mode]).click()
   await assertCurrentColorModeButton(page, mode)
 }
