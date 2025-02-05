@@ -2,51 +2,76 @@ import { Page, expect } from '@playwright/test'
 import { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import { themes } from './base'
 
-export const toggleAndTestColorMode = async (
-  page: Page,
-  currentMode: ColorMode,
-  targetMode: ColorMode | null,
-  systemMode: EffectiveColorMode | null | undefined
-) => {
-  const resultingCurrentMode = currentMode === 'system' ? (systemMode ? systemMode : 'dark') : currentMode
-
-  // Check current theme
-  await expect(page.getByTestId('headerBar')).toHaveCSS('background-color', themes[resultingCurrentMode].appBarColor)
-  await expect(page.getByTestId('settingsSidebar')).not.toBeVisible()
+/**
+ * Closes the settings sidebar if it is open and compare the color schemes of the main app and the embedded iframe.
+ *
+ * @param page The playwright page object.
+ * @param mode The color/palette mode that should be applied.
+ */
+export const assertTheme = async (page: Page, mode: EffectiveColorMode) => {
+  await closeSettingsSidebar(page)
+  await expect(page.getByTestId('headerBar')).toHaveCSS('background-color', themes[mode].appBarColor)
   await expect(page.getByTestId('docIframe').contentFrame().locator('body')).toHaveCSS(
     'background-color',
-    themes[resultingCurrentMode].backgroundColor
+    themes[mode].backgroundColor
   )
+}
 
-  // Open settings and make sure that the current theme is selected
-  await page.getByTestId('openAppSettings').click()
-  await expect(page.getByTestId('settingsSidebar')).toBeVisible()
+/**
+ * Opens the settings sidebar if it is not open, yet.
+ *
+ * @param page The playwright page object.
+ */
+export const openSettingsSidebar = async (page: Page) => {
+  const sideBarElement = page.getByTestId('settingsSidebar')
+  if (!(await sideBarElement.isVisible())) {
+    await page.getByTestId('openAppSettings').click()
+  }
+
+  await expect(sideBarElement).toBeVisible()
+}
+
+/**
+ * Closes the settings sidebar if it is open.
+ *
+ * @param page The playwright page object.
+ */
+export const closeSettingsSidebar = async (page: Page) => {
+  const sideBarElement = page.getByTestId('settingsSidebar')
+  if (await sideBarElement.isVisible()) {
+    await page.getByTestId('closeSettingsBtn').click()
+  }
+  await expect(sideBarElement).not.toBeVisible()
+}
+
+/**
+ * Ensures that the currently selected color mode in the settings sidebar is ``mode``.
+ * @param page The playwright page object.
+ * @param mode The color mode button that should be selected.
+ */
+export const assertCurrentColorModeButton = async (page: Page, mode: ColorMode) => {
+  await openSettingsSidebar(page)
+
   const toggleButtonGroup = page.getByTestId('toggleColorModeGroup')
   const toggleButtons = toggleButtonGroup.locator('[data-testid^="toggleButton"]')
   await expect(toggleButtons).toHaveCount(3)
+  expect(await toggleButtons.allTextContents()).toStrictEqual(['Light', 'System', 'Dark'])
+
+  // Make sure that there is only one option selected
   const currentModeButton = toggleButtonGroup.locator('[aria-pressed="true"]')
   await expect(currentModeButton).toHaveCount(1)
-  expect(await currentModeButton.getAttribute('value')).toBe(currentMode.toString())
 
-  if (!targetMode) {
-    return
-  }
-  const resultingTargetMode = targetMode === 'system' ? (systemMode ? systemMode : 'dark') : targetMode
+  // Expect that the selected button is ``mode``
+  expect((await currentModeButton.innerText()).toLowerCase()).toBe(mode.toString())
+}
 
-  // Change the theme
-  await page.getByTestId(`toggleButton-${targetMode}`).click()
-  const newModeButton = toggleButtonGroup.locator('[aria-pressed="true"]')
-  await expect(newModeButton).toHaveCount(1)
-  expect(await newModeButton.getAttribute('value')).toBe(targetMode.toString())
-
-  // Close settings
-  await page.getByTestId('closeSettingsBtn').click()
-  await expect(page.getByTestId('settingsSidebar')).not.toBeVisible()
-
-  // Check new theme
-  await expect(page.getByTestId('headerBar')).toHaveCSS('background-color', themes[resultingTargetMode].appBarColor)
-  await expect(page.getByTestId('docIframe').contentFrame().locator('body')).toHaveCSS(
-    'background-color',
-    themes[resultingTargetMode].backgroundColor
-  )
+/**
+ * Switches the color mode th ``mode``.
+ * @param page The playwright page object.
+ * @param mode he color mode that should be applied.
+ */
+export const switchColorMode = async (page: Page, mode: ColorMode) => {
+  await openSettingsSidebar(page)
+  await page.getByTestId(`toggleButton-${mode}`).click()
+  await assertCurrentColorModeButton(page, mode)
 }
