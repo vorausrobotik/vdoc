@@ -1,29 +1,55 @@
-import { expect } from '@playwright/test'
-import test, { themes } from './base'
-import { toggleAndTestColorMode } from './helpers'
+import test from './base'
+import { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import { assertCurrentColorModeButton, assertTheme, switchColorMode } from './helpers'
 
 test.describe('Color schemes tests', () => {
-  test('Theme should be set to light if preferred color scheme is undefined', async ({ page }) => {
+  test('Color mode should be system by default', async ({ page }) => {
     await page.emulateMedia({ colorScheme: undefined })
     await page.goto('/example-project-01/latest')
-    await expect(page.getByTestId('headerBar')).toHaveCSS('background-color', themes.light.appBarColor)
-    await expect(page.getByTestId('docIframe').contentFrame().locator('body')).toHaveCSS(
-      'background-color',
-      themes.light.backgroundColor
-    )
+    await assertCurrentColorModeButton(page, 'system')
   })
 
-  test('Toggle color mode from system (dark) to light should work', async ({ page }) => {
-    await page.emulateMedia({ colorScheme: 'dark' })
+  test('Theme should be light if preferred color scheme is undefined', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: undefined })
     await page.goto('/example-project-01/latest')
-    await expect(page.getByTestId('loadingIndicator')).not.toBeVisible()
-    await toggleAndTestColorMode(page, 'system', 'light', 'dark')
+    await assertTheme(page, 'light')
   })
 
-  test('Toggle color mode from system (light) to dark should work', async ({ page }) => {
+  test('Theme should be light if preferred color scheme is "light"', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' })
     await page.goto('/example-project-01/latest')
-    await expect(page.getByTestId('loadingIndicator')).not.toBeVisible()
-    await toggleAndTestColorMode(page, 'system', 'dark', 'light')
+    await assertTheme(page, 'light')
+  })
+
+  test('Theme should be dark if preferred color scheme is "dark"', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.goto('/example-project-01/latest')
+    await assertTheme(page, 'dark')
+  })
+
+  const effectiveColorModes: EffectiveColorMode[] = ['dark', 'light']
+  const colorModes: ColorMode[] = ['dark', 'light', 'system']
+  effectiveColorModes.forEach((preferredColorScheme: EffectiveColorMode) => {
+    colorModes.forEach((sourceColorScheme) => {
+      colorModes.forEach((targetColorScheme) => {
+        test(`Theme should be changeable from ${sourceColorScheme} to ${targetColorScheme} when prefers-color-scheme is ${preferredColorScheme}`, async ({
+          page,
+        }) => {
+          await page.emulateMedia({ colorScheme: preferredColorScheme })
+          await page.goto('/example-project-01/latest')
+
+          // Make sure that the user preferred color scheme is applied
+          await assertTheme(page, preferredColorScheme)
+
+          // Switch the color mode to ``sourceColorScheme``
+          await switchColorMode(page, sourceColorScheme as ColorMode)
+          await assertTheme(page, sourceColorScheme === 'system' ? preferredColorScheme : sourceColorScheme)
+
+          // Switch the color mode to ``targetColorScheme``
+          await switchColorMode(page, targetColorScheme as ColorMode)
+          await assertTheme(page, targetColorScheme === 'system' ? preferredColorScheme : targetColorScheme)
+        })
+      })
+    })
   })
 })
