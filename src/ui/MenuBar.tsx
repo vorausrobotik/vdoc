@@ -46,7 +46,6 @@ export default function MenuBar() {
         </Box>
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
 
-        {/* Version Dropdown Menu */}
         {projectVersions && latestVersion && projectVersions && (
           <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
             <VersionDropdown
@@ -57,7 +56,6 @@ export default function MenuBar() {
             />
           </Box>
         )}
-        {/* Settings Button */}
         <IconButton
           data-testid={testIDs.header.settingsButton}
           aria-label="Open App Settings"
@@ -66,7 +64,6 @@ export default function MenuBar() {
           <SettingsOutlinedIcon />
         </IconButton>
       </Toolbar>
-      {/* Sidebar */}
       <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
     </AppBar>
   )
