@@ -2,6 +2,8 @@ import { expect } from '@playwright/test'
 import test from './base'
 
 test('Test navigation index to documentation to version overview', async ({ page }) => {
+  await page.goto('/')
+
   const projectCards = page.getByTestId('projectCard')
   const versionDropdown = page.getByTestId('versionDropdown')
   const docIframe = page.getByTestId('docIframe')
