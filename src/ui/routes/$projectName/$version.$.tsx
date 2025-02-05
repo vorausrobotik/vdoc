@@ -110,13 +110,12 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   useEffect(() => {
     if (iframeRef.current && loaded) {
       const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
-      const currentOrigin = window.location.origin
       if (iframeDocument) {
         const anchorElements = iframeDocument.querySelectorAll('a')
         anchorElements.forEach((anchor) => {
           const href = anchor.getAttribute('href')
           if (href) {
-            const result = sanitizeDocuUri(href, currentOrigin, name, version)
+            const result = sanitizeDocuUri(href, window.location.origin, name, version)
             const params = {
               projectName: result.project ?? name,
               version: result.version ?? version,
