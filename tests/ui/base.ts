@@ -47,7 +47,6 @@ const mockAPIRequests = async (page: Page) => {
 
 test.beforeEach(async ({ page }) => {
   await mockAPIRequests(page)
-  await page.goto('/')
 })
 
 export default test
