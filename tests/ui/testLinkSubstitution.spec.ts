@@ -1,24 +1,19 @@
 import { expect } from '@playwright/test'
 import test from './base'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import { openProjectDocumentation } from './helpers'
 
 test('Test link substitution', async ({ page }) => {
-  await page.goto('/')
-
-  const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
-  const expectedDocumentationContent = 'Hello, this is a mocked documentation component.'
-  const basePath = 'http://localhost:3000'
+  const documentation = await openProjectDocumentation(page, 'example-project-01', 'latest')
 
   // Expect the documentation iframe to display the mocked documentation page
-  await page.goto('/example-project-01/latest')
-  await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
+  await expect(documentation).toContainText('Hello, this is a mocked documentation component.')
 
   // Ensure that all links have been substituted correctly
-  const links = docIframe.contentFrame().getByRole('link')
+  const links = documentation.getByRole('link')
   await expect(links).toHaveCount(3)
   const expectedSubstitutedLinks = [
-    `${basePath}/example-project-01/latest/#`,
-    `${basePath}/example-project-01/latest/index.html`,
+    'http://localhost:3000/example-project-01/latest/#',
+    'http://localhost:3000/example-project-01/latest/index.html',
     'https://www.sphinx-doc.org/',
   ]
   for (const [index, expectedLink] of expectedSubstitutedLinks.entries()) {

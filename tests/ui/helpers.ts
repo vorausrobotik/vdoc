@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test'
+import { Locator, Page, expect } from '@playwright/test'
 import { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
@@ -46,6 +46,7 @@ export const closeSettingsSidebar = async (page: Page) => {
 
 /**
  * Ensures that the currently selected color mode in the settings sidebar is ``mode``.
+ *
  * @param page The playwright page object.
  * @param mode The color mode button that should be selected.
  */
@@ -66,7 +67,8 @@ export const assertCurrentColorModeButton = async (page: Page, mode: ColorMode) 
 }
 
 /**
- * Switches the color mode th ``mode``.
+ * Switches the color mode to ``mode``.
+ *
  * @param page The playwright page object.
  * @param mode he color mode that should be applied.
  */
@@ -74,4 +76,28 @@ export const switchColorMode = async (page: Page, mode: ColorMode) => {
   await openSettingsSidebar(page)
   await page.getByTestId(testIDs.sidebar.settings.toggleColorModes.buttons[mode]).click()
   await assertCurrentColorModeButton(page, mode)
+}
+
+/**
+ * Opens a documentation and waits for the iframe to be fully loaded.
+ *
+ * @param page The playwright page object.
+ * @param name The project name.
+ * @param version The project version.
+ * @returns The iframe locator.
+ */
+export const openProjectDocumentation = async (page: Page, name: string, version: string): Promise<Locator> => {
+  const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
+
+  await page.goto(`/${name}/${version}`)
+
+  await expect(docIframe).toBeVisible({ timeout: 10000 })
+
+  await docIframe.waitFor({ state: 'attached' })
+  const iframeDocument = docIframe.contentFrame()
+  expect(iframeDocument).not.toBeNull()
+
+  await expect(iframeDocument.locator('html')).toBeVisible({ timeout: 10000 })
+
+  return iframeDocument.locator('html')
 }
