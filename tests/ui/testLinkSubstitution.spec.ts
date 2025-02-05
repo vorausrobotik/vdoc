@@ -1,6 +1,14 @@
 import { expect } from '@playwright/test'
-import test from './base'
+import test, { mockAPIRequests } from './base'
 import { openProjectDocumentation } from './helpers'
+
+test.beforeEach(async ({ page }) => {
+  await mockAPIRequests(page)
+})
+
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll()
+})
 
 test('Test link substitution', async ({ page }) => {
   const documentation = await openProjectDocumentation(page, 'example-project-01', 'latest')

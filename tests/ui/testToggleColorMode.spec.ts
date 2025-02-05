@@ -1,6 +1,14 @@
-import test from './base'
+import test, { mockAPIRequests } from './base'
 import { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import { assertCurrentColorModeButton, assertTheme, switchColorMode } from './helpers'
+
+test.beforeEach(async ({ page }) => {
+  await mockAPIRequests(page)
+})
+
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll()
+})
 
 test.describe('Color schemes tests', () => {
   test('Color mode should be system by default', async ({ page }) => {
