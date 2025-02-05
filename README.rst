@@ -1,6 +1,9 @@
 .. image:: https://github.com/vorausrobotik/vdoc/actions/workflows/pipeline.yml/badge.svg
     :target: https://github.com/vorausrobotik/vdoc/actions/workflows/pipeline.yml
     :class: badge
+.. image:: https://codecov.io/gh/vorausrobotik/vdoc/graph/badge.svg
+    :target: https://codecov.io/gh/vorausrobotik/vdoc
+    :class: badge
 .. image:: https://img.shields.io/pypi/pyversions/vdoc
     :target: https://pypi.org/project/vdoc
     :class: badge
