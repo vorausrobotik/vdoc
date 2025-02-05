@@ -1,15 +1,21 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, Typography } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
+import { useState } from 'react'
+
 import { useStore } from '@tanstack/react-store'
 import globalStore from './helpers/GlobalStore'
 import { useNavigate } from '@tanstack/react-router'
 import VersionDropdown from './components/VersionDropdown'
 
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import SettingsSidebar from './components/SettingsSidebar'
+
 export default function MenuBar() {
+  const navigate = useNavigate({ from: '/$projectName/$version/$' })
   const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
   const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
   const latestVersion = useStore(globalStore, (state) => state['latestVersion'])
-  const navigate = useNavigate({ from: '/$projectName/$version/$' })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
@@ -25,7 +31,7 @@ export default function MenuBar() {
   }
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" data-testid="headerBar">
       <Toolbar>
         {/* Logo with Text */}
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2 }}>
@@ -50,7 +56,13 @@ export default function MenuBar() {
             />
           </Box>
         )}
+        {/* Settings Button */}
+        <IconButton data-testid="openAppSettings" aria-label="Open App Settings" onClick={() => setSidebarOpen(true)}>
+          <SettingsOutlinedIcon />
+        </IconButton>
       </Toolbar>
+      {/* Sidebar */}
+      <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
     </AppBar>
   )
 }

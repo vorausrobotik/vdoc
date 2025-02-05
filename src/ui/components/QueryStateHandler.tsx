@@ -16,7 +16,7 @@ const QueryStateHandler = <T,>({ loading, error, data, children, loadingComponen
     return loadingComponent ? (
       <>{loadingComponent}</>
     ) : (
-      <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 2 }}>
+      <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 2 }} data-testid="loadingIndicator">
         <CircularProgress />
       </Box>
     )

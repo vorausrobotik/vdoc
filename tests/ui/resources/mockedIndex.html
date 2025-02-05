@@ -1,7 +1,18 @@
 <html>
   <style>
-    body {
-      background-color: white;
+    .light {
+      background-color: rgb(227, 242, 253);
+      color: black;
+    }
+    .light a {
+      color: blue;
+    }
+    .dark {
+      background-color: rgb(18, 18, 18);
+      color: white;
+    }
+    .dark a {
+      color: lightblue;
     }
   </style>
   <body>
@@ -11,5 +22,11 @@
       <li><a href="index.html">Link with href 'index.html'</a></li>
       <li><a href="https://www.sphinx-doc.org/">Link with href 'https://www.sphinx-doc.org/'</a></li>
     </ul>
+    <script>
+      function applyColorMode() {
+        document.body.className = localStorage.getItem('darkMode') || 'light'
+      }
+      applyColorMode()
+    </script>
   </body>
 </html>
