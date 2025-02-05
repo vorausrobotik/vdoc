@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { Link, useRouter, useLocation } from '@tanstack/react-router'
-import { useTheme, Typography, Grid2 } from '@mui/material'
+import { useTheme, Typography, Grid2, useColorScheme } from '@mui/material'
 import { fetchProjectVersion, fetchProjectVersions } from '../../helpers/APIFunctions'
 import { useQuery } from '@tanstack/react-query'
 import globalStore from '../../helpers/GlobalStore'
@@ -103,8 +103,11 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   const router = useRouter()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [loaded, setLoaded] = useState<boolean>(false)
+  const [iframeKey, setIframeKey] = useState<string>(crypto.randomUUID())
+  const { mode, systemMode } = useColorScheme()
+
   useEffect(() => {
-    if (iframeRef.current) {
+    if (iframeRef.current && loaded) {
       const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
       const currentOrigin = window.location.origin
       if (iframeDocument) {
@@ -136,12 +139,20 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
       }
     }
   }, [router, loaded, name, version])
+
+  useEffect(() => {
+    const resultingMode = mode === 'system' ? systemMode : mode
+    iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', resultingMode as 'light' | 'dark')
+    setIframeKey(crypto.randomUUID())
+  }, [mode, iframeRef, systemMode])
+
   return (
     <Fragment>
       {name && version !== 'latest' && version !== latestVersion && (
         <DeprecatedVersionBanner name={name} version={version} />
       )}
       <iframe
+        key={iframeKey}
         data-testid={'docIframe'}
         ref={iframeRef}
         onLoad={() => setLoaded(true)}

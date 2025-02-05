@@ -1,5 +1,6 @@
 import { test } from '@playwright/test'
 import { Page } from '@playwright/test'
+import { ColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import fs from 'fs'
 import path from 'path'
 
@@ -48,5 +49,27 @@ const mockAPIRequests = async (page: Page) => {
 test.beforeEach(async ({ page }) => {
   await mockAPIRequests(page)
 })
+
+interface ColorModeProps {
+  appBarColor: string
+  backgroundColor: string
+  errorColor: string
+  successColor: string
+}
+
+export const themes: Pick<Record<ColorMode, ColorModeProps>, 'light' | 'dark'> = {
+  dark: {
+    appBarColor: 'rgb(18, 18, 18)',
+    backgroundColor: 'rgb(18, 18, 18)',
+    errorColor: 'rgb(214, 17, 22)',
+    successColor: 'rgb(102, 187, 106)',
+  },
+  light: {
+    appBarColor: 'rgb(25, 118, 210)',
+    backgroundColor: 'rgb(227, 242, 253)',
+    errorColor: 'rgb(211, 47, 47)',
+    successColor: 'rgb(46, 125, 50)',
+  },
+}
 
 export default test
