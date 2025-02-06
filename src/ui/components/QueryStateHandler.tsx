@@ -1,7 +1,6 @@
 import { ReactElement, ReactNode } from 'react'
-import testIDs from '../interfacesAndTypes/testIDs'
-import { Box, CircularProgress, Alert, AlertTitle } from '@mui/material'
-
+import LoadingSpinner from './LoadingSpinner'
+import ErrorComponent from './ErrorComponent'
 import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
 
 interface QueryStateHandlerProps<T> {
@@ -14,32 +13,11 @@ interface QueryStateHandlerProps<T> {
 
 const QueryStateHandler = <T,>({ loading, error, data, children, loadingComponent }: QueryStateHandlerProps<T>) => {
   if (loading) {
-    return loadingComponent ? (
-      <>{loadingComponent}</>
-    ) : (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        sx={{ mt: 2 }}
-        data-testid={testIDs.loadingIndicator}
-      >
-        <CircularProgress />
-      </Box>
-    )
+    return loadingComponent ? <>{loadingComponent}</> : <LoadingSpinner />
   }
 
   if (error) {
-    const errorMessage = error.response?.data?.message ?? 'An unknown error occurred.'
-
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center">
-        <Alert severity="error" sx={{ minWidth: '100%' }}>
-          <AlertTitle>Error</AlertTitle>
-          {errorMessage}
-        </Alert>
-      </Box>
-    )
+    return <ErrorComponent error={error} />
   }
 
   if (data) {
