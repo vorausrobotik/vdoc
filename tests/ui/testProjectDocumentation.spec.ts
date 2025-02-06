@@ -45,3 +45,30 @@ test('Requesting non existing versions must be handled properly with manual redi
   // User must be redirected to previous page
   await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
 })
+
+test('Requesting non existing project must be handled properly', async ({ page }) => {
+  await page.route('*/**/api/projects/non-existing-project/versions/', (route) =>
+    route.fulfill({
+      status: 404,
+      body: JSON.stringify({
+        message: "Project 'non-existing-project' doesn't exist.",
+      }),
+    })
+  )
+  await page.goto('/')
+  await expect(page).toHaveURL('http://localhost:3000')
+  await page.goto('/non-existing-project')
+  await expect(page).toHaveURL('http://localhost:3000/non-existing-project')
+
+  await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
+
+  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
+  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(
+    "Project 'non-existing-project' doesn't exist."
+  )
+  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await page.getByTestId(testIDs.errorComponent.actionButton).click()
+
+  // User must be redirected to previous page
+  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+})
