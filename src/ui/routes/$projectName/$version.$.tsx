@@ -15,6 +15,7 @@ import testIDs from '../../interfacesAndTypes/testIDs'
 export const Route = createFileRoute('/$projectName/$version/$')({
   component: DocumentationComponent,
 })
+import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
 
 const fetchProjectDetailsAndSetStore = async (projectName: string, version: string): Promise<[string, string]> => {
   const [versions, latestVersion] = await Promise.all([
