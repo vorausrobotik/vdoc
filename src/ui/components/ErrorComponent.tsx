@@ -1,56 +1,102 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, ElementType } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
-import { Box } from '@mui/material'
-import EmptyState from './EmptyState'
-import SearchOffIcon from '@mui/icons-material/SearchOff'
+import { Box, Typography, Button, SvgIcon } from '@mui/material'
+import type { Variant } from '@mui/material/styles/createTypography'
+import { SvgIconProps } from '@mui/material/SvgIcon'
+import { BoxProps } from '@mui/system'
+import testIDs from '../interfacesAndTypes/testIDs'
 
-interface ErrorComponentProps extends React.ComponentProps<'div'> {
-  error: FastAPIAxiosErrorT
-  timerMs?: number
+type SvgIconColor = SvgIconProps['color']
+
+interface ErrorComponentVisualProps extends BoxProps {
+  error?: FastAPIAxiosErrorT
+  timerSeconds?: number
   actionText?: string
+  title?: string
+  titleVariant?: Variant
+  description?: string
+  descriptionVariant?: Variant
+  iconClass: ElementType
+  iconColor?: SvgIconColor
+  iconFontSize?: number
+  onAction?: () => void
 }
 
-export const ErrorComponent = ({ error, timerMs = 10000, actionText = 'Go back' }: ErrorComponentProps) => {
-  const [timer, setTimer] = useState(10)
-  const router = useRouter()
-
-  const handleGoBack = useCallback(() => {
-    router.history.back()
-  }, [router])
+const ErrorComponent = ({
+  error,
+  title,
+  titleVariant = 'h4',
+  description,
+  descriptionVariant = 'body1',
+  iconClass,
+  iconFontSize = 150,
+  iconColor,
+  onAction,
+  timerSeconds = 5,
+  actionText = 'Go back',
+  ...boxProps
+}: ErrorComponentVisualProps) => {
+  const [timer, setTimer] = useState(timerSeconds)
 
   useEffect(() => {
-    if (timerMs) {
+    if (timerSeconds && onAction) {
       if (timer > 0) {
         const timerId = setInterval(() => {
           setTimer((prev) => prev - 1)
-        }, timerMs)
+        }, 1000)
 
         return () => clearInterval(timerId)
       } else {
-        handleGoBack()
+        onAction()
       }
     }
-  }, [timer, handleGoBack, timerMs])
+  }, [timer, onAction, timerSeconds])
 
-  const errorMessage = error.response?.data?.message ?? 'An unknown error occurred.'
+  const errorMessage = error?.response?.data?.message ?? (title ? title : 'An unknown error occurred.')
 
   const getDescription = (): string | undefined => {
-    return timerMs ? `Returning to previous page in ${timer} second${timer <= 1 ? '' : 's'}...` : undefined
+    return timerSeconds ? `Returning to previous page in ${timer} second${timer <= 1 ? '' : 's'}...` : undefined
   }
-
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 2 }}>
-      <EmptyState
-        title={errorMessage}
-        titleVariant="h5"
-        description={getDescription()}
-        iconClass={SearchOffIcon}
-        iconFontSize={100}
-        iconColor="warning"
-        actionText={actionText}
-        onAction={handleGoBack}
+    <Box
+      sx={boxProps.sx}
+      data-testid={testIDs.errorComponent.main}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      textAlign="center"
+      height="100%"
+    >
+      <SvgIcon
+        data-testid={testIDs.errorComponent.icon}
+        component={iconClass}
+        color={iconColor}
+        sx={{ fontSize: iconFontSize }}
       />
+      <Typography variant={titleVariant} marginTop={2} data-testid={testIDs.errorComponent.title}>
+        {errorMessage}
+      </Typography>
+      <Typography
+        variant={descriptionVariant}
+        color="textSecondary"
+        marginTop={1}
+        data-testid={testIDs.errorComponent.description}
+      >
+        {description ?? getDescription()}
+      </Typography>
+      {onAction && actionText && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onAction}
+          sx={{ marginTop: 3 }}
+          data-testid={testIDs.errorComponent.actionButton}
+        >
+          {actionText}
+        </Button>
+      )}
     </Box>
   )
 }

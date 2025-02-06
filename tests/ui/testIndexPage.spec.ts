@@ -55,3 +55,35 @@ test('Test navigation index to documentation to version overview', async ({ page
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
   await expect(versionDropdown).toContainText('1.0.0')
 })
+
+test('Test project overview on no projects', async ({ page }) => {
+  // Reset global mocks
+  await page.unrouteAll()
+  await page.route('*/**/api/projects/', (route) =>
+    route.fulfill({
+      json: [],
+    })
+  )
+
+  // Make sure no projects are listed and the error component is shown with all correct parameters
+  await page.goto('/')
+  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
+  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe('No projects found')
+  expect(await page.getByTestId(testIDs.errorComponent.description).innerText()).toBe(
+    'Upload docs to vdoc to get started!'
+  )
+  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('RELOAD PROJECTS')
+
+  // Mock the API request to return a list of projects and reload the page
+  await page.route('*/**/api/projects/', (route) =>
+    route.fulfill({
+      json: ['test-01', 'test-02'],
+    })
+  )
+  await page.getByTestId(testIDs.errorComponent.actionButton).click()
+
+  // Expect the error component to be gone and a list of project cars to be present
+  await expect(page.getByTestId(testIDs.errorComponent.main)).not.toBeVisible()
+  const projectCards = page.getByTestId(testIDs.landingPage.projectCard.main)
+  await expect(projectCards).toHaveCount(2)
+})
