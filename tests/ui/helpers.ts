@@ -1,5 +1,6 @@
-import { Locator, Page, expect } from '@playwright/test'
-import { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import { expect } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
+import type { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
 

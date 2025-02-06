@@ -1,8 +1,27 @@
-import { test } from '@playwright/test'
-import { Page } from '@playwright/test'
-import { ColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import test from '@playwright/test'
+import type {
+  TestType,
+  PlaywrightTestArgs,
+  PlaywrightTestOptions,
+  PlaywrightWorkerArgs,
+  PlaywrightWorkerOptions,
+} from '@playwright/test'
+import type { Page } from '@playwright/test'
+import type { ColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import fs from 'fs'
 import path from 'path'
+
+export const prepareTestSuite = async (
+  test: TestType<PlaywrightTestArgs & PlaywrightTestOptions, PlaywrightWorkerArgs & PlaywrightWorkerOptions>
+) => {
+  test.beforeEach(async ({ page }) => {
+    await mockAPIRequests(page)
+  })
+
+  test.afterEach(async ({ page }) => {
+    await page.unrouteAll()
+  })
+}
 
 export const mockAPIRequests = async (page: Page) => {
   const routes = [

@@ -1,14 +1,8 @@
 import { expect } from '@playwright/test'
-import test, { mockAPIRequests } from './base'
+import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 
-test.beforeEach(async ({ page }) => {
-  await mockAPIRequests(page)
-})
-
-test.afterEach(async ({ page }) => {
-  await page.unrouteAll()
-})
+await prepareTestSuite(test)
 
 test('Test navigation index to documentation to version overview', async ({ page }) => {
   await page.goto('/')
