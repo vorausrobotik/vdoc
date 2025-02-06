@@ -5,7 +5,7 @@ import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
 import { Box, Container, Card, CardActions, CardContent, Grid2, Typography } from '@mui/material'
 import { fetchProjects } from '../helpers/APIFunctions'
-import EmptyState from '../components/EmptyState'
+import ErrorComponent from '../components/ErrorComponent'
 import { SentimentDissatisfied } from '@mui/icons-material'
 import testIDs from '../interfacesAndTypes/testIDs'
 
@@ -63,12 +63,14 @@ function Index() {
               </Grid2>
             </Box>
           ) : (
-            <EmptyState
+            <ErrorComponent
               title="No projects found"
               iconClass={SentimentDissatisfied}
+              iconColor="primary"
               description="Upload docs to vdoc to get started!"
               actionText="Reload Projects"
               onAction={refetch}
+              sx={{ mt: 2 }}
             />
           )}
         </Container>
