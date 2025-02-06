@@ -1,23 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { Fragment } from 'react/jsx-runtime'
-import { Link, useRouter, useLocation } from '@tanstack/react-router'
-import { useTheme, Typography, Grid2, useColorScheme } from '@mui/material'
+import { useRouter, useLocation } from '@tanstack/react-router'
+import { useColorScheme } from '@mui/material'
 import { fetchProjectVersion, fetchProjectVersions } from '../../helpers/APIFunctions'
-import { useQuery } from '@tanstack/react-query'
 import globalStore from '../../helpers/GlobalStore'
-import QueryStateHandler from '../../components/QueryStateHandler'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
 import testIDs from '../../interfacesAndTypes/testIDs'
-
-export const Route = createFileRoute('/$projectName/$version/$')({
-  component: DocumentationComponent,
-})
+import ErrorComponent from '../../components/ErrorComponent'
 import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
+import SearchOffIcon from '@mui/icons-material/SearchOff'
 
 const fetchProjectDetailsAndSetStore = async (projectName: string, version: string): Promise<[string, string]> => {
+  // Check if the requested version is available
+  await fetchProjectVersion(projectName, version)
+
+  // Fetch more information
   const [versions, latestVersion] = await Promise.all([
     fetchProjectVersions(projectName),
     fetchProjectVersion(projectName, 'latest'),
@@ -30,67 +31,42 @@ const fetchProjectDetailsAndSetStore = async (projectName: string, version: stri
     currentVersion: version,
     latestVersion,
   }))
-
   return [version, latestVersion]
 }
 
+export const Route = createFileRoute('/$projectName/$version/$')({
+  component: DocumentationComponent,
+  loader: async ({ params: { projectName, version } }) => {
+    return fetchProjectDetailsAndSetStore(projectName, version)
+  },
+  pendingComponent: LoadingSpinner,
+  errorComponent: ({ error }) => {
+    const ErrorComponentWithRouter = () => {
+      const router = useRouter()
+      const handleGoBack = useCallback(() => {
+        router.history.back()
+      }, [router])
+
+      return <ErrorComponent iconClass={SearchOffIcon} error={error as FastAPIAxiosErrorT} onAction={handleGoBack} />
+    }
+
+    return <ErrorComponentWithRouter />
+  },
+})
+
 function DocumentationComponent() {
-  const { projectName, version, _splat } = Route.useParams()
+  const { projectName, _splat } = Route.useParams()
   const location = useLocation()
-
-  const {
-    data: data,
-    error: dataError,
-    isLoading: dataLoading,
-  } = useQuery({
-    queryKey: ['projects', projectName, version],
-    queryFn: () => fetchProjectDetailsAndSetStore(projectName, version),
-  })
+  const [resolvedVersion, latestVersion] = Route.useLoaderData()
 
   return (
-    <QueryStateHandler loading={dataLoading} error={dataError as FastAPIAxiosErrorT} data={data}>
-      {([resolvedVersion, latestVersion]) => (
-        <DocuIFrame
-          key={location.href}
-          name={projectName}
-          version={resolvedVersion}
-          latestVersion={latestVersion}
-          splat={_splat}
-        />
-      )}
-    </QueryStateHandler>
-  )
-}
-
-interface DeprecatedVersionBannerPropsI {
-  name: string
-  version: string
-}
-
-function DeprecatedVersionBanner({ name, version }: DeprecatedVersionBannerPropsI) {
-  const theme = useTheme()
-  return (
-    <Link
-      to="/$projectName/$version/$"
-      params={{ projectName: name, version: 'latest' }}
-      style={{ textDecoration: 'none' }}
-      data-testid={testIDs.project.documentation.latestVersionWarningBanner}
-    >
-      <Grid2
-        container
-        direction="row"
-        sx={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: theme.palette.warning.main,
-        }}
-      >
-        <Typography variant="body1" color="black">
-          You're currently reading an <b>old version</b> ({version}) of {name}! To view the latest version of the
-          documentation, click this banner.
-        </Typography>
-      </Grid2>
-    </Link>
+    <DocuIFrame
+      key={location.href}
+      name={projectName}
+      version={resolvedVersion}
+      latestVersion={latestVersion}
+      splat={_splat}
+    />
   )
 }
 

@@ -44,6 +44,15 @@ export const mockAPIRequests = async (page: Page) => {
       response: { json: ['3.2.0'] },
     },
     {
+      pattern: '*/**/api/projects/example-project-01/versions/42.0.0',
+      response: {
+        status: 404,
+        body: JSON.stringify({
+          message: "Project 'example-project-01' doesn't have a documentation for version '42.0.0'",
+        }),
+      },
+    },
+    {
       pattern: '*/**/api/projects/example-project-02/versions/',
       response: { json: ['1.0.0'] },
     },
