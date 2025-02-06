@@ -1,7 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import QueryStateHandler from '../../components/QueryStateHandler'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../helpers/APIFunctions'
 import globalStore from '../../helpers/GlobalStore'
@@ -9,85 +7,93 @@ import { groupVersionsByMajorVersion } from '../../helpers/Versions'
 import { Typography, Container, Chip, Stack, Card, Grid2, Box, CardContent } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
 import testIDs from '../../interfacesAndTypes/testIDs'
+import SearchOffIcon from '@mui/icons-material/SearchOff'
+import ErrorComponent from '../../components/ErrorComponent'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 export const Route = createFileRoute('/$projectName/')({
   component: ProjectVersionsOverview,
+  loader: async ({ params: { projectName } }) => {
+    globalStore.setState((state) => {
+      return {
+        ...state,
+        projectVersions: null,
+        currentVersion: null,
+      }
+    })
+    return fetchProjectVersions(projectName)
+  },
+  pendingComponent: LoadingSpinner,
+  errorComponent: ({ error }) => {
+    const ErrorComponentWithRouter = () => {
+      const router = useRouter()
+      const handleGoBack = useCallback(() => {
+        router.history.back()
+      }, [router])
+
+      return <ErrorComponent iconClass={SearchOffIcon} error={error as FastAPIAxiosErrorT} onAction={handleGoBack} />
+    }
+
+    return <ErrorComponentWithRouter />
+  },
 })
 
 function ProjectVersionsOverview() {
   const { projectName } = Route.useParams()
   const router = useRouter()
-  globalStore.setState((state) => {
-    return {
-      ...state,
-      projectVersions: null,
-      currentVersion: null,
-    }
-  })
 
-  const {
-    data: versions,
-    error: versionsError,
-    isLoading: versionsLoading,
-  } = useQuery({
-    queryKey: ['projects', projectName],
-    queryFn: () => fetchProjectVersions(projectName),
-  })
+  const versions = Route.useLoaderData()
 
   const groupedVersions: Record<number, string[]> = useMemo(() => {
     return versions ? groupVersionsByMajorVersion(versions) : {}
   }, [versions])
 
   return (
-    <QueryStateHandler loading={versionsLoading} error={versionsError as FastAPIAxiosErrorT} data={versions}>
-      {() => (
-        <Container sx={{ mt: 2 }}>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Version index of {projectName}
-          </Typography>
-          <Box sx={{ flexGrow: 1 }}>
-            <Grid2 container spacing={2}>
-              {Object.keys(groupedVersions)
-                .reverse()
-                .map((major) => (
-                  <Grid2 size={6}>
-                    <Card key={major} data-testid={testIDs.project.versionOverview.majorVersionCard.main}>
-                      <CardContent>
-                        <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
-                          <SellIcon />
-                          <Typography variant="h6">v{major}</Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1}>
-                          {groupedVersions[Number(major)].map((version) => (
-                            <Chip
-                              data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
-                              key={version}
-                              label={version}
-                              component="a"
-                              onClick={() =>
-                                router.navigate({
-                                  to: '/$projectName/$version/$',
-                                  from: '/$projectName',
-                                  params: {
-                                    projectName: projectName,
-                                    version: version,
-                                  },
-                                })
-                              }
-                              clickable
-                              variant="outlined"
-                            />
-                          ))}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid2>
-                ))}
-            </Grid2>
-          </Box>
-        </Container>
-      )}
-    </QueryStateHandler>
+    <Container sx={{ mt: 2 }}>
+      <Typography variant="h5" sx={{ mb: 2 }}>
+        Version index of {projectName}
+      </Typography>
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid2 container spacing={2}>
+          {Object.keys(groupedVersions)
+            .reverse()
+            .map((major) => (
+              <Grid2 size={6}>
+                <Card key={major} data-testid={testIDs.project.versionOverview.majorVersionCard.main}>
+                  <CardContent>
+                    <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
+                      <SellIcon />
+                      <Typography variant="h6">v{major}</Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1}>
+                      {groupedVersions[Number(major)].map((version) => (
+                        <Chip
+                          data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
+                          key={version}
+                          label={version}
+                          component="a"
+                          onClick={() =>
+                            router.navigate({
+                              to: '/$projectName/$version/$',
+                              from: '/$projectName',
+                              params: {
+                                projectName: projectName,
+                                version: version,
+                              },
+                            })
+                          }
+                          clickable
+                          variant="outlined"
+                        />
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid2>
+            ))}
+        </Grid2>
+      </Box>
+    </Container>
   )
 }
 
