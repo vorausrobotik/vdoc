@@ -51,6 +51,13 @@ export const testIDs = {
       documentationIframe: 'project.documentation.documentationIframe',
     },
   },
+  errorComponent: {
+    main: 'errorComponent',
+    icon: 'errorComponent.icon',
+    title: 'errorComponent.title',
+    description: 'errorComponent.description',
+    actionButton: 'errorComponent.actionButton',
+  },
 } as const
 
 export default testIDs
