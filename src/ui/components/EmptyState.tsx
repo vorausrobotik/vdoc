@@ -1,15 +1,34 @@
 import { Box, Typography, Button, SvgIcon } from '@mui/material'
+import type { Variant } from '@mui/material/styles/createTypography'
+import { SvgIconProps } from '@mui/material/SvgIcon'
+
+type SvgIconColor = SvgIconProps['color']
+
 import React from 'react'
 
 interface EmptyStateVisualProps {
   title: string
+  titleVariant?: Variant
   description?: string
+  descriptionVariant?: Variant
   iconClass: React.ElementType
+  iconColor: SvgIconColor
+  iconFontSize?: number
   onAction?: () => void
   actionText?: string
 }
 
-const EmptyState = (props: EmptyStateVisualProps) => {
+const EmptyState = ({
+  title,
+  titleVariant = 'h4',
+  description,
+  descriptionVariant = 'body1',
+  iconClass,
+  iconFontSize = 150,
+  iconColor = 'inherit',
+  onAction,
+  actionText,
+}: EmptyStateVisualProps) => {
   return (
     <Box
       display="flex"
@@ -19,18 +38,18 @@ const EmptyState = (props: EmptyStateVisualProps) => {
       textAlign="center"
       height="100%"
     >
-      <SvgIcon component={props.iconClass} sx={{ fontSize: 150 }} />
-      <Typography variant="h4" marginTop={2}>
-        {props.title}
+      <SvgIcon component={iconClass} color={iconColor} sx={{ fontSize: iconFontSize }} />
+      <Typography variant={titleVariant} marginTop={2}>
+        {title}
       </Typography>
-      {props.description && (
-        <Typography variant="body1" color="textSecondary" marginTop={1}>
-          {props.description}
+      {description && (
+        <Typography variant={descriptionVariant} color="textSecondary" marginTop={1}>
+          {description}
         </Typography>
       )}
-      {props.onAction && props.actionText && (
-        <Button variant="contained" color="primary" onClick={props.onAction} sx={{ marginTop: 3 }}>
-          {props.actionText}
+      {onAction && actionText && (
+        <Button variant="contained" color="primary" onClick={onAction} sx={{ marginTop: 3 }}>
+          {actionText}
         </Button>
       )}
     </Box>
