@@ -1,5 +1,5 @@
 import { useState, useEffect, ElementType } from 'react'
-import { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
+import { AxiosError } from 'axios'
 import { Box, Typography, Button, SvgIcon } from '@mui/material'
 import type { Variant } from '@mui/material/styles/createTypography'
 import { SvgIconProps } from '@mui/material/SvgIcon'
@@ -9,7 +9,7 @@ import testIDs from '../interfacesAndTypes/testIDs'
 type SvgIconColor = SvgIconProps['color']
 
 interface ErrorComponentVisualProps extends BoxProps {
-  error?: FastAPIAxiosErrorT
+  error?: AxiosError | Error
   timerSeconds?: number
   actionText?: string
   title?: string
@@ -52,7 +52,17 @@ const ErrorComponent = ({
     }
   }, [timer, onAction, timerSeconds])
 
-  const errorMessage = error?.response?.data?.message ?? (title ? title : 'An unknown error occurred.')
+  const getErrorMessage = (error: AxiosError | Error | undefined, title: string | undefined) => {
+    if (error) {
+      if (error instanceof AxiosError) {
+        return error.response?.data?.message
+      }
+      return error.message ?? 'An unknown error occurred.'
+    } else if (title) {
+      return title
+    }
+    return 'An unknown error occurred.'
+  }
 
   const getDescription = (): string | undefined => {
     return timerSeconds ? `Returning to previous page in ${timer} second${timer <= 1 ? '' : 's'}...` : undefined
@@ -75,7 +85,7 @@ const ErrorComponent = ({
         sx={{ fontSize: iconFontSize }}
       />
       <Typography variant={titleVariant} marginTop={2} data-testid={testIDs.errorComponent.title}>
-        {errorMessage}
+        {getErrorMessage(error, title)}
       </Typography>
       <Typography
         variant={descriptionVariant}
