@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
-import { Fragment } from 'react/jsx-runtime'
 import { useRouter, useLocation } from '@tanstack/react-router'
 import { useColorScheme } from '@mui/material'
 import { fetchProjectVersion, fetchProjectVersions } from '../../helpers/APIFunctions'
@@ -124,7 +123,7 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   }, [mode, iframeRef, systemMode])
 
   return (
-    <Fragment data-testid={testIDs.project.documentation.main}>
+    <div data-testid={testIDs.project.documentation.main} style={{ display: 'contents' }}>
       {name && version !== 'latest' && version !== latestVersion && (
         <DeprecatedVersionBanner name={name} version={version} />
       )}
@@ -136,6 +135,6 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
         style={{ border: 0, width: '100%', height: '100%' }}
         src={`/static/projects/${name}/${version === 'latest' ? latestVersion : version}/${splat}${window.location.hash}`}
       />
-    </Fragment>
+    </div>
   )
 }

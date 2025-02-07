@@ -46,6 +46,33 @@ test('Requesting non existing versions must be handled properly with manual redi
   await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
 })
 
+test('Requesting invalid versions must be handled properly with manual redirect', async ({ page }) => {
+  await page.route('*/**/api/projects/example-project-01/versions/invalid', (route) =>
+    route.fulfill({
+      status: 401,
+      body: JSON.stringify({
+        message: "'invalid' is not a valid version identifier.",
+      }),
+    })
+  )
+  await page.goto('/')
+  await expect(page).toHaveURL('http://localhost:3000')
+  await page.goto('/example-project-01/invalid')
+  await expect(page).toHaveURL('http://localhost:3000/example-project-01/invalid')
+
+  await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
+
+  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
+  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(
+    "'invalid' is not a valid version identifier."
+  )
+  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await page.getByTestId(testIDs.errorComponent.actionButton).click()
+
+  // User must be redirected to previous page
+  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+})
+
 test('Requesting non existing project must be handled properly', async ({ page }) => {
   await page.route('*/**/api/projects/non-existing-project/versions/', (route) =>
     route.fulfill({
