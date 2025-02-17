@@ -117,6 +117,7 @@ jobs:
   upload-coverage:
     timeout-minutes: 2
     runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
     needs:
       - test-ui-unit
       - coverage-python
