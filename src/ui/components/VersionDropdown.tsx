@@ -36,6 +36,7 @@ export default function VersionDropdown({
         onChange={onVersionChange}
         renderValue={renderVersion}
         label="Version"
+        sx={{ minWidth: '160px', mr: 1 }}
       >
         {versions
           ? [...versions]
