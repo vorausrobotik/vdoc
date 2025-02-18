@@ -58,7 +58,7 @@ function ProjectVersionsOverview() {
           {Object.keys(groupedVersions)
             .reverse()
             .map((major) => (
-              <Grid2 size={6}>
+              <Grid2 size={6} key={major}>
                 <Card key={major} data-testid={testIDs.project.versionOverview.majorVersionCard.main}>
                   <CardContent>
                     <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
