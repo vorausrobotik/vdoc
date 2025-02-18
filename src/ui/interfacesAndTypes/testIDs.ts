@@ -4,7 +4,8 @@ export const testIDs = {
     versionDropdown: {
       main: 'header.versionDropdown',
       item: 'header.versionDropdown.item',
-      moreItem: 'header.versionDropdown.moreItem',
+      emptyItem: 'header.versionDropdown.emptyItem',
+      showAllItem: 'header.versionDropdown.moreItem',
     },
     settingsButton: 'header.settingsButton',
   },

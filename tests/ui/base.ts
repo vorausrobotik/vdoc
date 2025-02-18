@@ -41,7 +41,7 @@ export const mockAPIRequests = async (page: Page) => {
     },
     {
       pattern: '*/**/api/projects/example-project-01/versions/latest',
-      response: { json: ['3.2.0'] },
+      response: { json: '3.2.0' },
     },
     {
       pattern: '*/**/api/projects/example-project-01/versions/42.0.0',
@@ -58,7 +58,7 @@ export const mockAPIRequests = async (page: Page) => {
     },
     {
       pattern: '*/**/api/projects/example-project-02/versions/latest',
-      response: { json: ['1.0.0'] },
+      response: { json: '1.0.0' },
     },
     {
       pattern: '*/**/api/projects/example-project-03/versions/',
@@ -66,7 +66,7 @@ export const mockAPIRequests = async (page: Page) => {
     },
     {
       pattern: '*/**/api/projects/example-project-03/versions/latest',
-      response: { json: ['1.0.0'] },
+      response: { json: '1.0.0' },
     },
   ]
   for (const { pattern, response } of routes) {

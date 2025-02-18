@@ -12,6 +12,7 @@ test('Requesting non existing versions must be handled properly with automatic r
   await expect(page).toHaveURL('http://localhost:3000/example-project-01/42.0.0')
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
+  await expect(page.getByTestId(testIDs.header.versionDropdown.main)).toHaveText('Select version...')
 
   await assertErrorComponent(page, {
     title: "Project 'example-project-01' doesn't have a documentation for version '42.0.0'",
@@ -25,7 +26,7 @@ test('Requesting non existing versions must be handled properly with automatic r
   }
 
   // User must be redirected to previous page
-  await assertIndexPage(page, { timeout: 1000 })
+  await assertIndexPage(page)
 })
 
 test('Requesting non existing versions must be handled properly with manual redirect', async ({ page }) => {
