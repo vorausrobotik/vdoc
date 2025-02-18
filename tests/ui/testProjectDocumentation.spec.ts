@@ -20,7 +20,7 @@ test('Requesting non existing versions must be handled properly with automatic r
 
   for (const remainingSeconds of [5, 4, 3, 2, 1]) {
     await expect(page.getByTestId(testIDs.errorComponent.description)).toHaveText(
-      `Returning to previous page in ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}...`
+      `Returning to previous page in ${remainingSeconds} second${remainingSeconds === 1 ? '' : 's'}...`
     )
   }
 
