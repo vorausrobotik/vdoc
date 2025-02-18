@@ -99,3 +99,29 @@ test('Requesting non existing project must be handled properly', async ({ page }
   // User must be redirected to previous page
   await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
 })
+
+test('Requesting non existing version must be handled properly', async ({ page }) => {
+  const errorMessage = "Project 'example-project-01' doesn't have a documentation for version '1'."
+  await page.route('*/**/api/projects/example-project-01/versions/1', (route) =>
+    route.fulfill({
+      status: 404,
+      body: JSON.stringify({
+        message: errorMessage,
+      }),
+    })
+  )
+  await page.goto('/')
+  await expect(page).toHaveURL('http://localhost:3000')
+  await page.goto('/example-project-01/1')
+  await expect(page).toHaveURL('http://localhost:3000/example-project-01/1')
+
+  await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
+
+  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
+  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(errorMessage)
+  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await page.getByTestId(testIDs.errorComponent.actionButton).click()
+
+  // User must be redirected to previous page
+  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+})
