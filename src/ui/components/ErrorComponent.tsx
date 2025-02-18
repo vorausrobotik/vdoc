@@ -65,7 +65,7 @@ const ErrorComponent = ({
   }
 
   const getDescription = (): string | undefined => {
-    return timerSeconds ? `Returning to previous page in ${timer} second${timer <= 1 ? '' : 's'}...` : undefined
+    return timerSeconds ? `Returning to previous page in ${timer} second${timer === 1 ? '' : 's'}...` : undefined
   }
   return (
     <Box
