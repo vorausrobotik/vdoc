@@ -16,6 +16,25 @@ export const assertIndexPage = async (page: Page, options?: { timeout?: number }
 }
 
 /**
+ * Expects the error component to be visible and show the given details.
+ * @param page The playwright page object.
+ * @param options The error component properties to check for.
+ */
+export const assertErrorComponent = async (
+  page: Page,
+  options: { title: string; description?: string; actionButtonText?: string }
+) => {
+  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
+  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(options.title)
+  if (options.description) {
+    expect(await page.getByTestId(testIDs.errorComponent.description).innerText()).toBe(options.description)
+  }
+  if (options.actionButtonText) {
+    expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe(options.actionButtonText)
+  }
+}
+
+/**
  * Closes the settings sidebar if it is open and compare the color schemes of the main app and the embedded iframe.
  *
  * @param page The playwright page object.

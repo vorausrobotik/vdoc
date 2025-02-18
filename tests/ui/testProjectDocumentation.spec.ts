@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import { assertIndexPage } from './helpers'
+import { assertIndexPage, assertErrorComponent } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -13,11 +13,11 @@ test('Requesting non existing versions must be handled properly with automatic r
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
-  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
-  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(
-    "Project 'example-project-01' doesn't have a documentation for version '42.0.0'"
-  )
-  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await assertErrorComponent(page, {
+    title: "Project 'example-project-01' doesn't have a documentation for version '42.0.0'",
+    actionButtonText: 'GO BACK',
+  })
+
   for (const remainingSeconds of [5, 4, 3, 2, 1]) {
     await expect(page.getByTestId(testIDs.errorComponent.description)).toHaveText(
       `Returning to previous page in ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}...`
@@ -36,11 +36,11 @@ test('Requesting non existing versions must be handled properly with manual redi
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
-  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
-  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(
-    "Project 'example-project-01' doesn't have a documentation for version '42.0.0'"
-  )
-  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await assertErrorComponent(page, {
+    title: "Project 'example-project-01' doesn't have a documentation for version '42.0.0'",
+    actionButtonText: 'GO BACK',
+  })
+
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
@@ -63,11 +63,11 @@ test('Requesting invalid versions must be handled properly with manual redirect'
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
-  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
-  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(
-    "'invalid' is not a valid version identifier."
-  )
-  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await assertErrorComponent(page, {
+    title: "'invalid' is not a valid version identifier.",
+    actionButtonText: 'GO BACK',
+  })
+
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
@@ -90,11 +90,11 @@ test('Requesting non existing project must be handled properly', async ({ page }
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
-  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
-  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(
-    "Project 'non-existing-project' doesn't exist."
-  )
-  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await assertErrorComponent(page, {
+    title: "Project 'non-existing-project' doesn't exist.",
+    actionButtonText: 'GO BACK',
+  })
+
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
@@ -118,9 +118,10 @@ test('Requesting non existing version must be handled properly', async ({ page }
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
-  await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
-  expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe(errorMessage)
-  expect(await page.getByTestId(testIDs.errorComponent.actionButton).innerText()).toBe('GO BACK')
+  await assertErrorComponent(page, {
+    title: errorMessage,
+    actionButtonText: 'GO BACK',
+  })
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
