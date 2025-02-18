@@ -128,3 +128,21 @@ test('Requesting non existing version must be handled properly', async ({ page }
   // User must be redirected to previous page
   await assertIndexPage(page, { timeout: 1000 })
 })
+
+test('Requesting non existing documentation page must be handled properly', async ({ page }) => {
+  await page.goto('/')
+  await assertIndexPage(page)
+  await page.goto('/example-project-03/1.0.0/nonexisting.html')
+  await expect(page).toHaveURL('http://localhost:3000/example-project-03/1.0.0/nonexisting.html')
+
+  await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
+
+  await assertErrorComponent(page, {
+    title: "Whoops! This page doesn't seem to exist...",
+    actionButtonText: 'GO BACK',
+  })
+  await page.getByTestId(testIDs.errorComponent.actionButton).click()
+
+  // User must be redirected to previous page
+  await assertIndexPage(page, { timeout: 1000 })
+})

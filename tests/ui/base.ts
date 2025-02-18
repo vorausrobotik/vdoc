@@ -30,6 +30,10 @@ export const mockAPIRequests = async (page: Page) => {
       response: { body: fs.readFileSync(path.resolve('tests/ui/resources/mockedIndex.html')) },
     },
     {
+      pattern: '*/**/static/projects/example-project-03/1.0.0/nonexisting.html',
+      response: { body: fs.readFileSync(path.resolve('tests/ui/resources/nonExisting.html')) },
+    },
+    {
       pattern: '*/**/api/projects/',
       response: {
         json: [{ name: 'example-project-01' }, { name: 'example-project-02' }, { name: 'example-project-03' }],
