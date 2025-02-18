@@ -17,7 +17,6 @@ export default function VersionDropdown({
   onVersionChange,
   ...divProps
 }: VersionDropdownProps) {
-  const numVersions = versions?.length
   const renderVersion = (version: string) => (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <span>{version}</span>
@@ -26,6 +25,11 @@ export default function VersionDropdown({
       )}
     </div>
   )
+  const onChange = (event: SelectChangeEvent) => {
+    if (event.target.value) {
+      onVersionChange(event)
+    }
+  }
   return (
     <FormControl size="small" variant="outlined" sx={{ minWidth: 120 }}>
       <InputLabel>Version</InputLabel>
@@ -33,11 +37,12 @@ export default function VersionDropdown({
         data-testid={testIDs.header.versionDropdown.main}
         id={divProps.id}
         value={selectedVersion === 'latest' ? latestVersion : selectedVersion}
-        onChange={onVersionChange}
+        onChange={onChange}
         renderValue={renderVersion}
-        label="Version"
+        label="Select version..."
         sx={{ minWidth: '160px', mr: 1 }}
       >
+        <MenuItem key="empty" value="" data-testid={testIDs.header.versionDropdown.emptyItem}></MenuItem>
         {versions
           ? [...versions]
               .reverse()
@@ -48,11 +53,9 @@ export default function VersionDropdown({
                 </MenuItem>
               ))
           : null}
-        {numVersions && numVersions > numVersionsPreview && (
-          <MenuItem key="more" value="more" data-testid={testIDs.header.versionDropdown.moreItem}>
-            ...more
-          </MenuItem>
-        )}
+        <MenuItem key="all" value="all" data-testid={testIDs.header.versionDropdown.showAllItem}>
+          ...show all
+        </MenuItem>
       </Select>
     </FormControl>
   )

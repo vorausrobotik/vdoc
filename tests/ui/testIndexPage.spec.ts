@@ -34,8 +34,8 @@ test('Test navigation index to documentation to version overview', async ({ page
   await expect(versionDropdown).toContainText('3.2.0')
   await versionDropdown.click()
   const versionOptions = page.getByRole('option')
-  await expect(versionOptions).toHaveCount(6)
-  const expectedOptions = ['3.2.0', '3.1.0', '3.0.0', '2.0.0', '1.0.0', '...more']
+  await expect(versionOptions).toHaveCount(7)
+  const expectedOptions = ['', '3.2.0', '3.1.0', '3.0.0', '2.0.0', '1.0.0', '...show all']
   for (const [index, value] of expectedOptions.entries()) {
     await expect(versionOptions.nth(index)).toContainText(value)
   }

@@ -1,6 +1,6 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import testIDs from './interfacesAndTypes/testIDs'
 import { fetchProjectVersions, fetchProjectVersion } from './helpers/APIFunctions'
 import { LinkButton } from './interfacesAndTypes/LinkButton'
@@ -38,7 +38,7 @@ export default function MenuBar() {
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
-    if (selectedVersion === 'more') {
+    if (selectedVersion === 'all') {
       navigate({
         to: '/$projectName',
       })
@@ -48,6 +48,21 @@ export default function MenuBar() {
       })
     }
   }
+
+  const getSelectedVersion = useMemo(() => {
+    let result
+    if (params.version && projectVersions) {
+      if (params.version !== 'latest' && !projectVersions?.includes(params.version)) {
+        result = ''
+      } else {
+        result = params.version
+      }
+    } else {
+      result = ''
+    }
+
+    return result
+  }, [params.version, projectVersions])
 
   return (
     <AppBar position="static" data-testid={testIDs.header.main}>
@@ -71,7 +86,7 @@ export default function MenuBar() {
         {projectVersions && latestVersion && params.version && (
           <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
             <VersionDropdown
-              selectedVersion={params.version ?? 'latest'}
+              selectedVersion={getSelectedVersion}
               latestVersion={latestVersion}
               versions={projectVersions}
               onVersionChange={handleVersionSelectChange}
