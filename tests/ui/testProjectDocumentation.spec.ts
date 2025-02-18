@@ -1,12 +1,13 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import { assertIndexPage } from './helpers'
 
 await prepareTestSuite(test)
 
 test('Requesting non existing versions must be handled properly with automatic redirect', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveURL('http://localhost:3000')
+  await assertIndexPage(page)
   await page.goto('/example-project-01/42.0.0')
   await expect(page).toHaveURL('http://localhost:3000/example-project-01/42.0.0')
 
@@ -24,12 +25,12 @@ test('Requesting non existing versions must be handled properly with automatic r
   }
 
   // User must be redirected to previous page
-  await expect(page).toHaveURL('http://localhost:3000')
+  await assertIndexPage(page, { timeout: 1000 })
 })
 
 test('Requesting non existing versions must be handled properly with manual redirect', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveURL('http://localhost:3000')
+  await assertIndexPage(page)
   await page.goto('/example-project-01/42.0.0')
   await expect(page).toHaveURL('http://localhost:3000/example-project-01/42.0.0')
 
@@ -43,7 +44,7 @@ test('Requesting non existing versions must be handled properly with manual redi
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
-  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+  await assertIndexPage(page, { timeout: 1000 })
 })
 
 test('Requesting invalid versions must be handled properly with manual redirect', async ({ page }) => {
@@ -56,7 +57,7 @@ test('Requesting invalid versions must be handled properly with manual redirect'
     })
   )
   await page.goto('/')
-  await expect(page).toHaveURL('http://localhost:3000')
+  await assertIndexPage(page)
   await page.goto('/example-project-01/invalid')
   await expect(page).toHaveURL('http://localhost:3000/example-project-01/invalid')
 
@@ -70,7 +71,7 @@ test('Requesting invalid versions must be handled properly with manual redirect'
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
-  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+  await assertIndexPage(page, { timeout: 1000 })
 })
 
 test('Requesting non existing project must be handled properly', async ({ page }) => {
@@ -83,7 +84,7 @@ test('Requesting non existing project must be handled properly', async ({ page }
     })
   )
   await page.goto('/')
-  await expect(page).toHaveURL('http://localhost:3000')
+  await assertIndexPage(page)
   await page.goto('/non-existing-project')
   await expect(page).toHaveURL('http://localhost:3000/non-existing-project')
 
@@ -97,7 +98,7 @@ test('Requesting non existing project must be handled properly', async ({ page }
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
-  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+  await assertIndexPage(page, { timeout: 1000 })
 })
 
 test('Requesting non existing version must be handled properly', async ({ page }) => {
@@ -111,7 +112,7 @@ test('Requesting non existing version must be handled properly', async ({ page }
     })
   )
   await page.goto('/')
-  await expect(page).toHaveURL('http://localhost:3000')
+  await assertIndexPage(page)
   await page.goto('/example-project-01/1')
   await expect(page).toHaveURL('http://localhost:3000/example-project-01/1')
 
@@ -123,5 +124,5 @@ test('Requesting non existing version must be handled properly', async ({ page }
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
 
   // User must be redirected to previous page
-  await expect(page).toHaveURL('http://localhost:3000', { timeout: 2000 })
+  await assertIndexPage(page, { timeout: 1000 })
 })

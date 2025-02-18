@@ -5,6 +5,17 @@ import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
 
 /**
+ * Expects that the index/home page is visible including all project cards.
+ *
+ * @param page The playwright page object.
+ * @param options The optional playwright options.
+ */
+export const assertIndexPage = async (page: Page, options?: { timeout?: number }) => {
+  await expect(page).toHaveURL('http://localhost:3000', { timeout: options?.timeout })
+  await expect(page.getByTestId(testIDs.landingPage.projectCard.main)).toHaveCount(3)
+}
+
+/**
  * Closes the settings sidebar if it is open and compare the color schemes of the main app and the embedded iframe.
  *
  * @param page The playwright page object.
