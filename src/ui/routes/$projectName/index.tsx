@@ -2,7 +2,6 @@ import { useMemo, useCallback } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../helpers/APIFunctions'
-import globalStore from '../../helpers/GlobalStore'
 import { groupVersionsByMajorVersion } from '../../helpers/Versions'
 import { Typography, Container, Chip, Stack, Card, Grid2, Box, CardContent } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
@@ -14,13 +13,6 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 export const Route = createFileRoute('/$projectName/')({
   component: ProjectVersionsOverview,
   loader: async ({ params: { projectName } }) => {
-    globalStore.setState((state) => {
-      return {
-        ...state,
-        projectVersions: null,
-        currentVersion: null,
-      }
-    })
     return fetchProjectVersions(projectName)
   },
   pendingComponent: LoadingSpinner,

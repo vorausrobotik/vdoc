@@ -3,8 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useRouter, useLocation } from '@tanstack/react-router'
 import { useColorScheme } from '@mui/material'
-import { fetchProjectVersion, fetchProjectVersions } from '../../helpers/APIFunctions'
-import globalStore from '../../helpers/GlobalStore'
+import { fetchProjectVersion } from '../../helpers/APIFunctions'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
@@ -13,30 +12,19 @@ import ErrorComponent from '../../components/ErrorComponent'
 import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
 
-const fetchProjectDetailsAndSetStore = async (projectName: string, version: string): Promise<[string, string]> => {
-  // Check if the requested version is available
+const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<[string, string]> => {
+  // Check if requested version is available. If not, the loader throws an error and the error component is shown
   await fetchProjectVersion(projectName, version)
 
-  // Fetch more information
-  const [versions, latestVersion] = await Promise.all([
-    fetchProjectVersions(projectName),
-    fetchProjectVersion(projectName, 'latest'),
-  ])
+  const latestVersion = await fetchProjectVersion(projectName, 'latest')
 
-  globalStore.setState((state) => ({
-    ...state,
-    projectName,
-    projectVersions: versions,
-    currentVersion: version,
-    latestVersion,
-  }))
   return [version, latestVersion]
 }
 
 export const Route = createFileRoute('/$projectName/$version/$')({
   component: DocumentationComponent,
   loader: async ({ params: { projectName, version } }) => {
-    return fetchProjectDetailsAndSetStore(projectName, version)
+    return fetchVersionAndLatestVersion(projectName, version)
   },
   pendingComponent: LoadingSpinner,
   errorComponent: ({ error }) => {
@@ -82,7 +70,6 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   const [loaded, setLoaded] = useState<boolean>(false)
   const [iframeKey, setIframeKey] = useState<string>(crypto.randomUUID())
   const { mode, systemMode } = useColorScheme()
-
   useEffect(() => {
     if (iframeRef.current && loaded) {
       const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
