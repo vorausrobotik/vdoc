@@ -1,11 +1,11 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, Typography } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import testIDs from './interfacesAndTypes/testIDs'
+import { fetchProjectVersions, fetchProjectVersion } from './helpers/APIFunctions'
+import { LinkButton } from './interfacesAndTypes/LinkButton'
 
-import { useStore } from '@tanstack/react-store'
-import globalStore from './helpers/GlobalStore'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import VersionDropdown from './components/VersionDropdown'
 
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
@@ -13,10 +13,28 @@ import SettingsSidebar from './components/SettingsSidebar'
 
 export default function MenuBar() {
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
-  const projectVersions = useStore(globalStore, (state) => state['projectVersions'])
-  const currentVersion = useStore(globalStore, (state) => state['currentVersion'])
-  const latestVersion = useStore(globalStore, (state) => state['latestVersion'])
+  const params = useParams({ strict: false })
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const [projectName, setProjectName] = useState<string | undefined>(undefined)
+  const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
+  const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    const fetchData = async (name: string): Promise<[string[], string]> => {
+      return await Promise.all([fetchProjectVersions(name), fetchProjectVersion(name, 'latest')])
+    }
+    if (params.projectName) {
+      fetchData(params.projectName).then(([versions, latestVersion]) => {
+        setProjectName(params.projectName)
+        setProjectVersions(versions)
+        setLatestVersion(latestVersion)
+      })
+    } else {
+      setProjectVersions(undefined)
+      setLatestVersion(undefined)
+    }
+  }, [params, projectName])
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
@@ -54,10 +72,10 @@ export default function MenuBar() {
         </Box>
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
 
-        {projectVersions && latestVersion && projectVersions && (
+        {projectVersions && latestVersion && params.version && (
           <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
             <VersionDropdown
-              selectedVersion={currentVersion ?? 'latest'}
+              selectedVersion={params.version ?? 'latest'}
               latestVersion={latestVersion}
               versions={projectVersions}
               onVersionChange={handleVersionSelectChange}
