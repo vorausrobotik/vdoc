@@ -90,7 +90,8 @@ class Project(BaseModel):
                 parsed_version = Version(version)
             except PackagingInvalidVersion as error:
                 raise InvalidVersion(version=version) from error
-            if parsed_version not in project.versions:
+            # Version("1") == Version("1.0.0") validates to True, comparing the plain public string mitigates this issue
+            if parsed_version.public not in map(lambda version: version.public, project.versions):
                 raise ProjectVersionNotFound(name=name, version=parsed_version)
 
         return parsed_version, project._base_path / str(
