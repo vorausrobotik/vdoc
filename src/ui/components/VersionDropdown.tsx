@@ -47,7 +47,7 @@ export default function VersionDropdown({
                   {renderVersion(version)}
                 </MenuItem>
               ))
-          : null}{' '}
+          : null}
         {numVersions && numVersions > numVersionsPreview && (
           <MenuItem key="more" value="more" data-testid={testIDs.header.versionDropdown.moreItem}>
             ...more
