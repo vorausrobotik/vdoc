@@ -36,7 +36,15 @@ export default function MenuBar() {
       <Toolbar>
         {/* Logo with Text */}
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2 }}>
-          <IconButton aria-label="delete" href={'/'}>
+          <IconButton
+            LinkComponent={LinkButton}
+            href="/"
+            onClick={() =>
+              navigate({
+                to: '/',
+              })
+            }
+          >
             <VDocLogo height={50} width={50} viewBox="0 0 100 100" />
           </IconButton>
 
