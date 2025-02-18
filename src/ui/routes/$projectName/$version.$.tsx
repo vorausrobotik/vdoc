@@ -70,35 +70,44 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
   const [loaded, setLoaded] = useState<boolean>(false)
   const [iframeKey, setIframeKey] = useState<string>(crypto.randomUUID())
   const { mode, systemMode } = useColorScheme()
+
   useEffect(() => {
+    /**
+     * Sanitizes and replaces all hyperlinks in the documentation iframe.
+     *
+     * @param iframeDocument The iframe document object.
+     */
+    const replaceIFrameLinks = (iframeDocument: Document) => {
+      const anchorElements = iframeDocument.querySelectorAll('a')
+      anchorElements.forEach((anchor) => {
+        const href = anchor.getAttribute('href')
+        if (href) {
+          const result = sanitizeDocuUri(href, window.location.origin, name, version)
+          const params = {
+            projectName: result.project ?? name,
+            version: result.version ?? version,
+            _splat: result.remainder,
+          }
+          anchor.href = result.href
+          anchor.addEventListener('click', (event) => {
+            if (result.isInternal) {
+              event.preventDefault()
+              router.navigate({
+                to: '/$projectName/$version/$',
+                from: '/$projectName/$version/$',
+                params: params,
+              })
+            } else {
+              anchor.target = 'blank'
+            }
+          })
+        }
+      })
+    }
     if (iframeRef.current && loaded) {
       const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
       if (iframeDocument) {
-        const anchorElements = iframeDocument.querySelectorAll('a')
-        anchorElements.forEach((anchor) => {
-          const href = anchor.getAttribute('href')
-          if (href) {
-            const result = sanitizeDocuUri(href, window.location.origin, name, version)
-            const params = {
-              projectName: result.project ?? name,
-              version: result.version ?? version,
-              _splat: result.remainder,
-            }
-            anchor.href = result.href
-            anchor.addEventListener('click', (event) => {
-              if (result.isInternal) {
-                event.preventDefault()
-                router.navigate({
-                  to: '/$projectName/$version/$',
-                  from: '/$projectName/$version/$',
-                  params: params,
-                })
-              } else {
-                anchor.target = 'blank'
-              }
-            })
-          }
-        })
+        replaceIFrameLinks(iframeDocument)
       }
     }
   }, [router, loaded, name, version])
