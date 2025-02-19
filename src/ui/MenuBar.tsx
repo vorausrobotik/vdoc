@@ -1,4 +1,4 @@
-import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, Typography } from '@mui/material'
+import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
 import { useState, useEffect } from 'react'
 import testIDs from './interfacesAndTypes/testIDs'
@@ -65,10 +65,6 @@ export default function MenuBar() {
           >
             <VDocLogo height={50} width={50} viewBox="0 0 100 100" />
           </IconButton>
-
-          <Typography variant="h6" component="div">
-            VDoc
-          </Typography>
         </Box>
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
 
