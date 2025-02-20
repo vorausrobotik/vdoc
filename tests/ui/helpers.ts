@@ -5,6 +5,22 @@ import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
 
 /**
+ * Expects the given hyperlinks to be visible on the page in the given order.
+ *
+ * @param locator The playwright locator that must include the expected links.
+ * @param links The expected links to be visible on the page.
+ *
+ * @returns The link locators.
+ */
+export const assertLinksOnPage = async (locator: Locator, links: string[]): Promise<Locator> => {
+  const availableLinks = locator.getByRole('link')
+  await expect(availableLinks).toHaveCount(links.length)
+  const actualLinks = await availableLinks.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
+  expect(actualLinks).toStrictEqual(links)
+  return availableLinks
+}
+
+/**
  * Expects that the index/home page is visible including all project cards.
  *
  * @param page The playwright page object.
