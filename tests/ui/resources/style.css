@@ -1,0 +1,17 @@
+.light {
+    background-color: rgb(227, 242, 253);
+    color: black;
+}
+
+.light a {
+    color: blue;
+}
+
+.dark {
+    background-color: rgb(18, 18, 18);
+    color: white;
+}
+
+.dark a {
+    color: lightblue;
+}
