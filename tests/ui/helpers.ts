@@ -138,6 +138,8 @@ export const openProjectDocumentation = async (page: Page, name: string, version
 
   await page.goto(`/${name}/${version}`)
 
+  await expect(page).toHaveURL(`http://localhost:3000/${name}/${version}`)
+
   await expect(docIframe).toBeVisible({ timeout: 10000 })
 
   await docIframe.waitFor({ state: 'attached' })
