@@ -106,7 +106,6 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
     }
 
     const checkForErrors = (iframeDocument: Document) => {
-      console.log(iframeDocument.body.innerHTML)
       if (iframeDocument.body.innerText === '{"detail":"Not Found"}') {
         throw new Error("Whoops! This page doesn't seem to exist...")
       }
