@@ -26,8 +26,12 @@ export const prepareTestSuite = async (
 export const mockAPIRequests = async (page: Page) => {
   const routes = [
     {
-      pattern: '*/**/static/projects/*/*/',
+      pattern: '*/**/static/projects/**/*',
       response: { body: fs.readFileSync(path.resolve('tests/ui/resources/mockedIndex.html')) },
+    },
+    {
+      pattern: '*/**/static/projects/**/examples.html',
+      response: { body: fs.readFileSync(path.resolve('tests/ui/resources/mockedExamples.html')) },
     },
     {
       pattern: '*/**/static/projects/**/style.css',

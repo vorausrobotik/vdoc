@@ -6,9 +6,9 @@ import { useColorScheme } from '@mui/material'
 import { fetchProjectVersion } from '../../helpers/APIFunctions'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
-import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
 import testIDs from '../../interfacesAndTypes/testIDs'
 import ErrorComponent from '../../components/ErrorComponent'
+import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
 import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
 
@@ -73,34 +73,30 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
 
   useEffect(() => {
     /**
-     * Sanitizes and replaces all hyperlinks in the documentation iframe.
+     * Propagates the iframe navigation events to the tanstack router.
      *
      * @param iframeDocument The iframe document object.
      */
-    const replaceIFrameLinks = (iframeDocument: Document) => {
+    const setupIframeNavigation = (iframeDocument: Document) => {
       const anchorElements = iframeDocument.querySelectorAll('a')
+
       anchorElements.forEach((anchor) => {
-        const href = anchor.getAttribute('href')
-        if (href) {
-          const result = sanitizeDocuUri(href, window.location.origin, name, version)
-          const params = {
-            projectName: result.project ?? name,
-            version: result.version ?? version,
-            _splat: result.remainder,
-          }
-          anchor.href = result.href
+        if (!anchor.href) return
+        if (anchor.origin === window.location.origin) {
+          const params = sanitizeDocuUri(anchor.href, window.location.origin, name, version)
+          anchor.pathname = anchor.pathname.replace('/static/projects', '').replace(`/${latestVersion}/`, '/latest/')
           anchor.addEventListener('click', (event) => {
-            if (result.isInternal) {
-              event.preventDefault()
-              router.navigate({
-                to: '/$projectName/$version/$',
-                from: '/$projectName/$version/$',
-                params: params,
-              })
-            } else {
-              anchor.target = 'blank'
-            }
+            event.preventDefault()
+            router.navigate({
+              to: '/$projectName/$version/$',
+              from: '/$projectName/$version/$',
+              params: params,
+            })
           })
+        } else {
+          // External links open in a new tab
+          anchor.setAttribute('target', '_blank')
+          anchor.setAttribute('rel', 'noopener noreferrer')
         }
       })
     }
@@ -113,11 +109,11 @@ function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
     if (iframeRef.current && loaded) {
       const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
       if (iframeDocument) {
-        replaceIFrameLinks(iframeDocument)
         checkForErrors(iframeDocument)
+        setupIframeNavigation(iframeDocument)
       }
     }
-  }, [router, loaded, name, version])
+  }, [router, loaded, name, version, latestVersion])
 
   useEffect(() => {
     const resultingMode = mode === 'system' ? systemMode : mode

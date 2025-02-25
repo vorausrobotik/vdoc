@@ -2,7 +2,7 @@ import { expect, test, describe } from 'vitest'
 import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
 
 describe('sanitizeDocuUri', () => {
-  test('sanitizes uris as expected', () => {
+  test('sanitizes valid uris as expected', () => {
     const basePath = 'http://localhost:8080'
     const testData = [
       {
@@ -12,10 +12,9 @@ describe('sanitizeDocuUri', () => {
           projectVersion: '6.0',
         },
         expected: {
-          isInternal: true,
-          project: 'project-one',
-          remainder: 'index.html#',
+          projectName: 'project-one',
           version: '6.0',
+          _splat: 'index.html#',
           href: `${basePath}/project-one/6.0/index.html#`,
         },
       },
@@ -26,10 +25,9 @@ describe('sanitizeDocuUri', () => {
           projectVersion: '1.3.0',
         },
         expected: {
-          isInternal: true,
-          project: 'meta-project',
-          remainder: '#',
+          projectName: 'meta-project',
           version: '1.3.0',
+          _splat: '#',
           href: `${basePath}/meta-project/1.3.0/#`,
         },
       },
@@ -40,10 +38,9 @@ describe('sanitizeDocuUri', () => {
           projectVersion: '1.3.0',
         },
         expected: {
-          isInternal: true,
-          project: 'meta-project',
-          remainder: undefined,
+          projectName: 'meta-project',
           version: '1.3.0',
+          _splat: '',
           href: `${basePath}/meta-project/1.3.0`,
         },
       },
@@ -54,10 +51,9 @@ describe('sanitizeDocuUri', () => {
           projectVersion: 'latest',
         },
         expected: {
-          isInternal: true,
-          project: 'project-one',
-          remainder: 'examples.html#examples',
+          projectName: 'project-one',
           version: 'latest',
+          _splat: 'examples.html#examples',
           href: `${basePath}/project-one/latest/examples.html#examples`,
         },
       },
@@ -68,27 +64,22 @@ describe('sanitizeDocuUri', () => {
           projectVersion: 'latest',
         },
         expected: {
-          isInternal: true,
-          project: 'project-one',
-          remainder: 'examples.html#examples',
+          projectName: 'project-one',
           version: 'latest',
+          _splat: 'examples.html#examples',
           href: `${basePath}/project-one/latest/examples.html#examples`,
-        },
-      },
-      {
-        input: {
-          href: 'https://www.sphinx-doc.org/',
-          projectName: 'example-project',
-          projectVersion: "doesn't matter",
-        },
-        expected: {
-          isInternal: false,
-          href: 'https://www.sphinx-doc.org/',
         },
       },
     ]
     testData.forEach(({ input, expected }) => {
       expect(sanitizeDocuUri(input.href, basePath, input.projectName, input.projectVersion)).toStrictEqual(expected)
+    })
+  })
+  test('sanitizing invalid or external uris must throw errors', () => {
+    const basePath = 'http://localhost:8080'
+    const testData = ['https://google.com', 'http://localhost:9000']
+    testData.forEach((href) => {
+      expect(() => sanitizeDocuUri(href, basePath, '', '')).toThrowError(`Unable to sanitize doc URI ${href}`)
     })
   })
 })
