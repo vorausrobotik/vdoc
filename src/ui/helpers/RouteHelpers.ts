@@ -1,8 +1,7 @@
 export interface SanitizeDocUriResI {
-  project?: string
-  version?: string
-  remainder?: string
-  isInternal: boolean
+  projectName: string
+  version: string
+  _splat: string
   href: string
 }
 export const sanitizeDocuUri = (
@@ -21,14 +20,15 @@ export const sanitizeDocuUri = (
     String.raw`^${escapedBasePath}(?:\/static)?(?:\/projects)?\/(?<name>[^\/]+)\/(?<version>[^\/#?\n]+)(?:\/(?<remainder>.*?))?(?:\n|$)`
   )
   const match = href.match(re)
-  if (match && match.groups) {
-    const { name, version, remainder } = match.groups
-    const url = new URL(`${name}/${version}${remainder ? `/${remainder}` : ''}`, basePath)
-    return { project: name, version, remainder, isInternal: true, href: url.href }
-  } else if (!href.startsWith('http')) {
-    const url = new URL(`${projectName}/${projectVersion}/${href}`, basePath)
-    return { remainder: href, isInternal: true, href: url.href }
-  } else {
-    return { isInternal: false, href: href }
+
+  if (!match?.groups) {
+    throw new Error(`Unable to sanitize doc URI ${href}`)
+  }
+  const remainder = match.groups.remainder || ''
+  return {
+    projectName: projectName,
+    version: projectVersion,
+    _splat: remainder,
+    href: `${basePath}/${projectName}/${projectVersion}${remainder ? `/${remainder}` : ''}`,
   }
 }
