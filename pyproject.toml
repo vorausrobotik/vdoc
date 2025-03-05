@@ -122,3 +122,6 @@ module = [
     "sphinxawesome_theme.postprocess",
 ]
 ignore_missing_imports = true
+
+[tool.doc8]
+max-line-length = 120
