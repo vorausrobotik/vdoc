@@ -46,7 +46,7 @@ def get_project_version_impl(name: str, version: str) -> str:
         The requested version of the project.
     """
     parsed_version, _ = Project.get_version_and_docs_path(name=name, version=version)
-    return str(parsed_version)
+    return parsed_version
 
 
 def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JSONResponse:
