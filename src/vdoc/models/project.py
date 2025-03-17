@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from pathlib import Path
-from typing import List
+from typing import Dict
 
 from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
@@ -66,7 +66,7 @@ class Project(BaseModel):
         return sorted(projects, key=lambda project: project.name)
 
     @classmethod
-    def get_version_and_docs_path(cls, name: str, version: str) -> tuple[Version, Path]:
+    def get_version_and_docs_path(cls, name: str, version: str) -> tuple[str, Path]:
         """Returns the validated version and the path containing the documentation.
 
         Args:
@@ -82,24 +82,24 @@ class Project(BaseModel):
             The validated version and the path containing the documentation.
         """
         project = Project(name=name)
+        return_version: str
 
         if version == "latest":
-            parsed_version = project.latest
+            return_version = project.latest
         else:
             try:
                 parsed_version = Version(version)
+                return_version = version
             except PackagingInvalidVersion as error:
                 raise InvalidVersion(version=version) from error
             # Version("1") == Version("1.0.0") validates to True, comparing the plain public string mitigates this issue
             if parsed_version.public not in map(lambda version: version.public, project.versions):
                 raise ProjectVersionNotFound(name=name, version=parsed_version)
 
-        return parsed_version, project._base_path / str(
-            parsed_version
-        )  # Path existence is validated at object construction
+        return return_version, project._base_path / return_version  # Path existence is validated at object construction
 
     @property
-    def versions(self) -> List[Version]:
+    def versions(self) -> Dict[Version, str]:
         """Returns a list of all available project versions.
 
         Raises:
@@ -109,13 +109,19 @@ class Project(BaseModel):
             A list of all versions of the project.
         """
         versions = self._base_path.glob("[!.]*")  # Path existence is validated at object construction
-        return sorted([Version(path.name) for path in versions if path.is_dir()])
+        parsed_versions: Dict[Version, str] = {}
+        for path in versions:
+            if not path.is_dir():
+                continue
+            parsed_versions[Version(path.name)] = path.name
+
+        return dict(sorted(parsed_versions.items()))
 
     @property
-    def latest(self) -> Version:
+    def latest(self) -> str:
         """Returns the latest version available of the project.
 
         Returns:
             _description_
         """
-        return max(self.versions)
+        return self.versions[max(self.versions.keys())]

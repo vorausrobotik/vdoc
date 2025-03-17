@@ -16,28 +16,25 @@ def test_list_projects(dummy_projects_dir: Path) -> None:  # pylint: disable=unu
 
 
 def test_list_project_versions(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
-    assert Project(name="dummy-project-01").versions == [
-        Version("0.0.1"),
-        Version("0.0.2"),
-        Version("0.1.0"),
-        Version("1.0.0"),
-        Version("1.1.0"),
-        Version("2.0.0"),
-    ]
+    assert Project(name="dummy-project-03").versions == {
+        Version("1.0.0"): "1.0.0",
+        Version("1.3.0"): "1.3.0",
+        Version("2.0.0-b0"): "2.0.0-beta",
+    }
 
 
 def test_get_project_latest_version(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
-    assert Project(name="dummy-project-02").latest == Version("6.0.0")
+    assert Project(name="dummy-project-03").latest == "2.0.0-beta"
 
 
 def test_get_version_and_docs_path(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
-    assert (Version("1.0.0"), dummy_projects_dir / "dummy-project-01" / "1.0.0") == Project.get_version_and_docs_path(
+    assert ("1.0.0", dummy_projects_dir / "dummy-project-01" / "1.0.0") == Project.get_version_and_docs_path(
         name="dummy-project-01", version="1.0.0"
     )
 
 
 def test_get_version_and_docs_path_latest(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
-    assert (Version("2.0.0"), dummy_projects_dir / "dummy-project-01" / "2.0.0") == Project.get_version_and_docs_path(
+    assert ("2.0.0", dummy_projects_dir / "dummy-project-01" / "2.0.0") == Project.get_version_and_docs_path(
         name="dummy-project-01", version="latest"
     )
 

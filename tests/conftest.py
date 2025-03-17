@@ -21,7 +21,7 @@ from vdoc.constants import CONFIG_ENV_PREFIX, DEFAULT_API_PASSWORD, DEFAULT_API_
 DUMMY_VERSIONS = (
     ("0.0.1", "0.0.2", "0.1.0", "1.0.0", "1.1.0", "2.0.0"),
     ("6.0", "1.0", "3.6", "5.9.9"),
-    ("1.0.0", "1.3.0"),
+    ("1.0.0", "1.3.0", "2.0.0-beta"),
 )
 
 DUMMY_DOCS_STRUCTURE = {
