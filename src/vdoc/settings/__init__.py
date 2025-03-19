@@ -24,3 +24,5 @@ class VDocSettings(BaseSettings):
     api_password: bytes = DEFAULT_API_PASSWORD
     bind_address: str = DEFAULT_BIND_ADDRESS
     bind_port: int = DEFAULT_BIND_PORT
+
+    project_display_name_mapping: dict[str, str] = {}

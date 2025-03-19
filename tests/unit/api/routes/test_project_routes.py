@@ -1,5 +1,6 @@
 """Contains all unit tests for the projects REST API."""
 
+import os
 import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -12,12 +13,17 @@ from vdoc.exceptions import ProjectVersionNotFound
 from vdoc.models.project import Project
 
 
+@patch.dict(os.environ, {"VDOC_PROJECT_DISPLAY_NAME_MAPPING": '{"dummy-project-01": "Dummy Project 01"}'})
 @patch("vdoc.api.routes.projects.list_projects_impl")
 def test_list_projects_route(list_projects_impl_mock: MagicMock, dummy_projects_dir: Path, api: TestClient) -> None:
     mocked_projects = Project.list(search_path=dummy_projects_dir)
     list_projects_impl_mock.return_value = mocked_projects
     response = api.get("/api/projects/")
-    assert response.json() == [{"name": "dummy-project-01"}, {"name": "dummy-project-02"}, {"name": "dummy-project-03"}]
+    assert response.json() == [
+        {"name": "dummy-project-01", "display_name": "Dummy Project 01"},
+        {"name": "dummy-project-02", "display_name": "dummy-project-02"},
+        {"name": "dummy-project-03", "display_name": "dummy-project-03"},
+    ]
     list_projects_impl_mock.assert_called_once_with()
 
 

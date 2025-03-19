@@ -1,6 +1,8 @@
 """Contains all tests for the project models."""
 
+import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from packaging.version import Version
@@ -8,6 +10,12 @@ from packaging.version import Version
 from tests.conftest import DUMMY_DOCS_STRUCTURE
 from vdoc.exceptions import InvalidVersion, ProjectVersionNotFound
 from vdoc.models.project import Project
+
+
+@patch.dict(os.environ, {"VDOC_PROJECT_DISPLAY_NAME_MAPPING": '{"dummy-project-01": "Dummy Project 01"}'})
+def test_project_display_name(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
+    assert Project(name="dummy-project-01").display_name == "Dummy Project 01"
+    assert Project(name="dummy-project-02").display_name == "dummy-project-02"
 
 
 def test_list_projects(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
