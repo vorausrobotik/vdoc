@@ -8,7 +8,7 @@ from typing import Dict
 
 from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, computed_field, field_validator
 
 from vdoc.exceptions import InvalidVersion, ProjectNotFound, ProjectVersionNotFound
 from vdoc.settings import VDocSettings
@@ -97,6 +97,17 @@ class Project(BaseModel):
                 raise ProjectVersionNotFound(name=name, version=parsed_version)
 
         return return_version, project._base_path / return_version  # Path existence is validated at object construction
+
+    @computed_field  # type: ignore[prop-decorator]  # https://docs.pydantic.dev/2.0/usage/computed_fields/
+    @cached_property
+    def display_name(self) -> str:
+        """Returns the display name of the project if configured, otherwise the project name.
+
+        Returns:
+            str: The project display name.
+        """
+        settings = VDocSettings()
+        return settings.project_display_name_mapping.get(self.name, self.name)
 
     @property
     def versions(self) -> Dict[Version, str]:

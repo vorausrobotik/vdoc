@@ -100,3 +100,6 @@ All configuration environment variables are prefixed with ``VDOC_``:
    * - ``VDOC_BIND_ADDRESS``
      - The application bind port.
      - ``8080``
+   * - ``VDOC_PROJECT_DISPLAY_NAME_MAPPING``
+     - An optional mapping (dictionary) of project names to display names.
+     - ``{}``

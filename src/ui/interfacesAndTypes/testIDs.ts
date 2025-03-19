@@ -30,6 +30,7 @@ export const testIDs = {
     main: 'landingPage',
     projectCard: {
       main: 'landingPage.projectCard',
+      title: 'landingPage.projectCard.title',
       actions: {
         main: 'landingPage.projectCard.actions',
         documentationLink: 'landingPage.projectCard.actions.openDocumentation',

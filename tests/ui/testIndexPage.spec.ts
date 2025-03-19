@@ -14,7 +14,11 @@ test('Test navigation index to documentation to version overview', async ({ page
   const latestVersionWarningBanner = page.getByTestId(testIDs.project.documentation.latestVersionWarningBanner)
 
   // Expect three projects on the main page with links to the docs
-  await expect(projectCards).toHaveCount(3)
+  const expectedDisplayNames = ['Example Project 01', 'example-project-02', 'example-project-03']
+  await expect(projectCards).toHaveCount(expectedDisplayNames.length)
+  for (const [index, value] of expectedDisplayNames.entries()) {
+    await expect(projectCards.nth(index).getByTestId(testIDs.landingPage.projectCard.title)).toContainText(value)
+  }
   await expect(versionDropdown).not.toBeVisible()
   await expect(docIframe).not.toBeVisible()
   const documentationButton = projectCards.nth(0).getByTestId(testIDs.landingPage.projectCard.actions.documentationLink)
