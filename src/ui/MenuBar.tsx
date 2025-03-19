@@ -1,4 +1,4 @@
-import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent } from '@mui/material'
+import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme } from '@mui/material'
 import VDocLogo from './icons/VDocLogo'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from './interfacesAndTypes/testIDs'
@@ -14,6 +14,7 @@ import SettingsSidebar from './components/SettingsSidebar'
 export default function MenuBar() {
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
   const params = useParams({ strict: false })
+  const theme = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
@@ -65,7 +66,14 @@ export default function MenuBar() {
   }, [params.version, projectVersions])
 
   return (
-    <AppBar position="static" data-testid={testIDs.header.main}>
+    <AppBar
+      position="static"
+      data-testid={testIDs.header.main}
+      sx={{
+        background: theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.default,
+      }}
+      elevation={0}
+    >
       <Toolbar>
         {/* Logo with Text */}
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2 }}>

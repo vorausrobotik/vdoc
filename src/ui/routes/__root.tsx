@@ -2,7 +2,6 @@ import { createRootRoute, Outlet } from '@tanstack/react-router'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import MenuBar from '../MenuBar'
 import { Box, CssBaseline, ThemeProvider, createTheme, useColorScheme } from '@mui/material'
-
 const theme = createTheme({
   colorSchemes: {
     light: true,
