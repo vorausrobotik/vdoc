@@ -99,13 +99,13 @@ interface ColorModeProps {
 
 export const themes: Pick<Record<ColorMode, ColorModeProps>, 'light' | 'dark'> = {
   dark: {
-    appBarColor: 'rgb(18, 18, 18)',
+    appBarColor: 'rgba(0, 0, 0, 0)',
     backgroundColor: 'rgb(18, 18, 18)',
     errorColor: 'rgb(214, 17, 22)',
     successColor: 'rgb(102, 187, 106)',
   },
   light: {
-    appBarColor: 'rgb(25, 118, 210)',
+    appBarColor: 'rgb(255, 255, 255)',
     backgroundColor: 'rgb(227, 242, 253)',
     errorColor: 'rgb(211, 47, 47)',
     successColor: 'rgb(46, 125, 50)',
