@@ -100,6 +100,12 @@ All configuration environment variables are prefixed with ``VDOC_``:
    * - ``VDOC_BIND_ADDRESS``
      - The application bind port.
      - ``8080``
+   * - ``VDOC_LOGO_LIGHT_URL``
+     - The URL to the light logo.
+     - ``https://logos.vorausrobotik.com/v_rgb.png``
+   * - ``VDOC_LOGO_DARK_URL``
+     - The URL to the dark logo.
+     - ``https://logos.vorausrobotik.com/v_rgb.png``
    * - ``VDOC_PROJECT_DISPLAY_NAME_MAPPING``
      - An optional mapping (dictionary) of project names to display names.
      - ``{}``

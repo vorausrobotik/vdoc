@@ -1,15 +1,14 @@
-import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme } from '@mui/material'
-import VDocLogo from './icons/VDocLogo'
+import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from './interfacesAndTypes/testIDs'
-import { fetchProjectVersions, fetchProjectVersion } from './helpers/APIFunctions'
-import { LinkButton } from './interfacesAndTypes/LinkButton'
+import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL } from './helpers/APIFunctions'
 
 import { useNavigate, useParams } from '@tanstack/react-router'
 import VersionDropdown from './components/VersionDropdown'
 
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SettingsSidebar from './components/SettingsSidebar'
+import { EffectiveColorMode } from './interfacesAndTypes/ColorModes'
 
 export default function MenuBar() {
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
@@ -18,8 +17,17 @@ export default function MenuBar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
+  const [logoUrl, setLogoUrl] = useState<string | null | undefined>(null)
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    const fetchData = async (mode: EffectiveColorMode): Promise<string | null> => {
+      return await fetchLogoURL(mode)
+    }
+    fetchData(theme.palette.mode).then((url) => {
+      setLogoUrl(url)
+    })
+  }, [theme])
 
   useEffect(() => {
     const fetchData = async (name: string): Promise<[string[], string]> => {
@@ -76,19 +84,25 @@ export default function MenuBar() {
     >
       <Toolbar>
         {/* Logo with Text */}
-        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2 }}>
-          <IconButton
-            LinkComponent={LinkButton}
-            href="/"
+        {logoUrl !== undefined && (
+          <Box
+            sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
+            component="a"
             onClick={() =>
               navigate({
                 to: '/',
               })
             }
           >
-            <VDocLogo height={50} width={50} viewBox="0 0 100 100" />
-          </IconButton>
-        </Box>
+            {logoUrl !== null ? (
+              <img src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
+            ) : (
+              <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                vdoc
+              </Typography>
+            )}
+          </Box>
+        )}
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
 
         {projectVersions && latestVersion && params.version && (
