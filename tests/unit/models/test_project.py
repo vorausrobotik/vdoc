@@ -18,6 +18,18 @@ def test_project_display_name(dummy_projects_dir: Path) -> None:  # pylint: disa
     assert Project(name="dummy-project-02").display_name == "dummy-project-02"
 
 
+@patch.dict(
+    os.environ,
+    {
+        "VDOC_PROJECT_CATEGORIES": '[{"id": 1, "name": "General"}, {"id": 2, "name": "API"}]',
+        "VDOC_PROJECT_CATEGORY_MAPPING": '{"dummy-project-01": "API"}',
+    },
+)
+def test_project_category(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
+    assert Project(name="dummy-project-01").category_id == 2
+    assert Project(name="dummy-project-02").category_id is None
+
+
 def test_list_projects(dummy_projects_dir: Path) -> None:  # pylint: disable=unused-argument
     projects = Project.list()
     assert projects == [Project(name=project_name) for project_name in DUMMY_DOCS_STRUCTURE]

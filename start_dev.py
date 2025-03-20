@@ -20,7 +20,7 @@ def run_vite(port: int = 8090) -> None:
 
 def run_uvicorn(port: int = 8080) -> None:
     """Starts the uvicorn development server on the given port."""
-    uvicorn_run(app="vdoc.api:app", host="localhost", port=port, reload=True)
+    uvicorn_run(app="vdoc.api:app", host="localhost", port=port, reload=True, env_file=".env")
 
 
 def main() -> None:
