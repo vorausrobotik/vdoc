@@ -79,33 +79,41 @@ All configuration environment variables are prefixed with ``VDOC_``:
 
 
 .. list-table:: VDoc Configuration
-   :widths: 25 50 25
+   :widths: 25 25 25 25
    :header-rows: 1
 
    * - Environment variable
      - Explanation
      - Default
+     - Example
    * - ``VDOC_DOCS_DIR``
      - The directory to which all project documentations will be uploaded.
      - ``/srv/vdoc/docs/``
+     - ``/path/to/your/docs/```
    * - ``VDOC_API_USERNAME``
      - The username required for uploading documentations via the API.
      - ``admin``
+     - ``Something more secure``
    * - ``VDOC_API_PASSWORD``
      - The password required for uploading documentations via the API.
      - ``admin``
+     - ``sup3r_s3cr3t``
    * - ``VDOC_BIND_ADDRESS``
      - The application bind address.
      - ``0.0.0.0``
-   * - ``VDOC_BIND_ADDRESS``
+     - ``127.0.0.1``
+   * - ``VDOC_BIND_PORT``
      - The application bind port.
      - ``8080``
+     - ``1337``
    * - ``VDOC_LOGO_LIGHT_URL``
      - The URL to the light logo.
      - ``https://logos.vorausrobotik.com/v_rgb.png``
+     - ``https://example.com/light-mode-logo.png``
    * - ``VDOC_LOGO_DARK_URL``
      - The URL to the dark logo.
      - ``https://logos.vorausrobotik.com/v_rgb.png``
+     - ``https://example.com/dark-mode-logo.png``
    * - ``VDOC_PROJECT_DISPLAY_NAME_MAPPING``
      - An optional mapping (dictionary) of project names to display names.
      - ``{}``
