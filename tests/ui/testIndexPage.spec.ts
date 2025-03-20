@@ -1,30 +1,33 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import { assertIndexPage } from './helpers'
 
 await prepareTestSuite(test)
 
 test('Test navigation index to documentation to version overview', async ({ page }) => {
   await page.goto('/')
 
-  const projectCards = page.getByTestId(testIDs.landingPage.projectCard.main)
+  await assertIndexPage(page, {
+    categories: {
+      General: [{ name: 'example-project-01', display_name: 'Example Project 01', category_id: 0 }],
+      Misc: [{ name: 'example-project-02', display_name: 'example-project-02', category_id: -1 }],
+    },
+  })
+
+  const projectCards = page.getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main)
   const versionDropdown = page.getByTestId(testIDs.header.versionDropdown.main)
   const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
   const expectedDocumentationContent = 'Hello, this is a mocked documentation component.'
   const latestVersionWarningBanner = page.getByTestId(testIDs.project.documentation.latestVersionWarningBanner)
 
-  // Expect three projects on the main page with links to the docs
-  const expectedDisplayNames = ['Example Project 01', 'example-project-02', 'example-project-03']
-  await expect(projectCards).toHaveCount(expectedDisplayNames.length)
-  for (const [index, value] of expectedDisplayNames.entries()) {
-    await expect(projectCards.nth(index).getByTestId(testIDs.landingPage.projectCard.title)).toContainText(value)
-  }
   await expect(versionDropdown).not.toBeVisible()
   await expect(docIframe).not.toBeVisible()
-  const documentationButton = projectCards.nth(0).getByTestId(testIDs.landingPage.projectCard.actions.documentationLink)
+  const documentationButton = projectCards
+    .nth(0)
+    .getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink)
   await expect(documentationButton).toBeVisible()
   await expect(latestVersionWarningBanner).not.toBeVisible()
-  await expect(documentationButton).toHaveText('Documentation')
 
   // Navigate to the latest documentation of example-project-01
   await documentationButton.click()
@@ -88,6 +91,6 @@ test('Test project overview on no projects', async ({ page }) => {
 
   // Expect the error component to be gone and a list of project cars to be present
   await expect(page.getByTestId(testIDs.errorComponent.main)).not.toBeVisible()
-  const projectCards = page.getByTestId(testIDs.landingPage.projectCard.main)
+  const projectCards = page.getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main)
   await expect(projectCards).toHaveCount(2)
 })
