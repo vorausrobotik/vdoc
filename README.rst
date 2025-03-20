@@ -117,3 +117,12 @@ All configuration environment variables are prefixed with ``VDOC_``:
    * - ``VDOC_PROJECT_DISPLAY_NAME_MAPPING``
      - An optional mapping (dictionary) of project names to display names.
      - ``{}``
+     - ``{"project-01": "Project Name", "project-02": "Another Project Name"}``
+   * - ``VDOC_PROJECT_CATEGORIES``
+     - An optional list of project categories.
+     - ``[]``
+     - ``[{"name": "Category 1", "id": "0"}]``
+   * - ``VDOC_PROJECT_CATEGORY_MAPPING``
+     - An optional list of of project mappings.
+     - ``{}``
+     - ``{"project-01": "Category 1"}``

@@ -109,6 +109,19 @@ class Project(BaseModel):
         settings = VDocSettings()
         return settings.project_display_name_mapping.get(self.name, self.name)
 
+    @computed_field  # type: ignore[prop-decorator]  # https://docs.pydantic.dev/2.0/usage/computed_fields/
+    @cached_property
+    def category_id(self) -> int | None:
+        """Returns the category ID of the project if configured, otherwise None.
+
+        Returns:
+            int | None: The optional project category ID.
+        """
+        settings = VDocSettings()
+        if category_name := settings.project_category_mapping.get(self.name):
+            return next(category.id for category in settings.project_categories if category.name == category_name)
+        return None
+
     @property
     def versions(self) -> Dict[Version, str]:
         """Returns a list of all available project versions.

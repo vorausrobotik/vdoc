@@ -11,6 +11,7 @@ from starlette.requests import Request
 from starlette.responses import FileResponse
 from starlette.routing import BaseRoute
 
+from vdoc.api.routes import project_categories as PROJECT_CATEGORIES_MODULE
 from vdoc.api.routes import projects as PROJECTS_MODULE
 from vdoc.api.routes import settings as SETTINGS_MODULE
 from vdoc.exceptions import VDocException
@@ -48,6 +49,7 @@ app.add_middleware(
 
 app.include_router(PROJECTS_MODULE.router, prefix="/api")
 app.include_router(SETTINGS_MODULE.router, prefix="/api")
+app.include_router(PROJECT_CATEGORIES_MODULE.router, prefix="/api")
 
 
 @app.exception_handler(VDocException)

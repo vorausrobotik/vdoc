@@ -13,16 +13,23 @@ from vdoc.exceptions import ProjectVersionNotFound
 from vdoc.models.project import Project
 
 
-@patch.dict(os.environ, {"VDOC_PROJECT_DISPLAY_NAME_MAPPING": '{"dummy-project-01": "Dummy Project 01"}'})
+@patch.dict(
+    os.environ,
+    {
+        "VDOC_PROJECT_DISPLAY_NAME_MAPPING": '{"dummy-project-01": "Dummy Project 01"}',
+        "VDOC_PROJECT_CATEGORIES": '[{"id": 1, "name": "General"}]',
+        "VDOC_PROJECT_CATEGORY_MAPPING": '{"dummy-project-01": "General"}',
+    },
+)
 @patch("vdoc.api.routes.projects.list_projects_impl")
 def test_list_projects_route(list_projects_impl_mock: MagicMock, dummy_projects_dir: Path, api: TestClient) -> None:
     mocked_projects = Project.list(search_path=dummy_projects_dir)
     list_projects_impl_mock.return_value = mocked_projects
     response = api.get("/api/projects/")
     assert response.json() == [
-        {"name": "dummy-project-01", "display_name": "Dummy Project 01"},
-        {"name": "dummy-project-02", "display_name": "dummy-project-02"},
-        {"name": "dummy-project-03", "display_name": "dummy-project-03"},
+        {"name": "dummy-project-01", "display_name": "Dummy Project 01", "category_id": 1},
+        {"name": "dummy-project-02", "display_name": "dummy-project-02", "category_id": None},
+        {"name": "dummy-project-03", "display_name": "dummy-project-03", "category_id": None},
     ]
     list_projects_impl_mock.assert_called_once_with()
 
