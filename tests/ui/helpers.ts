@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 import type { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import type { Project } from '../../src/ui/interfacesAndTypes/Project'
 import { themes } from './base'
 
 /**
@@ -26,9 +27,45 @@ export const assertLinksOnPage = async (locator: Locator, links: string[]): Prom
  * @param page The playwright page object.
  * @param options The optional playwright options.
  */
-export const assertIndexPage = async (page: Page, options?: { timeout?: number }) => {
+export const assertIndexPage = async (
+  page: Page,
+  options?: { timeout?: number; categories?: Record<string, Project[]> }
+) => {
   await expect(page).toHaveURL('http://localhost:3000', { timeout: options?.timeout })
-  await expect(page.getByTestId(testIDs.landingPage.projectCard.main)).toHaveCount(3)
+  if (options?.categories) {
+    const projectCategories = page.getByTestId(testIDs.landingPage.projectCategories.projectCategory.main)
+
+    // Assert that all categories are visible
+    await expect(projectCategories).toHaveCount(Object.keys(options.categories).length)
+
+    for (const [categoryIndex, [category, projects]] of Object.entries(options.categories).entries()) {
+      // Assert category title
+      await expect(
+        page.getByTestId(testIDs.landingPage.projectCategories.projectCategory.title).nth(categoryIndex)
+      ).toContainText(category)
+
+      const projectCards = projectCategories
+        .nth(categoryIndex)
+        .getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main)
+      for (const [projectIndex, project] of projects.entries()) {
+        // Assert project title
+        await expect(
+          projectCards
+            .nth(projectIndex)
+            .getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.title)
+        ).toContainText(project.display_name)
+
+        // Assert documentation button
+        await expect(
+          projectCards
+            .nth(projectIndex)
+            .getByTestId(
+              testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
+            )
+        ).toBeVisible()
+      }
+    }
+  }
 }
 
 /**

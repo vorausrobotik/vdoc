@@ -1,54 +1,87 @@
+import { useMemo } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
+import { groupProjectsByCategories } from '../helpers/Projects'
 import { Box, Container, Card, CardActions, CardContent, Grid2, Typography } from '@mui/material'
 import testIDs from '../interfacesAndTypes/testIDs'
-import { Project } from '../interfacesAndTypes/Project'
+import { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
 })
 
 function Index() {
-  const projects: Project[] = Route.useLoaderData()
+  const [projects, projectCategories]: [Project[], ProjectCategory[]] = Route.useLoaderData()
+
+  const getGroupedProjects = useMemo(() => {
+    return groupProjectsByCategories(projects, projectCategories)
+  }, [projects, projectCategories])
   return (
     <Container sx={{ mt: 2 }}>
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid2
-          container
-          direction="row"
-          sx={{
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-          }}
-          spacing={2}
-        >
-          {projects.map((project) => (
-            <Grid2 key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
-              <Card sx={{ minHeight: 140 }} data-testid={testIDs.landingPage.projectCard.main}>
-                <CardContent>
-                  <Typography
-                    gutterBottom
-                    sx={{ color: 'text.secondary', fontSize: 14 }}
-                    data-testid={testIDs.landingPage.projectCard.title}
-                  >
-                    {project.display_name}
-                  </Typography>
-                </CardContent>
-                <CardActions data-testid={testIDs.landingPage.projectCard.actions.main}>
-                  <LinkButton
-                    data-testid={testIDs.landingPage.projectCard.actions.documentationLink}
-                    to={`/$projectName/$version/$`}
-                    params={{ projectName: project.name, version: 'latest' }}
-                    size="small"
-                  >
-                    Documentation
-                  </LinkButton>
-                </CardActions>
-              </Card>
-            </Grid2>
-          ))}
-        </Grid2>
-      </Box>
+      {Object.entries(getGroupedProjects)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([category, projects]) => (
+          <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
+            <Typography
+              variant="h6"
+              sx={{ mb: 2, textTransform: 'uppercase' }}
+              data-testid={testIDs.landingPage.projectCategories.projectCategory.title}
+            >
+              {category}
+            </Typography>
+            <Box sx={{ flexGrow: 1 }}>
+              <Grid2
+                container
+                direction="row"
+                sx={{
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                }}
+                spacing={2}
+                data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.main}
+              >
+                {projects.map((project) => (
+                  <IndexProjectCard project={project} />
+                ))}
+              </Grid2>
+            </Box>
+          </Box>
+        ))}
     </Container>
+  )
+}
+
+function IndexProjectCard({ project }: { project: Project }) {
+  return (
+    <Grid2 key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
+      <Card
+        sx={{ minHeight: 120 }}
+        data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main}
+      >
+        <CardContent>
+          <Typography
+            gutterBottom
+            sx={{ color: 'text.secondary', fontSize: 14 }}
+            data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.title}
+          >
+            {project.display_name}
+          </Typography>
+        </CardContent>
+        <CardActions
+          data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.main}
+        >
+          <LinkButton
+            data-testid={
+              testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
+            }
+            to={`/$projectName/$version/$`}
+            params={{ projectName: project.name, version: 'latest' }}
+            size="small"
+          >
+            Documentation
+          </LinkButton>
+        </CardActions>
+      </Card>
+    </Grid2>
   )
 }

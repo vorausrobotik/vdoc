@@ -28,12 +28,23 @@ export const testIDs = {
   },
   landingPage: {
     main: 'landingPage',
-    projectCard: {
-      main: 'landingPage.projectCard',
-      title: 'landingPage.projectCard.title',
-      actions: {
-        main: 'landingPage.projectCard.actions',
-        documentationLink: 'landingPage.projectCard.actions.openDocumentation',
+    projectCategories: {
+      main: 'landingPage.projectCategories',
+      projectCategory: {
+        main: 'landingPage.projectCategories.projectCategory',
+        title: 'landingPage.projectCategories.projectCategory.title',
+        projects: {
+          main: 'landingPage.projectCategories.projectCategory.projects',
+          projectCard: {
+            main: 'landingPage.projectCategories.projectCategory.projects.projectCard',
+            title: 'landingPage.projectCategories.projectCategory.projects.projectCard.title',
+            actions: {
+              main: 'landingPage.projectCategories.projectCategory.projects.projectCard.actions',
+              documentationLink:
+                'landingPage.projectCategories.projectCategory.projects.projectCard.actions.openDocumentation',
+            },
+          },
+        },
       },
     },
   },

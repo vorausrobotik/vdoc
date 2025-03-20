@@ -1,15 +1,15 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { fetchProjects } from '../helpers/APIFunctions'
+import { fetchProjects, fetchProjectCategories } from '../helpers/APIFunctions'
 import ErrorComponent from '../components/ErrorComponent'
 import { SentimentDissatisfied } from '@mui/icons-material'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
-    const projects = await fetchProjects()
+    const [projects, projectCategories] = await Promise.all([fetchProjects(), fetchProjectCategories()])
     if (projects.length === 0) {
       throw new Error('No projects found')
     }
-    return projects
+    return [projects, projectCategories]
   },
   errorComponent: ({ error }) => {
     const ErrorComponentWithRouter = () => {

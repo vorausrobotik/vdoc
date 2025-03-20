@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Project } from '../interfacesAndTypes/Project'
+import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
 export const fetchProjectVersion = async (projectName: string, version: string): Promise<string> => {
@@ -16,4 +16,8 @@ export const fetchProjects = async (): Promise<Project[]> => {
 
 export const fetchLogoURL = async (mode: EffectiveColorMode): Promise<string | null> => {
   return (await axios.get(`/api/settings/logo_url/${mode}`)).data
+}
+
+export const fetchProjectCategories = async (): Promise<ProjectCategory[]> => {
+  return (await axios.get(`/api/project_categories/`)).data
 }
