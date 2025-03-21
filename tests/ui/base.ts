@@ -44,7 +44,10 @@ export const mockAPIRequests = async (page: Page) => {
     {
       pattern: '*/**/api/project_categories/',
       response: {
-        json: [{ id: 0, name: 'General' }],
+        json: [
+          { id: 0, name: 'General' },
+          { id: 1, name: 'Extensions' },
+        ],
       },
     },
     {
@@ -52,7 +55,7 @@ export const mockAPIRequests = async (page: Page) => {
       response: {
         json: [
           { name: 'example-project-01', display_name: 'Example Project 01', category_id: 0 },
-          { name: 'example-project-02', display_name: 'example-project-02', category_id: null },
+          { name: 'example-project-02', display_name: 'example-project-02', category_id: 1 },
           { name: 'example-project-03', display_name: 'example-project-03', category_id: null },
         ],
       },
