@@ -1,7 +1,7 @@
 export interface Project {
   name: string
   display_name: string
-  category_id: number
+  category_id: number | null
 }
 
 export interface ProjectCategory {

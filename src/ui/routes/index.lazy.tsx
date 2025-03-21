@@ -18,35 +18,33 @@ function Index() {
   }, [projects, projectCategories])
   return (
     <Container sx={{ mt: 2 }}>
-      {Object.entries(getGroupedProjects)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([category, projects]) => (
-          <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
-            <Typography
-              variant="h6"
-              sx={{ mb: 2, textTransform: 'uppercase' }}
-              data-testid={testIDs.landingPage.projectCategories.projectCategory.title}
+      {Object.entries(getGroupedProjects).map(([category, projects]) => (
+        <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, textTransform: 'uppercase' }}
+            data-testid={testIDs.landingPage.projectCategories.projectCategory.title}
+          >
+            {category}
+          </Typography>
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid2
+              container
+              direction="row"
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+              }}
+              spacing={2}
+              data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.main}
             >
-              {category}
-            </Typography>
-            <Box sx={{ flexGrow: 1 }}>
-              <Grid2
-                container
-                direction="row"
-                sx={{
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                }}
-                spacing={2}
-                data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.main}
-              >
-                {projects.map((project) => (
-                  <IndexProjectCard project={project} />
-                ))}
-              </Grid2>
-            </Box>
+              {projects.map((project) => (
+                <IndexProjectCard project={project} />
+              ))}
+            </Grid2>
           </Box>
-        ))}
+        </Box>
+      ))}
     </Container>
   )
 }
