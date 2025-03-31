@@ -1,7 +1,7 @@
 import { useState, useEffect, ElementType } from 'react'
 import { AxiosError } from 'axios'
 import { Box, Typography, Button, SvgIcon } from '@mui/material'
-import type { Variant } from '@mui/material/styles/createTypography'
+import type { TypographyVariant } from '@mui/material/styles'
 import { SvgIconProps } from '@mui/material/SvgIcon'
 import { BoxProps } from '@mui/system'
 import testIDs from '../interfacesAndTypes/testIDs'
@@ -13,9 +13,9 @@ interface ErrorComponentVisualProps extends BoxProps {
   timerSeconds?: number
   actionText?: string
   title?: string
-  titleVariant?: Variant
+  titleVariant?: TypographyVariant
   description?: string
-  descriptionVariant?: Variant
+  descriptionVariant?: TypographyVariant
   iconClass: ElementType
   iconColor?: SvgIconColor
   iconFontSize?: number

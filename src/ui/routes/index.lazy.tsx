@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
 import { groupProjectsByCategories } from '../helpers/Projects'
-import { Box, Container, Card, CardActions, CardContent, Grid2, Typography } from '@mui/material'
+import { Box, Container, Card, CardActions, CardContent, Grid, Typography } from '@mui/material'
 import testIDs from '../interfacesAndTypes/testIDs'
 import { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 
@@ -28,7 +28,7 @@ function Index() {
             {category}
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
-            <Grid2
+            <Grid
               container
               direction="row"
               sx={{
@@ -41,7 +41,7 @@ function Index() {
               {projects.map((project) => (
                 <IndexProjectCard project={project} />
               ))}
-            </Grid2>
+            </Grid>
           </Box>
         </Box>
       ))}
@@ -51,7 +51,7 @@ function Index() {
 
 function IndexProjectCard({ project }: { project: Project }) {
   return (
-    <Grid2 key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
+    <Grid key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
       <Card
         sx={{ minHeight: 120 }}
         data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main}
@@ -80,6 +80,6 @@ function IndexProjectCard({ project }: { project: Project }) {
           </LinkButton>
         </CardActions>
       </Card>
-    </Grid2>
+    </Grid>
   )
 }

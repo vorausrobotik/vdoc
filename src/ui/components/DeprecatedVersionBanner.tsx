@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useTheme, Typography, Grid2 } from '@mui/material'
+import { useTheme, Typography, Grid } from '@mui/material'
 import testIDs from '../interfacesAndTypes/testIDs'
 
 interface DeprecatedVersionBannerPropsI {
@@ -15,7 +15,7 @@ export const DeprecatedVersionBanner = ({ name, version }: DeprecatedVersionBann
       style={{ textDecoration: 'none' }}
       data-testid={testIDs.project.documentation.latestVersionWarningBanner}
     >
-      <Grid2
+      <Grid
         container
         direction="row"
         sx={{
@@ -28,7 +28,7 @@ export const DeprecatedVersionBanner = ({ name, version }: DeprecatedVersionBann
           You're currently reading an <b>old version</b> ({version}) of {name}! To view the latest version of the
           documentation, click this banner.
         </Typography>
-      </Grid2>
+      </Grid>
     </Link>
   )
 }
