@@ -3,7 +3,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import { fetchProjectVersions } from '../../helpers/APIFunctions'
 import { groupVersionsByMajorVersion } from '../../helpers/Versions'
-import { Typography, Container, Chip, Stack, Card, Grid2, Box, CardContent } from '@mui/material'
+import { Typography, Container, Chip, Stack, Card, Grid, Box, CardContent } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
 import testIDs from '../../interfacesAndTypes/testIDs'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
@@ -46,11 +46,11 @@ function ProjectVersionsOverview() {
         Version index of {projectName}
       </Typography>
       <Box sx={{ flexGrow: 1 }}>
-        <Grid2 container spacing={2}>
+        <Grid container spacing={2}>
           {Object.keys(groupedVersions)
             .reverse()
             .map((major) => (
-              <Grid2 size={6} key={major}>
+              <Grid size={6} key={major}>
                 <Card key={major} data-testid={testIDs.project.versionOverview.majorVersionCard.main}>
                   <CardContent>
                     <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
@@ -81,9 +81,9 @@ function ProjectVersionsOverview() {
                     </Stack>
                   </CardContent>
                 </Card>
-              </Grid2>
+              </Grid>
             ))}
-        </Grid2>
+        </Grid>
       </Box>
     </Container>
   )
