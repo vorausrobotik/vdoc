@@ -6,7 +6,7 @@
 import { testIDs } from '../interfacesAndTypes/testIDs'
 import axios from 'axios'
 import { useColorScheme } from '@mui/material'
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 
 interface Props {
   src: string
@@ -19,6 +19,15 @@ interface Props {
 export default function IFrame(props: Props) {
   const { colorScheme } = useColorScheme()
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const sourceRef = useRef<string | undefined>(null)
+
+  // This function prevents reloading on same source
+  const setSource = (newSource: string) => {
+    if (sourceRef.current !== newSource) {
+      iframeRef.current?.contentWindow?.location.replace(newSource);
+      sourceRef.current = newSource;
+    }
+  }
 
   const setDarkMode = (mode: "dark" | "light") => {
     iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', colorScheme as 'light' | 'dark')
@@ -70,7 +79,7 @@ export default function IFrame(props: Props) {
 
       // From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
       a.onclick = () => {
-        iframeRef.current?.contentWindow?.location.replace(a.href)
+        setSource(a.href)
         return false
       }
     })
@@ -129,13 +138,16 @@ export default function IFrame(props: Props) {
     props.onTitleChanged(title)
   }
 
+  useEffect(() => {
+    const srcWithOrigin = `${window.location.origin}${props.src}`;
+    setSource(srcWithOrigin);
+  }, [props.src])
 
   return (
     <iframe
       ref={iframeRef}
       data-testid={testIDs.project.documentation.documentationIframe}
       style={{ border: 0, width: '100%', height: '100%' }}
-      src={props.src}
       title="docs"
       onLoad={onIframeLoad}
     />

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, Fragment } from 'react'
+import { useCallback, useMemo, Fragment } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useRouter, useLocation } from '@tanstack/react-router'
@@ -86,19 +86,16 @@ function DocuIFrame(props: DocuIFramePropsI) {
 
   const updateUrl = (name: string, version: string, page: string, hash: string): void => {
     const hashSuffix = hash.trim() !== '' ? `#${hash}` : ''
-    // const toParams = {
-    //   projectName: name,
-    //   version: version,
-    //   _splat: `${page}${hashSuffix}`,
-    // }
-    const url = `/${name}/${version}/${encodeURI(page)}${hashSuffix}`
-    console.log('updateUrl:', url)
-    router.history.push(url)
-    // router.navigate({
-    //   to: '/$projectName/$version/$',
-    //   from: '/$projectName/$version/$',
-    //   params: toParams,
-    // })
+    const toParams = {
+      projectName: name,
+      version: version,
+      _splat: `${page}${hashSuffix}`,
+    }
+    router.navigate({
+      from: '/$projectName/$version/$',
+      to: '/$projectName/$version/$',
+      params: toParams,
+    })
   }
 
   const updateTitle = (newTitle: string): void => {
@@ -112,7 +109,6 @@ function DocuIFrame(props: DocuIFramePropsI) {
     if (urlPage === props.page) {
       return
     }
-    console.log('iFramePageChanged:', urlPage)
     updateUrl(props.name, resolvedVersion.current, urlPage, urlHash)
   }
 
