@@ -17,22 +17,31 @@ interface Props {
 }
 
 export default function IFrame(props: Props) {
-  const { mode, systemMode } = useColorScheme()
-  const [iframeKey, setIFrameKey] = useState<string>(crypto.randomUUID())
+  const { colorScheme } = useColorScheme()
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
-  // // Update documentation's theme
-  // useEffect(() => {
-  //   const resultingMode = mode === 'system' ? systemMode : mode
-  //   iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', resultingMode as 'light' | 'dark')
-  //   setIFrameKey(crypto.randomUUID())
-  // }, [mode, iframeRef, systemMode])
+  const setDarkMode = (mode: "dark" | "light") => {
+    iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', colorScheme as 'light' | 'dark')
+    if (mode === "dark") {
+      iframeRef?.current?.contentDocument?.documentElement?.classList.toggle("dark", true);
+    } else {
+      iframeRef?.current?.contentDocument?.documentElement?.classList.toggle("dark", false);
+    }
+  }
+
+  // Update documentation's theme
+  useEffect(() => {
+    setDarkMode(colorScheme as 'light' | 'dark')
+  }, [colorScheme])
 
   const onIframeLoad = (): void => {
     if (iframeRef.current === null) {
       console.error('iframeRef is null')
       return
     }
+
+    // Apply dark mode
+    setDarkMode(colorScheme as 'light' | 'dark')
 
     // Remove the event listeners to prevent memory leaks
     iframeRef.current.contentWindow?.removeEventListener('hashchange', hashChangeEventListener)
@@ -120,10 +129,10 @@ export default function IFrame(props: Props) {
     props.onTitleChanged(title)
   }
 
+
   return (
     <iframe
       ref={iframeRef}
-      // key={crypto.randomUUID()}
       data-testid={testIDs.project.documentation.documentationIframe}
       style={{ border: 0, width: '100%', height: '100%' }}
       src={props.src}
