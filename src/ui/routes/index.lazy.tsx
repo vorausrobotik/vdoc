@@ -39,7 +39,7 @@ function Index() {
               data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.main}
             >
               {projects.map((project) => (
-                <IndexProjectCard project={project} />
+                <IndexProjectCard key={project.name} project={project} />
               ))}
             </Grid>
           </Box>
@@ -51,7 +51,7 @@ function Index() {
 
 function IndexProjectCard({ project }: { project: Project }) {
   return (
-    <Grid key={project.name} size={{ xs: 6, md: 4, lg: 3 }}>
+    <Grid size={{ xs: 6, md: 4, lg: 3 }}>
       <Card
         sx={{ minHeight: 120 }}
         data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main}
