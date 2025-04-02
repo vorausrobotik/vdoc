@@ -6,7 +6,7 @@
 import { testIDs } from '../interfacesAndTypes/testIDs'
 import axios from 'axios'
 import { useColorScheme } from '@mui/material'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 
 interface Props {
   src: string
@@ -20,21 +20,13 @@ export default function IFrame(props: Props) {
   const { colorScheme } = useColorScheme()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
-
-  // This function prevents reloading on same source
-  const setSource = (newSource: string) => {
-    if (sourceRef.current !== newSource) {
-      iframeRef.current?.contentWindow?.location.replace(newSource);
-      sourceRef.current = newSource;
-    }
-  }
-
-  const setDarkMode = (mode: "dark" | "light") => {
+  const [contentWindow, setContentWindow] = useState<Window | null>()
+  const setDarkMode = (mode: 'dark' | 'light') => {
     iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', colorScheme as 'light' | 'dark')
-    if (mode === "dark") {
-      iframeRef?.current?.contentDocument?.documentElement?.classList.toggle("dark", true);
+    if (mode === 'dark') {
+      iframeRef?.current?.contentDocument?.documentElement?.classList.toggle('dark', true)
     } else {
-      iframeRef?.current?.contentDocument?.documentElement?.classList.toggle("dark", false);
+      iframeRef?.current?.contentDocument?.documentElement?.classList.toggle('dark', false)
     }
   }
 
@@ -49,12 +41,11 @@ export default function IFrame(props: Props) {
       return
     }
 
+    // Cache current active content windows for other processes
+    setContentWindow(iframeRef.current?.contentWindow)
+
     // Apply dark mode
     setDarkMode(colorScheme as 'light' | 'dark')
-
-    // Remove the event listeners to prevent memory leaks
-    iframeRef.current.contentWindow?.removeEventListener('hashchange', hashChangeEventListener)
-    iframeRef.current.contentWindow?.removeEventListener('titlechange', titleChangeEventListener)
 
     const url = iframeRef.current?.contentDocument?.location.href
     if (url == null) {
@@ -79,7 +70,8 @@ export default function IFrame(props: Props) {
 
       // From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
       a.onclick = () => {
-        setSource(a.href)
+        iframeRef.current?.contentWindow?.location.replace(a.href)
+        sourceRef.current = a.href
         return false
       }
     })
@@ -91,10 +83,6 @@ export default function IFrame(props: Props) {
       })
     })()
 
-    // Add the event listeners again
-    iframeRef.current.contentWindow?.addEventListener('hashchange', hashChangeEventListener)
-    iframeRef.current.contentWindow?.addEventListener('titlechange', titleChangeEventListener)
-
     const delimiter = '/static/projects/'
     const parts = url.split(delimiter).slice(1).join(delimiter).split('/')
     const urlPageAndHash = parts.slice(2).join('/')
@@ -105,7 +93,7 @@ export default function IFrame(props: Props) {
     props.onPageChanged(urlPage, urlHash, title)
   }
 
-  const hashChangeEventListener = (): void => {
+  const hashChangeEventListener = useCallback((): void => {
     if (iframeRef.current === null) {
       console.error('hashChangeEvent from iframe but iframeRef is null')
       return
@@ -122,9 +110,9 @@ export default function IFrame(props: Props) {
     }
 
     props.onHashChanged(hash)
-  }
+  }, [props.onHashChanged])
 
-  const titleChangeEventListener = (): void => {
+  const titleChangeEventListener = useCallback((): void => {
     if (iframeRef.current === null) {
       console.error('titleChangeEvent from iframe but iframeRef is null')
       return
@@ -136,11 +124,28 @@ export default function IFrame(props: Props) {
     }
 
     props.onTitleChanged(title)
-  }
+  }, [props.onTitleChanged])
 
   useEffect(() => {
-    const srcWithOrigin = `${window.location.origin}${props.src}`;
-    setSource(srcWithOrigin);
+    if (!contentWindow) {
+      return
+    }
+
+    contentWindow.addEventListener('hashchange', hashChangeEventListener)
+    contentWindow.addEventListener('titlechange', titleChangeEventListener)
+
+    return () => {
+      contentWindow.removeEventListener('hashchange', hashChangeEventListener)
+      contentWindow.removeEventListener('titlechange', titleChangeEventListener)
+    }
+  }, [contentWindow, titleChangeEventListener, hashChangeEventListener])
+
+  useEffect(() => {
+    const srcWithOrigin = `${window.location.origin}${props.src}`
+    if (sourceRef.current !== srcWithOrigin) {
+      iframeRef.current?.contentWindow?.location.replace(srcWithOrigin)
+      sourceRef.current = srcWithOrigin
+    }
   }, [props.src])
 
   return (

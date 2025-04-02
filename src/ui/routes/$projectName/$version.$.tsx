@@ -109,6 +109,7 @@ function DocuIFrame(props: DocuIFramePropsI) {
     if (urlPage === props.page) {
       return
     }
+    console.log('iFramePageChanged:', { urlPage, urlHash, title })
     updateUrl(props.name, resolvedVersion.current, urlPage, urlHash)
   }
 
@@ -116,7 +117,7 @@ function DocuIFrame(props: DocuIFramePropsI) {
     if (newHash === props.hash) {
       return
     }
-    console.log('iFrameHashChanged:', newHash)
+    console.log('iFrameHashChanged:', { page: props.page, newHash })
     updateUrl(props.name, resolvedVersion.current, props.page, newHash)
   }
 
