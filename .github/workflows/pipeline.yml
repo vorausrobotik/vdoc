@@ -52,7 +52,7 @@ jobs:
       - linting
       - build
     env:
-      IMAGE_NAME: voraus.jfrog.io/default-docker-public-production-cloud-local/vdoc
+      IMAGE_NAME: voraus.jfrog.io/bypass-docker-public-production-cloud-local/vdoc
       JFROG_CLI_BUILD_NAME: vdoc/${{ github.ref_name }}
       JFROG_CLI_BUILD_NUMBER: '1'
     steps:
