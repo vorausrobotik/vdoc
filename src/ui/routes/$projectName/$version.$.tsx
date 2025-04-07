@@ -1,16 +1,17 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useRouter, useLocation } from '@tanstack/react-router'
-import { useColorScheme } from '@mui/material'
+
 import { fetchProjectVersion } from '../../helpers/APIFunctions'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import testIDs from '../../interfacesAndTypes/testIDs'
 import ErrorComponent from '../../components/ErrorComponent'
-import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
+
 import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
+import IFrame from '../../components/IFrame'
 
 const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<[string, string]> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown
@@ -42,97 +43,100 @@ export const Route = createFileRoute('/$projectName/$version/$')({
 })
 
 function DocumentationComponent() {
-  const { projectName, _splat } = Route.useParams()
   const location = useLocation()
+  const { projectName, _splat } = Route.useParams()
   const [resolvedVersion, latestVersion] = Route.useLoaderData()
 
-  return (
-    <DocuIFrame
-      key={location.href}
-      name={projectName}
-      version={resolvedVersion}
-      latestVersion={latestVersion}
-      splat={_splat}
-    />
+  const iframeProps = useMemo(
+    () => ({
+      name: projectName,
+      version: resolvedVersion,
+      latestVersion: latestVersion,
+      page: _splat || '',
+      hash: location.hash,
+    }),
+    [_splat, location.hash, latestVersion, projectName, resolvedVersion]
   )
+
+  return <DocuIFrame {...iframeProps} />
 }
 
 interface DocuIFramePropsI {
   name: string
   version: string
   latestVersion: string
-  splat: string | undefined
+  page: string
+  hash: string
 }
 
-function DocuIFrame({ name, version, latestVersion, splat }: DocuIFramePropsI) {
+function DocuIFrame(props: DocuIFramePropsI) {
+  const [error, setError] = useState<Error | null>(null)
   const router = useRouter()
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const [loaded, setLoaded] = useState<boolean>(false)
-  const [iframeKey, setIframeKey] = useState<string>(crypto.randomUUID())
-  const { mode, systemMode } = useColorScheme()
+  const resolvedVersion = useRef<string>(props.version === 'latest' ? props.latestVersion : props.version)
+
+  const iFrameSrc = useMemo(() => {
+    const resolvedVersion = props.version === 'latest' ? props.latestVersion : props.version
+    const hashSuffix = props.hash.trim() !== '' ? `#${props.hash}` : ''
+    return `/static/projects/${props.name}/${resolvedVersion}/${props.page}${hashSuffix}`
+  }, [props.name, props.page, props.hash, props.version, props.latestVersion])
+
+  const updateUrl = (name: string, version: string, page: string, hash: string): void => {
+    const hashSuffix = hash.trim() !== '' ? `#${hash}` : ''
+    const toParams = {
+      projectName: name,
+      version: version,
+      _splat: `${page}${hashSuffix}`,
+    }
+    router.navigate({
+      from: '/$projectName/$version/$',
+      to: '/$projectName/$version/$',
+      params: toParams,
+    })
+  }
+
+  const updateTitle = (newTitle: string): void => {
+    document.title = newTitle
+  }
+
+  const iFramePageChanged = (urlPage: string, urlHash: string, title?: string): void => {
+    if (title != null && title !== document.title) {
+      updateTitle(title)
+    }
+    if (urlPage === props.page) {
+      return
+    }
+    updateUrl(props.name, resolvedVersion.current, urlPage, urlHash)
+  }
+
+  const iFrameHashChanged = (newHash: string): void => {
+    if (newHash === props.hash) {
+      return
+    }
+    updateUrl(props.name, resolvedVersion.current, props.page, newHash)
+  }
+
+  const iFrameNotFound = (): void => {
+    setError(new Error("Whoops! This page doesn't seem to exist..."))
+  }
 
   useEffect(() => {
-    /**
-     * Propagates the iframe navigation events to the tanstack router.
-     *
-     * @param iframeDocument The iframe document object.
-     */
-    const setupIframeNavigation = (iframeDocument: Document) => {
-      const anchorElements = iframeDocument.querySelectorAll('a')
-
-      anchorElements.forEach((anchor) => {
-        if (!anchor.href) return
-        if (anchor.origin === window.location.origin) {
-          const params = sanitizeDocuUri(anchor.href, window.location.origin, name, version)
-          anchor.pathname = anchor.pathname.replace('/static/projects', '').replace(`/${latestVersion}/`, '/latest/')
-          anchor.addEventListener('click', (event) => {
-            event.preventDefault()
-            router.navigate({
-              to: '/$projectName/$version/$',
-              from: '/$projectName/$version/$',
-              params: params,
-            })
-          })
-        } else {
-          // External links open in a new tab
-          anchor.setAttribute('target', '_blank')
-          anchor.setAttribute('rel', 'noopener noreferrer')
-        }
-      })
+    // Throwing the error in a useEffect to ensure it is caught by the error component of tanstack router.
+    if (error) {
+      throw error
     }
-
-    const checkForErrors = (iframeDocument: Document) => {
-      if (iframeDocument.body.innerText === '{"detail":"Not Found"}') {
-        throw new Error("Whoops! This page doesn't seem to exist...")
-      }
-    }
-    if (iframeRef.current && loaded) {
-      const iframeDocument = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document
-      if (iframeDocument) {
-        checkForErrors(iframeDocument)
-        setupIframeNavigation(iframeDocument)
-      }
-    }
-  }, [router, loaded, name, version, latestVersion])
-
-  useEffect(() => {
-    const resultingMode = mode === 'system' ? systemMode : mode
-    iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', resultingMode as 'light' | 'dark')
-    setIframeKey(crypto.randomUUID())
-  }, [mode, iframeRef, systemMode])
+  }, [error])
 
   return (
     <div data-testid={testIDs.project.documentation.main} style={{ display: 'contents' }}>
-      {name && version !== 'latest' && version !== latestVersion && (
-        <DeprecatedVersionBanner name={name} version={version} />
+      {props.name && props.version !== 'latest' && props.version !== props.latestVersion && (
+        <DeprecatedVersionBanner name={props.name} version={props.version} />
       )}
-      <iframe
-        key={iframeKey}
-        data-testid={testIDs.project.documentation.documentationIframe}
-        ref={iframeRef}
-        onLoad={() => setLoaded(true)}
-        style={{ border: 0, width: '100%', height: '100%' }}
-        src={`/static/projects/${name}/${version === 'latest' ? latestVersion : version}/${splat}${window.location.hash}`}
+      <IFrame
+        src={iFrameSrc}
+        onPageChanged={iFramePageChanged}
+        onHashChanged={iFrameHashChanged}
+        onTitleChanged={updateTitle}
+        onNotFound={iFrameNotFound}
       />
     </div>
   )

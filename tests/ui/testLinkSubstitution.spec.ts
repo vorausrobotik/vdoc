@@ -10,7 +10,7 @@ test('Test link substitution', async ({ page }) => {
   // Expect the documentation iframe to display the mocked documentation page
   await expect(documentation).toContainText('Hello, this is a mocked documentation component.')
 
-  const baseUrl = 'http://localhost:3000/example-project-01/latest'
+  const baseUrl = 'http://localhost:3000/example-project-01/3.2.0'
 
   // Ensure that all links have been substituted correctly
   let linkLocators = await assertLinksOnPage(documentation, [
