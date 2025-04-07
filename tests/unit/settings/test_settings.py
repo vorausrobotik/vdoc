@@ -17,7 +17,7 @@ def test_vdoc_settings() -> None:
     assert settings.docs_dir == Path("/srv/vdoc/docs/")
 
 
-@patch.dict(os.environ, {"VDOC_DOCS_DIR": "/tmp/foo"})
+@patch.dict(os.environ, {"VDOC_DOCS_DIR": "/tmp/foo"}, clear=True)
 def test_vdoc_settings_patchable() -> None:
     settings = VDocSettings()
     assert settings.docs_dir == Path("/tmp/foo/")
@@ -29,6 +29,7 @@ def test_vdoc_settings_patchable() -> None:
         "VDOC_PROJECT_CATEGORIES": '[{"id": 1, "name": "General"}, {"id": 2, "name": "API"}]',
         "VDOC_PROJECT_CATEGORY_MAPPING": '{"dummy-project-01": "API"}',
     },
+    clear=True,
 )
 def test_vdoc_settings_model_validation_project_categories() -> None:
     settings = VDocSettings()
@@ -52,6 +53,7 @@ def test_vdoc_settings_model_validation_project_categories_duplicate_id() -> Non
         "VDOC_PROJECT_CATEGORIES": '[{"id": 1, "name": "General"}]',
         "VDOC_PROJECT_CATEGORY_MAPPING": '{"dummy-project-01": "Dummy"}',
     },
+    clear=True,
 )
 def test_vdoc_settings_model_validation_project_categories_invalid_mapping() -> None:
     with pytest.raises(

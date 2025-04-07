@@ -15,7 +15,7 @@ def test_cli_warns_about_default_credentials(_: MagicMock, cli_runner: CliRunner
     assert "The application is running using the default credentials" in result.stdout
 
 
-@patch.dict(os.environ, {"VDOC_API_PASSWORD": "updated"})
+@patch.dict(os.environ, {"VDOC_API_PASSWORD": "updated"}, clear=True)
 @patch("vdoc.cli.run.run_impl")
 def test_cli_doesnt_warn_about_updated_credentials(_: MagicMock, cli_runner: CliRunner) -> None:
     result = cli_runner.invoke(app=app, args=["run"])
