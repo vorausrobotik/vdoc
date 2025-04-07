@@ -32,7 +32,7 @@ def list_project_versions_impl(name: str) -> list[str]:
     Returns:
         A list of all available versions of the project.
     """
-    return [str(version) for version in Project(name=name).versions]
+    return list(Project(name=name).versions.values())
 
 
 def get_project_version_impl(name: str, version: str) -> str:
