@@ -1,13 +1,17 @@
-.light {
+/**
+ * Stylesheet that mocks the behavior of https: //sphinxawesome.xyz/.
+ */
+
+body {
   background-color: rgb(227, 242, 253);
   color: black;
 }
 
-.light a {
+a {
   color: blue;
 }
 
-.dark {
+.dark body {
   background-color: rgb(18, 18, 18);
   color: white;
 }
