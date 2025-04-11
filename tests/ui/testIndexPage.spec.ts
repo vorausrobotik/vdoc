@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import { assertIndexPage } from './helpers'
+import { assertIndexPage, assertVersionOverview } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -50,9 +50,12 @@ test('Test navigation index to documentation to version overview', async ({ page
 
   // Navigate to the version overview
   await versionOptions.last().click()
-  await expect(page).toHaveURL(/.*example-project-01/)
-
-  await expect(page.getByTestId(testIDs.project.versionOverview.majorVersionCard.main)).toHaveCount(4)
+  await assertVersionOverview(page, 'example-project-01', {
+    v3: ['3.0.0', '3.1.0', '3.2.0'],
+    v2: ['2.0.0'],
+    v1: ['1.0.0'],
+    v0: ['0.1.0', '0.2.0'],
+  })
 
   // Navigate to version 1.0.0 of the documentation
   await page.getByRole('button', { name: '1.0.0' }).click()

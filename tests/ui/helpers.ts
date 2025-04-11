@@ -189,3 +189,28 @@ export const openProjectDocumentation = async (page: Page, name: string, version
 
   return iframeDocument.locator('html')
 }
+
+/**
+ * Expects the version overview to be visible and to show the expected versions in the expected order.
+ *
+ * @param page The playwright page object.
+ * @param name The project name.
+ * @param expectedVersions The expected versions grouped by major version.
+ */
+export const assertVersionOverview = async (page: Page, name: string, expectedVersions: Record<string, string[]>) => {
+  await expect(page).toHaveURL(`${BASE_URL}/${name}`)
+
+  const majorVersionCards = page.getByTestId(testIDs.project.versionOverview.majorVersionCard.main)
+
+  await expect(majorVersionCards).toHaveCount(Object.keys(expectedVersions).length)
+
+  Object.keys(expectedVersions).forEach(async (majorVersion, index) => {
+    const expectedMinorAndPatchVersions = expectedVersions[majorVersion]
+    const majorVersionCard = majorVersionCards.nth(index)
+    const minorAndPatchVersionItems = majorVersionCard.getByTestId(
+      testIDs.project.versionOverview.majorVersionCard.versionItem.main
+    )
+    await expect(minorAndPatchVersionItems).toHaveCount(expectedMinorAndPatchVersions.length)
+    expect(await minorAndPatchVersionItems.allTextContents()).toStrictEqual(expectedMinorAndPatchVersions)
+  })
+}
