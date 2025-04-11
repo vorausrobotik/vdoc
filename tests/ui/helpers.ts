@@ -73,6 +73,35 @@ export const assertVersionDropdown = async (
     versionDropdownItems: versionDropdownItems,
   }
 }
+
+/**
+ * Expects the menu bar to be visible and optionally checks for the version dropdown items and logo.
+ *
+ * @param page The playwright page object.
+ * @param logoHref The logo href to check for.
+ * @param versionDropdownItems The optional list of version dropdown items to check for.
+ * @param logoURL The optional logo URL to check for.
+ * @param logoText The optional logo text to check for.
+ */
+export const assertMenuBar = async (page: Page, logoHref: string, logoURL?: string, logoText?: string) => {
+  await expect(page.getByTestId(testIDs.header.main)).toBeVisible()
+
+  const headerLogo = page.getByTestId(testIDs.header.logo.main)
+  expect(await headerLogo.evaluate((element: HTMLElement) => element.href)).toBe(logoHref)
+
+  if (logoURL) {
+    const logo = page.getByTestId(testIDs.header.logo.image)
+    await expect(logo).toBeVisible()
+    await expect(logo).toHaveAttribute('src', logoURL)
+  }
+
+  if (logoText) {
+    const text = page.getByTestId(testIDs.header.logo.text)
+    await expect(text).toBeVisible()
+    await expect(text).toHaveText(logoText)
+  }
+}
+
 /**
  * Expects that the index/home page is visible including all project cards.
  *
