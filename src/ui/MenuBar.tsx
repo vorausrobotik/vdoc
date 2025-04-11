@@ -87,17 +87,18 @@ export default function MenuBar() {
         {logoUrl !== undefined && (
           <Box
             sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
+            data-testid={testIDs.header.logo.main}
             component="a"
-            onClick={() =>
-              navigate({
-                to: '/',
-              })
-            }
+            href="/"
           >
             {logoUrl !== null ? (
-              <img src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
+              <img data-testid={testIDs.header.logo.image} src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
             ) : (
-              <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+              <Typography
+                data-testid={testIDs.header.logo.text}
+                variant="h6"
+                sx={{ color: theme.palette.text.primary }}
+              >
                 vdoc
               </Typography>
             )}

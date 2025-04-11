@@ -1,6 +1,11 @@
 export const testIDs = {
   header: {
     main: 'header',
+    logo: {
+      main: 'header.logo',
+      image: 'header.logo.image',
+      text: 'header.logo.text',
+    },
     versionDropdown: {
       main: 'header.versionDropdown',
       item: 'header.versionDropdown.item',
