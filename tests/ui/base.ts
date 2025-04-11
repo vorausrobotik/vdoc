@@ -93,6 +93,14 @@ export const mockAPIRequests = async (page: Page) => {
       pattern: '*/**/api/projects/example-project-03/versions/latest',
       response: { json: '1.0.0' },
     },
+    {
+      pattern: '*/**/api/settings/logo_url/light',
+      response: { json: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_rgb.png' },
+    },
+    {
+      pattern: '*/**/api/settings/logo_url/dark',
+      response: { json: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png' },
+    },
   ]
   for (const { pattern, response } of routes) {
     await page.route(pattern, (route) => route.fulfill(response))
