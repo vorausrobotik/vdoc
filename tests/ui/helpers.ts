@@ -24,6 +24,56 @@ export const assertLinksOnPage = async (locator: Locator, links: string[]): Prom
 }
 
 /**
+ * Expects the version dropdown to be visible and to contain the expected versions.
+ *
+ * @param page The playwright page object.
+ * @param selectedVersion: The currently selected version.
+ * @param expectedVersions The list of version dropdown items to check for.
+ *
+ * @returns The version dropdown items.
+ */
+export const assertVersionDropdown = async (
+  page: Page,
+  selectedVersion: string,
+  expectedVersions: string[]
+): Promise<{
+  versionDropdown: Locator
+  emptyItem: Locator
+  showAllItem: Locator
+  versionDropdownItems: Locator
+}> => {
+  const versionDropdown = page.getByTestId(testIDs.header.versionDropdown.main)
+  await expect(versionDropdown).toBeVisible()
+  await expect(versionDropdown).toContainText(selectedVersion)
+  if (!(await page.locator('[role="listbox"]').isVisible())) {
+    await versionDropdown.click()
+  }
+  await expect(page.locator('[role="listbox"]')).toBeVisible()
+
+  const versionDropdownItems = page.locator('[role="listbox"]').getByTestId(testIDs.header.versionDropdown.item)
+  const emptyItem = page.getByTestId(testIDs.header.versionDropdown.emptyItem)
+  const showAllItem = page.getByTestId(testIDs.header.versionDropdown.showAllItem)
+  await expect(emptyItem).toBeVisible()
+  await expect(emptyItem).toHaveText('')
+  await expect(showAllItem).toBeVisible()
+  await expect(showAllItem).toHaveText('...show all')
+
+  await expect(page.getByTestId(testIDs.header.versionDropdown.emptyItem)).toBeVisible()
+  await expect(page.getByTestId(testIDs.header.versionDropdown.showAllItem)).toBeVisible()
+  await expect(versionDropdownItems).toHaveCount(expectedVersions.length)
+
+  for (const [index, value] of expectedVersions.entries()) {
+    await expect(versionDropdownItems.nth(index)).toContainText(value)
+  }
+
+  return {
+    versionDropdown: versionDropdown,
+    emptyItem: emptyItem,
+    showAllItem: showAllItem,
+    versionDropdownItems: versionDropdownItems,
+  }
+}
+/**
  * Expects that the index/home page is visible including all project cards.
  *
  * @param page The playwright page object.

@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import { assertIndexPage, assertVersionOverview } from './helpers'
+import { assertIndexPage, assertVersionOverview, assertVersionDropdown } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -38,18 +38,10 @@ test('Test navigation index to documentation to version overview', async ({ page
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)
 
   // Test the version dropdown. The latest version is 3.2.0. There must be 5 options including a link to more
-  await expect(versionDropdown).toBeVisible()
-  await expect(versionDropdown).toContainText('3.2.0')
-  await versionDropdown.click()
-  const versionOptions = page.getByRole('option')
-  await expect(versionOptions).toHaveCount(7)
-  const expectedOptions = ['', '3.2.0', '3.1.0', '3.0.0', '2.0.0', '1.0.0', '...show all']
-  for (const [index, value] of expectedOptions.entries()) {
-    await expect(versionOptions.nth(index)).toContainText(value)
-  }
+  const dropdownItems = await assertVersionDropdown(page, '3.2.0', ['3.2.0', '3.1.0', '3.0.0', '2.0.0', '1.0.0'])
 
   // Navigate to the version overview
-  await versionOptions.last().click()
+  await dropdownItems.showAllItem.click()
   await assertVersionOverview(page, 'example-project-01', {
     v3: ['3.0.0', '3.1.0', '3.2.0'],
     v2: ['2.0.0'],
