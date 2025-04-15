@@ -5,6 +5,8 @@ import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import type { Project } from '../../src/ui/interfacesAndTypes/Project'
 import { themes } from './base'
 
+export const BASE_URL = 'http://localhost:3000'
+
 /**
  * Expects the given hyperlinks to be visible on the page in the given order.
  *
@@ -31,7 +33,7 @@ export const assertIndexPage = async (
   page: Page,
   options?: { timeout?: number; categories?: Record<string, Project[]> }
 ) => {
-  await expect(page).toHaveURL('http://localhost:3000', { timeout: options?.timeout })
+  await expect(page).toHaveURL(BASE_URL, { timeout: options?.timeout })
   if (options?.categories) {
     const projectCategories = page.getByTestId(testIDs.landingPage.projectCategories.projectCategory.main)
 
@@ -175,7 +177,7 @@ export const openProjectDocumentation = async (page: Page, name: string, version
 
   await page.goto(`/${name}/${version}`)
 
-  await expect(page).toHaveURL(`http://localhost:3000/${name}/${version}`)
+  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version}`)
 
   await expect(docIframe).toBeVisible({ timeout: 10000 })
 

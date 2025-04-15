@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
-import { openProjectDocumentation, assertLinksOnPage } from './helpers'
+import { openProjectDocumentation, assertLinksOnPage, BASE_URL } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -10,7 +10,7 @@ test('Test link substitution', async ({ page }) => {
   // Expect the documentation iframe to display the mocked documentation page
   await expect(documentation).toContainText('Hello, this is a mocked documentation component.')
 
-  const baseUrl = 'http://localhost:3000/example-project-01/3.2.0'
+  const baseUrl = `${BASE_URL}/example-project-01/3.2.0`
 
   // Ensure that all links have been substituted correctly
   let linkLocators = await assertLinksOnPage(documentation, [
