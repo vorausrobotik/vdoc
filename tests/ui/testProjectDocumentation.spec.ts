@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import { assertIndexPage, assertErrorComponent } from './helpers'
+import { assertIndexPage, assertErrorComponent, BASE_URL } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -9,7 +9,7 @@ test('Requesting non existing versions must be handled properly with automatic r
   await page.goto('/')
   await assertIndexPage(page)
   await page.goto('/example-project-01/42.0.0')
-  await expect(page).toHaveURL('http://localhost:3000/example-project-01/42.0.0')
+  await expect(page).toHaveURL(`${BASE_URL}/example-project-01/42.0.0`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
   await expect(page.getByTestId(testIDs.header.versionDropdown.main)).toHaveText('Select version...')
@@ -33,7 +33,7 @@ test('Requesting non existing versions must be handled properly with manual redi
   await page.goto('/')
   await assertIndexPage(page)
   await page.goto('/example-project-01/42.0.0')
-  await expect(page).toHaveURL('http://localhost:3000/example-project-01/42.0.0')
+  await expect(page).toHaveURL(`${BASE_URL}/example-project-01/42.0.0`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
@@ -60,7 +60,7 @@ test('Requesting invalid versions must be handled properly with manual redirect'
   await page.goto('/')
   await assertIndexPage(page)
   await page.goto('/example-project-01/invalid')
-  await expect(page).toHaveURL('http://localhost:3000/example-project-01/invalid')
+  await expect(page).toHaveURL(`${BASE_URL}/example-project-01/invalid`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
@@ -87,7 +87,7 @@ test('Requesting non existing project must be handled properly', async ({ page }
   await page.goto('/')
   await assertIndexPage(page)
   await page.goto('/non-existing-project')
-  await expect(page).toHaveURL('http://localhost:3000/non-existing-project')
+  await expect(page).toHaveURL(`${BASE_URL}/non-existing-project`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
@@ -115,7 +115,7 @@ test('Requesting non existing version must be handled properly', async ({ page }
   await page.goto('/')
   await assertIndexPage(page)
   await page.goto('/example-project-01/1')
-  await expect(page).toHaveURL('http://localhost:3000/example-project-01/1')
+  await expect(page).toHaveURL(`${BASE_URL}/example-project-01/1`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
@@ -133,7 +133,7 @@ test('Requesting non existing documentation page must be handled properly', asyn
   await page.goto('/')
   await assertIndexPage(page)
   await page.goto('/example-project-03/1.0.0/nonexisting.html')
-  await expect(page).toHaveURL('http://localhost:3000/example-project-03/1.0.0/nonexisting.html')
+  await expect(page).toHaveURL(`${BASE_URL}/example-project-03/1.0.0/nonexisting.html`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
 
