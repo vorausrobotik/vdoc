@@ -1,0 +1,42 @@
+diff a/tox.ini b/tox.ini	(rejected hunks)
+@@ -5,12 +5,15 @@ envlist =
+     combine-test-reports
+ isolated_build = True
+ 
++[testenv]
++passenv =
++    CODEMETER_HOST
++    SOURCE_DATE_EPOCH
+ 
+ [testenv:lint]
+ description = Run static checkers.
+ basepython = py311
+ extras = lint
+-passenv = CODEMETER_HOST
+ commands =
+     # Check import ordering
+     isort . --check
+@@ -32,7 +35,6 @@ extras = test
+ setenv =
+     PY_IGNORE_IMPORTMISMATCH=1
+     COVERAGE_FILE = reports{/}.coverage.{envname}
+-passenv = CODEMETER_HOST
+ commands =
+     # Run tests and doctests from .py files
+     pytest --junitxml=reports/pytest.xml.{envname} {posargs} src/ tests/
+@@ -60,7 +62,6 @@ setenv =
+     DOCSDIR = {toxinidir}/docs
+     BUILDDIR = {toxinidir}/docs/build
+ extras = doc
+-passenv = CODEMETER_HOST
+ commands =
+     # Remove build directory
+     python -c 'import shutil; shutil.rmtree("{env:BUILDDIR}", ignore_errors=True);'
+@@ -84,7 +85,6 @@ commands =
+ [testenv:build]
+ description = Build the package.
+ extras = build
+-passenv = CODEMETER_HOST
+ commands =
+     # Clean up build directories
+     python -c 'from shutil import rmtree; rmtree("build", True); rmtree("dist", True)'

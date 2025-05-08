@@ -1,0 +1,13 @@
+diff a/jreleaser.yml b/jreleaser.yml	(rejected hunks)
+@@ -6,5 +6,11 @@ release:
+       formatted: ALWAYS
+       sort: ASC
+       preset: conventional-commits
++      format: '- {{commitShortHash}} {{#commitIsConventional}}{{#conventionalCommitIsBreakingChange}}🚨 {{/conventionalCommitIsBreakingChange}}{{#conventionalCommitScope}}**{{conventionalCommitScope}}**: {{/conventionalCommitScope}}{{conventionalCommitDescription}}{{#conventionalCommitBreakingChangeContent}} - *{{conventionalCommitBreakingChangeContent}}*{{/conventionalCommitBreakingChangeContent}}{{/commitIsConventional}}{{^commitIsConventional}}{{commitTitle}}{{/commitIsConventional}}'
+       contributors:
+         format: "- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}"
++      hide:
++        contributors:
++          - 'GitHub'
++          - '[bot]'
++          - 'JenkinsServer'
