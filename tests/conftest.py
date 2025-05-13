@@ -59,7 +59,7 @@ def cli_runner_fixture() -> CliRunner:
     Returns:
         The CliRunner object for testing the CLI.
     """
-    return CliRunner(mix_stderr=False, env={"COLUMNS": "120"})
+    return CliRunner(env={"COLUMNS": "120"})
 
 
 @pytest.fixture(scope="function", name="dummy_projects_dir")
