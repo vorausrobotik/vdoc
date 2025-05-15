@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
-import { openProjectDocumentation, assertLinksOnPage, BASE_URL } from './helpers'
+import { openProjectDocumentation, assertLinksOnPage, assertLinkOpensInNewTab, BASE_URL } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -18,7 +18,10 @@ test('Test link substitution', async ({ page }) => {
     `${baseUrl}/index.html`,
     `${baseUrl}/examples.html`,
     'https://www.sphinx-doc.org/',
+    'https://example.com/',
   ])
+
+  await (await assertLinkOpensInNewTab(page, linkLocators.last(), 'https://example.com/')).close()
 
   // Go to the examples page
   await linkLocators.nth(2).click()
@@ -34,5 +37,7 @@ test('Test link substitution', async ({ page }) => {
     `${baseUrl}/index.html`,
     `${baseUrl}/examples.html`,
     'https://www.sphinx-doc.org/',
+    'https://example.com/',
   ])
+  await (await assertLinkOpensInNewTab(page, linkLocators.last(), 'https://example.com/')).close()
 })

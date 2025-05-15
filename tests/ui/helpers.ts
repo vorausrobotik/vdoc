@@ -24,6 +24,42 @@ export const assertLinksOnPage = async (locator: Locator, links: string[]): Prom
 }
 
 /**
+ * Asserts that clicking a link opens a new tab (popup page).
+ *
+ * @param page The playwright page object.
+ * @param linkLocator The link locator to click.
+ * @param expectedUrl The expected URL in the new tab.
+ * @param options Optional settings for validation.
+ * @param options.timeout Optional timeout for popup detection.
+ *
+ * @returns The new tab.
+ */
+export async function assertLinkOpensInNewTab(
+  page: Page,
+  linkSelector: Locator,
+  expectedUrl: string,
+  options?: {
+    timeout?: number
+  }
+): Promise<Page> {
+  const { timeout } = options ?? {}
+
+  const originalUrl = page.url()
+
+  // Wait for a new page (popup) to open after clicking the link
+  const [newPage] = await Promise.all([page.waitForEvent('popup', { timeout }), linkSelector.click()])
+
+  // Wait for the new tab to load
+  await newPage.waitForLoadState('load')
+
+  expect(newPage.url()).toBe(expectedUrl)
+
+  expect(page.url()).toBe(originalUrl)
+
+  return newPage
+}
+
+/**
  * Expects the version dropdown to be visible and to contain the expected versions.
  *
  * @param page The playwright page object.
