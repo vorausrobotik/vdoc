@@ -101,6 +101,10 @@ export const mockAPIRequests = async (page: Page) => {
       pattern: '*/**/api/settings/logo_url/dark',
       response: { json: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png' },
     },
+    {
+      pattern: '*/**/api/version',
+      response: { json: '42.0.42' },
+    },
   ]
   for (const { pattern, response } of routes) {
     await page.route(pattern, (route) => route.fulfill(response))
