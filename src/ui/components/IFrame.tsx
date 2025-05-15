@@ -78,6 +78,12 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
       const originalLink = anchor.href
       // Strip iframe prefix from the href for display/copy events
       anchor.href = new URL(anchor.href, iframeRef.current?.contentDocument?.baseURI).href.replace(stripPrefix, '/')
+
+      // Links that are to be opened in new tabs should still be opened in new tabs
+      if (anchor.target === '_blank') {
+        return
+      }
+
       // From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
       anchor.onclick = () => {
         iframeRef.current?.contentWindow?.location.replace(originalLink)
