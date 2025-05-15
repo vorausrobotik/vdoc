@@ -54,12 +54,14 @@ export default function SettingsSidebar(props: SettingsSidebarProps) {
       anchor="right"
       onClose={() => props.setOpen(false)}
       open={props.open}
-      PaperProps={{
-        elevation: 0,
-        sx: {
-          borderRadius: '10px 0px 0px 10px',
-          border: '1px solid',
-          borderColor: 'divider',
+      slotProps={{
+        paper: {
+          elevation: 0,
+          sx: {
+            borderRadius: '10px 0px 0px 10px',
+            border: '1px solid',
+            borderColor: 'divider',
+          },
         },
       }}
     >
