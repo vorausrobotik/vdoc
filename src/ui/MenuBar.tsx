@@ -1,7 +1,7 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from './interfacesAndTypes/testIDs'
-import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL } from './helpers/APIFunctions'
+import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL, fetchAppVersion } from './helpers/APIFunctions'
 
 import { useNavigate, useParams } from '@tanstack/react-router'
 import VersionDropdown from './components/VersionDropdown'
@@ -17,15 +17,17 @@ export default function MenuBar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
+  const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
   const [logoUrl, setLogoUrl] = useState<string | null | undefined>(null)
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
   useEffect(() => {
-    const fetchData = async (mode: EffectiveColorMode): Promise<string | null> => {
-      return await fetchLogoURL(mode)
+    const fetchData = async (mode: EffectiveColorMode): Promise<[string | null, string]> => {
+      return await Promise.all([fetchLogoURL(mode), fetchAppVersion()])
     }
-    fetchData(theme.palette.mode).then((url) => {
+    fetchData(theme.palette.mode).then(([url, appVersion]) => {
       setLogoUrl(url)
+      setAppVersion(appVersion)
     })
   }, [theme])
 
@@ -124,7 +126,7 @@ export default function MenuBar() {
           <SettingsOutlinedIcon />
         </IconButton>
       </Toolbar>
-      <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+      <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} appVersion={appVersion} />
     </AppBar>
   )
 }

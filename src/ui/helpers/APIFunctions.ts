@@ -18,6 +18,10 @@ export const fetchLogoURL = async (mode: EffectiveColorMode): Promise<string | n
   return (await axios.get(`/api/settings/logo_url/${mode}`)).data
 }
 
+export const fetchAppVersion = async (): Promise<string> => {
+  return (await axios.get('/api/version')).data
+}
+
 export const fetchProjectCategories = async (): Promise<ProjectCategory[]> => {
   return (await axios.get(`/api/project_categories/`)).data
 }
