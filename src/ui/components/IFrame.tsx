@@ -48,8 +48,8 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
     // Apply dark mode
     setDarkMode(colorScheme as 'light' | 'dark')
 
-    const url = iframeRef.current?.contentDocument?.location.href
-    if (url == null) {
+    const iframeHref = iframeRef.current?.contentDocument?.location.href
+    if (iframeHref == null) {
       console.warn('IFrame onload event triggered, but url is null')
       return
     }
@@ -92,7 +92,7 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
       }
     })
 
-    const parts = url.split(stripPrefix).slice(1).join(stripPrefix).split('/')
+    const parts = iframeHref.split(stripPrefix).slice(1).join(stripPrefix).split('/')
     const urlPageAndHash = parts.slice(2).join('/')
     const hashIndex = urlPageAndHash.includes('#') ? urlPageAndHash.indexOf('#') : urlPageAndHash.length
     const urlPage = urlPageAndHash.slice(0, hashIndex)
