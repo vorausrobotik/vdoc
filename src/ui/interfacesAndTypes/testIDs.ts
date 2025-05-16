@@ -27,6 +27,7 @@ export const testIDs = {
         },
       },
     },
+    appVersion: 'sidebar.settings.appVersion',
   },
   loadingIndicator: {
     main: 'loadingIndicator',

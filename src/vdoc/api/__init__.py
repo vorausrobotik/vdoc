@@ -11,6 +11,7 @@ from starlette.requests import Request
 from starlette.responses import FileResponse
 from starlette.routing import BaseRoute
 
+from vdoc import get_app_version
 from vdoc.api.routes import project_categories as PROJECT_CATEGORIES_MODULE
 from vdoc.api.routes import projects as PROJECTS_MODULE
 from vdoc.api.routes import settings as SETTINGS_MODULE
@@ -63,6 +64,16 @@ async def unicorn_exception_handler(_: Request, exc: VDocException) -> JSONRespo
         The exception as formatted JSONResponse.
     """
     return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
+
+
+@app.get("/api/version")
+def get_app_version_route() -> str:
+    """Returns the version of the app.
+
+    Returns:
+        The app version.
+    """
+    return get_app_version()
 
 
 @app.get("/{project_name}/{version}/objects.inv")

@@ -222,14 +222,18 @@ export const assertTheme = async (page: Page, mode: EffectiveColorMode) => {
  * Opens the settings sidebar if it is not open, yet.
  *
  * @param page The playwright page object.
+ *
+ * @returns The sidebar locator.
  */
-export const openSettingsSidebar = async (page: Page) => {
+export const openSettingsSidebar = async (page: Page): Promise<Locator> => {
   const sideBarElement = page.getByTestId(testIDs.sidebar.main)
   if (!(await sideBarElement.isVisible())) {
     await page.getByTestId(testIDs.header.settingsButton).click()
   }
 
   await expect(sideBarElement).toBeVisible()
+
+  return sideBarElement
 }
 
 /**

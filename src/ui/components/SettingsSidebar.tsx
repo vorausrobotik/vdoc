@@ -35,6 +35,7 @@ const IconToggleButton = styled(ToggleButton)({
 interface SettingsSidebarProps extends React.ComponentProps<'div'> {
   open: boolean
   setOpen: (newOpen: boolean) => void
+  appVersion?: string
 }
 
 export default function SettingsSidebar(props: SettingsSidebarProps) {
@@ -53,12 +54,14 @@ export default function SettingsSidebar(props: SettingsSidebarProps) {
       anchor="right"
       onClose={() => props.setOpen(false)}
       open={props.open}
-      PaperProps={{
-        elevation: 0,
-        sx: {
-          borderRadius: '10px 0px 0px 10px',
-          border: '1px solid',
-          borderColor: 'divider',
+      slotProps={{
+        paper: {
+          elevation: 0,
+          sx: {
+            borderRadius: '10px 0px 0px 10px',
+            border: '1px solid',
+            borderColor: 'divider',
+          },
         },
       }}
     >
@@ -118,6 +121,12 @@ export default function SettingsSidebar(props: SettingsSidebarProps) {
             Dark
           </IconToggleButton>
         </ToggleButtonGroup>
+      </Box>
+      <Box sx={{ mt: 'auto', px: 2, py: 2 }}>
+        <Divider sx={{ mb: 1 }} />
+        <Typography variant="caption" color="text.secondary" data-testid={testIDs.sidebar.appVersion}>
+          vdoc {props.appVersion ?? 'N/A'}
+        </Typography>
       </Box>
     </Drawer>
   )
