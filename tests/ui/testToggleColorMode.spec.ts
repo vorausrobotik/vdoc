@@ -8,24 +8,28 @@ test.describe('Color schemes tests', () => {
   test('Color mode should be system by default', async ({ page }) => {
     await page.emulateMedia({ colorScheme: undefined })
     await page.goto('/example-project-01/latest')
+    await page.waitForLoadState()
     await assertCurrentColorModeButton(page, 'system')
   })
 
   test('Theme should be light if preferred color scheme is undefined', async ({ page }) => {
     await page.emulateMedia({ colorScheme: undefined })
     await page.goto('/example-project-01/latest')
+    await page.waitForLoadState()
     await assertTheme(page, 'light')
   })
 
   test('Theme should be light if preferred color scheme is "light"', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' })
     await page.goto('/example-project-01/latest')
+    await page.waitForLoadState()
     await assertTheme(page, 'light')
   })
 
   test('Theme should be dark if preferred color scheme is "dark"', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.goto('/example-project-01/latest')
+    await page.waitForLoadState()
     await assertTheme(page, 'dark')
   })
 
@@ -39,6 +43,7 @@ test.describe('Color schemes tests', () => {
         }) => {
           await page.emulateMedia({ colorScheme: preferredColorScheme })
           await page.goto('/example-project-01/latest')
+          await page.waitForLoadState()
 
           // Make sure that the user preferred color scheme is applied
           await assertTheme(page, preferredColorScheme)
