@@ -25,11 +25,13 @@ test('Test link substitution', async ({ page }) => {
 
   // Go to the examples page
   await linkLocators.nth(2).click()
+  await page.waitForLoadState()
   await expect(page).toHaveURL(`${baseUrl}/examples.html`)
 
   linkLocators = await assertLinksOnPage(documentation, [`${baseUrl}/index.html`])
 
   await linkLocators.first().click()
+  await page.waitForLoadState()
   await expect(page).toHaveURL(`${baseUrl}/index.html`)
 
   linkLocators = await assertLinksOnPage(documentation, [

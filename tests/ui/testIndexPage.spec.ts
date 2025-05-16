@@ -7,6 +7,7 @@ await prepareTestSuite(test)
 
 test('Test navigation index to documentation to version overview', async ({ page }) => {
   await page.goto('/')
+  await page.waitForLoadState()
 
   await assertIndexPage(page, {
     categories: {
@@ -32,6 +33,7 @@ test('Test navigation index to documentation to version overview', async ({ page
 
   // Navigate to the latest documentation of example-project-01
   await documentationButton.click()
+  await page.waitForLoadState()
   await expect(page).toHaveURL(/.*example-project-01\/latest/)
 
   // Ensure documentation is rendered in the iframe
@@ -70,6 +72,7 @@ test('Test project overview on no projects', async ({ page }) => {
 
   // Make sure no projects are listed and the error component is shown with all correct parameters
   await page.goto('/')
+  await page.waitForLoadState()
   await expect(page.getByTestId(testIDs.errorComponent.main)).toBeVisible()
   expect(await page.getByTestId(testIDs.errorComponent.title).innerText()).toBe('No projects found')
   expect(await page.getByTestId(testIDs.errorComponent.description).innerText()).toBe(

@@ -5,7 +5,8 @@
 
 import { testIDs } from '../interfacesAndTypes/testIDs'
 import { useColorScheme } from '@mui/material'
-import { useRef, useEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
+import { sanitizeDocuUri } from '../helpers/RouteHelpers'
 
 interface Props {
   src: string
@@ -21,6 +22,8 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
   const sourceRef = useRef<string | undefined>(null)
   const [contentWindow, setContentWindow] = useState<Window | null>()
   const stripPrefix = '/static/projects/'
+
+  const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
 
   const setDarkMode = useCallback((mode: 'dark' | 'light') => {
     iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', mode as 'light' | 'dark')
@@ -48,8 +51,8 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
     // Apply dark mode
     setDarkMode(colorScheme as 'light' | 'dark')
 
-    const url = iframeRef.current?.contentDocument?.location.href
-    if (url == null) {
+    const iframeHref = iframeRef.current?.contentDocument?.location.href
+    if (iframeHref == null) {
       console.warn('IFrame onload event triggered, but url is null')
       return
     }
@@ -62,25 +65,38 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
     // Make all external links in iframe open in new tab and make internal links replace the iframe url so that change
     // doesn't show up in the page history (we'd need to click back twice)
     iframeRef.current.contentDocument?.querySelectorAll('a').forEach((anchor: HTMLAnchorElement) => {
-      if (!anchor.href.startsWith(window.location.origin)) {
-        anchor.setAttribute('target', '_blank')
-        return
-      }
+      let linkProjectName: string | undefined = undefined
+      // The href might be external or something else. The function is allowed to fail at this point.
+      /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+      try {
+        linkProjectName = sanitizeDocuUri(anchor.href).projectName
+      } catch {}
+      // Backup original href for onclick event
+      const originalLink = anchor.href
+      // Strip iframe prefix from the href for display/copy events
+      const sanitizedLink = new URL(anchor.href, iframeRef.current?.contentDocument?.baseURI).href.replace(
+        stripPrefix,
+        '/'
+      )
 
-      const href = anchor.getAttribute('href') ?? ''
-      if (href.trim() === '') {
+      if (anchor.href.trim() === '') {
         // Ignore empty links, may be handled with js internally.
         // Will inevitably cause the user to have to click back multiple times to get back to the previous page.
         return
       }
+      anchor.href = sanitizedLink
 
-      // Backup original href for onclick event
-      const originalLink = anchor.href
-      // Strip iframe prefix from the href for display/copy events
-      anchor.href = new URL(anchor.href, iframeRef.current?.contentDocument?.baseURI).href.replace(stripPrefix, '/')
-
-      // Links that are to be opened in new tabs should still be opened in new tabs
-      if (anchor.target === '_blank') {
+      /**
+       * Open the link in a new tab when
+       * - The origin differs.
+       * - The link leads to a different project documentation than the one that is currently open.
+       * - The link is already marked with a _blank target.
+       */
+      const isOtherOrigin = !anchor.href.startsWith(window.location.origin)
+      const isOtherProject = linkProjectName !== currentProjectName
+      const hasBlankTarget = anchor.target === '_blank'
+      if (isOtherOrigin || isOtherProject || hasBlankTarget) {
+        anchor.target = '_blank'
         return
       }
 
@@ -92,7 +108,7 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
       }
     })
 
-    const parts = url.split(stripPrefix).slice(1).join(stripPrefix).split('/')
+    const parts = iframeHref.split(stripPrefix).slice(1).join(stripPrefix).split('/')
     const urlPageAndHash = parts.slice(2).join('/')
     const hashIndex = urlPageAndHash.includes('#') ? urlPageAndHash.indexOf('#') : urlPageAndHash.length
     const urlPage = urlPageAndHash.slice(0, hashIndex)
