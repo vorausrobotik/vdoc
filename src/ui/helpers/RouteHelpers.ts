@@ -4,31 +4,34 @@ export interface SanitizeDocUriResI {
   _splat: string
   href: string
 }
-export const sanitizeDocuUri = (
-  href: string,
-  basePath: string,
-  projectName: string,
-  projectVersion: string
-): SanitizeDocUriResI => {
-  const escapeRegExp = (str: string): string => {
-    return str.replace(/[.*+?^=!:${}()|[\]/\\]/g, '\\$&')
-  }
+export const sanitizeDocuUri = (href: string, overrideName?: string, overrideVersion?: string): SanitizeDocUriResI => {
+  href = href.replace('static/projects/', '')
+  try {
+    const url = new URL(href, 'http://dummy-base') // Add dummy base in case href is relative
+    const pathnameParts = url.pathname.split('/').filter(Boolean)
 
-  const escapedBasePath = escapeRegExp(basePath)
+    if (pathnameParts.length < 2) {
+      throw new Error(`Invalid path structure in '${href}'`)
+    }
 
-  const re = new RegExp(
-    String.raw`^${escapedBasePath}(?:\/static)?(?:\/projects)?\/(?<name>[^\/]+)\/(?<version>[^\/#?\n]+)(?:\/(?<remainder>.*?))?(?:\n|$)`
-  )
-  const match = href.match(re)
+    const [name, version, ...remainderParts] = pathnameParts
+    let remainder = remainderParts.join('/')
 
-  if (!match?.groups) {
-    throw new Error(`Unable to sanitize doc URI ${href}`)
-  }
-  const remainder = match.groups.remainder || ''
-  return {
-    projectName: projectName,
-    version: projectVersion,
-    _splat: remainder,
-    href: `${basePath}/${projectName}/${projectVersion}${remainder ? `/${remainder}` : ''}`,
+    if (url.search || url.hash) {
+      remainder += `${url.search}${url.hash}`
+    }
+
+    const basePathPrefix = ['http://', 'https://'].some((word) => href.startsWith(word)) ? url.origin : undefined
+    const _name = overrideName || name
+    const _version = overrideVersion || version
+
+    return {
+      projectName: _name,
+      version: _version,
+      _splat: remainder,
+      href: [basePathPrefix, _name, _version, remainder].filter(Boolean).join('/'),
+    }
+  } catch {
+    throw new Error(`Unable to match URI '${href}'`)
   }
 }
