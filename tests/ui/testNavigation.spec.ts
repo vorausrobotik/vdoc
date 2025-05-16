@@ -7,6 +7,7 @@ await prepareTestSuite(test)
 test('Test navigation back to index page from index page (stay on same page)', async ({ page }) => {
   // GIVEN: The user is on the index page
   await page.goto('/')
+  await page.waitForLoadState()
   await assertIndexPage(page)
   await assertMenuBar(page, `${BASE_URL}/`)
 
@@ -15,6 +16,7 @@ test('Test navigation back to index page from index page (stay on same page)', a
 
   // THEN: The user should stay on the index page
   await assertIndexPage(page)
+  await page.waitForLoadState()
   await assertMenuBar(page, `${BASE_URL}/`)
 })
 
@@ -27,6 +29,7 @@ test('Test navigation back to index page from project documentation', async ({ p
   await page.getByTestId(testIDs.header.logo.main).click()
 
   // THEN: The user should be redirected to the index page
+  await page.waitForLoadState()
   await assertIndexPage(page)
   await assertMenuBar(page, `${BASE_URL}/`)
 })
@@ -34,6 +37,7 @@ test('Test navigation back to index page from project documentation', async ({ p
 test('Test navigation back to index page from project version overview', async ({ page }) => {
   // GIVEN: The user navigates to the version overview of a project
   await page.goto('/example-project-01')
+  await page.waitForLoadState()
   await assertVersionOverview(page, 'example-project-01', {
     v3: ['3.0.0', '3.1.0', '3.2.0'],
     v2: ['2.0.0'],
@@ -45,6 +49,7 @@ test('Test navigation back to index page from project version overview', async (
   await page.getByTestId(testIDs.header.logo.main).click()
 
   // THEN: The user should be redirected to the index page
+  await page.waitForLoadState()
   await assertIndexPage(page)
   await assertMenuBar(page, `${BASE_URL}/`)
 })

@@ -295,6 +295,7 @@ export const openProjectDocumentation = async (page: Page, name: string, version
   const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
 
   await page.goto(`/${name}/${version}`)
+  await page.waitForLoadState()
 
   await expect(page).toHaveURL(`${BASE_URL}/${name}/${version}`)
 
