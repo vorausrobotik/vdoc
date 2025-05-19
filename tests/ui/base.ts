@@ -102,7 +102,7 @@ export const mockAPIRequests = async (page: Page) => {
       response: { json: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png' },
     },
     {
-      pattern: '*/**/api/version',
+      pattern: '*/**/api/version/',
       response: { json: '42.0.42' },
     },
   ]
