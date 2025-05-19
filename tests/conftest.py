@@ -42,8 +42,9 @@ def resource_dir_fixture() -> Path:
 
 
 @pytest.fixture(scope="function", name="api")
-def api_client_fixture() -> TestClient:
-    return TestClient(app)
+def api_client_fixture() -> Generator[TestClient, None, None]:
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture(scope="function", name="authenticated_api")
