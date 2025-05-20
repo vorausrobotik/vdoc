@@ -4,7 +4,7 @@ import logging
 
 from uvicorn import run as uvicorn_run
 
-from vdoc.api import app
+from vdoc.api import create_app
 
 _logger = logging.getLogger(__name__)
 
@@ -17,4 +17,4 @@ def run_impl(bind_address: str, bind_port: int) -> None:
         bind_port: The bind port of the application.
     """
     _logger.info(f"Starting service on '{bind_address}:{bind_port}'")
-    uvicorn_run(app=app, host=bind_address, port=bind_port)
+    uvicorn_run(app=create_app(), host=bind_address, port=bind_port)
