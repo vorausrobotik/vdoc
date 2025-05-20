@@ -1,14 +1,14 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
-import testIDs from './interfacesAndTypes/testIDs'
-import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL, fetchAppVersion } from './helpers/APIFunctions'
+import testIDs from '../interfacesAndTypes/testIDs'
+import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL, fetchAppVersion } from '../helpers/APIFunctions'
 
 import { useNavigate, useParams } from '@tanstack/react-router'
-import VersionDropdown from './components/VersionDropdown'
+import VersionDropdown from './VersionDropdown'
 
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
-import SettingsSidebar from './components/SettingsSidebar'
-import { EffectiveColorMode } from './interfacesAndTypes/ColorModes'
+import SettingsSidebar from './SettingsSidebar'
+import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
 export default function MenuBar() {
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
