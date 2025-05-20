@@ -15,7 +15,7 @@ from httpx import BasicAuth
 from typer.testing import CliRunner
 
 from tests.utils import start_vdoc_server_and_get_uri
-from vdoc.api import app
+from vdoc.api import create_app
 from vdoc.constants import CONFIG_ENV_PREFIX, DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
 
 DUMMY_VERSIONS = (
@@ -43,7 +43,7 @@ def resource_dir_fixture() -> Path:
 
 @pytest.fixture(scope="function", name="api")
 def api_client_fixture() -> Generator[TestClient, None, None]:
-    with TestClient(app) as client:
+    with TestClient(create_app()) as client:
         yield client
 
 
