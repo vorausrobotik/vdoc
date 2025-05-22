@@ -1,10 +1,18 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
-import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL, fetchAppVersion } from '../helpers/APIFunctions'
+import OramaIntegrationT from '../interfacesAndTypes/integrations/OramaIntegrationI'
+import {
+  fetchProjectVersions,
+  fetchProjectVersion,
+  fetchLogoURL,
+  fetchAppVersion,
+  fetchIntegrationConfig,
+} from '../helpers/APIFunctions'
 
 import { useNavigate, useParams } from '@tanstack/react-router'
 import VersionDropdown from './VersionDropdown'
+import { OramaSearchIntegration } from './integrations/OramaSearchIntegration'
 
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SettingsSidebar from './SettingsSidebar'
@@ -18,16 +26,22 @@ export default function MenuBar() {
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
   const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
+  const [oramaIntegrationConfig, setOramaIntegrationConfig] = useState<OramaIntegrationT | null>(null)
   const [logoUrl, setLogoUrl] = useState<string | null | undefined>(null)
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
   useEffect(() => {
-    const fetchData = async (mode: EffectiveColorMode): Promise<[string | null, string]> => {
-      return await Promise.all([fetchLogoURL(mode), fetchAppVersion()])
+    const fetchData = async (mode: EffectiveColorMode): Promise<[string | null, string, OramaIntegrationT]> => {
+      return await Promise.all([
+        fetchLogoURL(mode),
+        fetchAppVersion(),
+        fetchIntegrationConfig<OramaIntegrationT>('orama'),
+      ])
     }
-    fetchData(theme.palette.mode).then(([url, appVersion]) => {
+    fetchData(theme.palette.mode).then(([url, appVersion, oramaIntegrationConfig]) => {
       setLogoUrl(url)
       setAppVersion(appVersion)
+      setOramaIntegrationConfig(oramaIntegrationConfig)
     })
   }, [theme])
 
@@ -107,6 +121,12 @@ export default function MenuBar() {
           </Box>
         )}
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
+        {oramaIntegrationConfig && (
+          <>
+            <OramaSearchIntegration {...oramaIntegrationConfig} />
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
+          </>
+        )}
 
         {projectVersions && latestVersion && params.version && (
           <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>

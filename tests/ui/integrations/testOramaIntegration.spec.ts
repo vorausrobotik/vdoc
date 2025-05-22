@@ -17,8 +17,8 @@ const oramaEnabledDataMock = {
   dictionary: {
     search_placeholder: 'Example search placeholder',
     suggestions: ['Example suggestion 1', 'Example suggestion 2', 'Example suggestion 3'],
-    disclaimer: 'This is a test disclaimer.',
-    chat_button_label: 'Chat button test label',
+    disclaimer: 'Orama can make mistakes. Please verify the information.',
+    chat_button_label: 'Get a summary',
   },
   active: true,
 }
@@ -50,7 +50,7 @@ test.describe('Orama integration tests', () => {
     await expect(searchButton).toContainText(oramaEnabledDataMock.dictionary.search_placeholder)
   })
 
-  test('Orama integration open via keyboard shortcut', async ({ page }) => {
+  test('Active orama integration works as expected', async ({ page }) => {
     await page.route('*/**/api/integrations/orama/', (route) => route.fulfill({ json: oramaEnabledDataMock }))
 
     await page.goto('/')
@@ -83,12 +83,12 @@ test.describe('Orama integration tests', () => {
     }
 
     // Test chat
-    const chatButton = searchBox.getByRole('button', { name: 'Chat button test label' })
+    const chatButton = searchBox.getByRole('button', { name: oramaEnabledDataMock.dictionary.chat_button_label })
     await expect(chatButton).toBeVisible()
     await expect(chatButton).toHaveText(oramaEnabledDataMock.dictionary.chat_button_label)
     await chatButton.click()
 
-    const disclaimer = page.locator('.disclaimer-text').first()
+    const disclaimer = page.locator('.sc-orama-text-h').last()
     await expect(disclaimer).toHaveText(oramaEnabledDataMock.dictionary.disclaimer)
   })
 })

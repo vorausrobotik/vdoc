@@ -25,3 +25,7 @@ export const fetchAppVersion = async (): Promise<string> => {
 export const fetchProjectCategories = async (): Promise<ProjectCategory[]> => {
   return (await axios.get(`/api/project_categories/`)).data
 }
+
+export const fetchIntegrationConfig = async <Type>(name: string): Promise<Type> => {
+  return (await axios.get(`/api/integrations/${name}/`)).data
+}
