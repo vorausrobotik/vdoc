@@ -94,12 +94,19 @@ export const mockAPIRequests = async (page: Page) => {
       response: { json: '1.0.0' },
     },
     {
-      pattern: '*/**/api/settings/logo_url/light',
-      response: { json: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_rgb.png' },
-    },
-    {
-      pattern: '*/**/api/settings/logo_url/dark',
-      response: { json: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png' },
+      pattern: '*/**/api/plugins/theme/',
+      response: {
+        json: {
+          name: 'theme',
+          active: true,
+          light: {
+            logo_url: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_rgb.png',
+          },
+          dark: {
+            logo_url: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png',
+          },
+        },
+      },
     },
     {
       pattern: '*/**/api/version/',

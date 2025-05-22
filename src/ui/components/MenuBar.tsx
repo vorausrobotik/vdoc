@@ -1,14 +1,14 @@
 import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
-import { fetchProjectVersions, fetchProjectVersion, fetchLogoURL, fetchAppVersion } from '../helpers/APIFunctions'
+import ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
+import { fetchProjectVersions, fetchProjectVersion, fetchAppVersion, fetchPluginConfig } from '../helpers/APIFunctions'
 
 import { useNavigate, useParams } from '@tanstack/react-router'
 import VersionDropdown from './VersionDropdown'
 
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SettingsSidebar from './SettingsSidebar'
-import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
 export default function MenuBar() {
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
@@ -18,16 +18,16 @@ export default function MenuBar() {
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
   const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
-  const [logoUrl, setLogoUrl] = useState<string | null | undefined>(null)
+  const [themePluginConfig, setThemePluginConfig] = useState<ThemePluginT | null>(null)
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
   useEffect(() => {
-    const fetchData = async (mode: EffectiveColorMode): Promise<[string | null, string]> => {
-      return await Promise.all([fetchLogoURL(mode), fetchAppVersion()])
+    const fetchData = async (): Promise<[string, ThemePluginT]> => {
+      return await Promise.all([fetchAppVersion(), fetchPluginConfig<ThemePluginT>('theme')])
     }
-    fetchData(theme.palette.mode).then(([url, appVersion]) => {
-      setLogoUrl(url)
+    fetchData().then(([appVersion, themePluginConfig]) => {
       setAppVersion(appVersion)
+      setThemePluginConfig(themePluginConfig)
     })
   }, [theme])
 
@@ -75,6 +75,10 @@ export default function MenuBar() {
     return result
   }, [params.version, projectVersions])
 
+  const logoUrl = useMemo(() => {
+    return themePluginConfig?.[theme.palette.mode]?.logo_url
+  }, [themePluginConfig, theme.palette.mode])
+
   return (
     <AppBar
       position="static"
@@ -86,7 +90,7 @@ export default function MenuBar() {
     >
       <Toolbar>
         {/* Logo with Text */}
-        {logoUrl !== undefined && (
+        {logoUrl && (
           <Box
             sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
             data-testid={testIDs.header.logo.main}
@@ -107,7 +111,6 @@ export default function MenuBar() {
           </Box>
         )}
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
-
         {projectVersions && latestVersion && params.version && (
           <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
             <VersionDropdown

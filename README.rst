@@ -132,3 +132,12 @@ All configuration environment variables are prefixed with ``VDOC_``:
      - An optional list of of project mappings.
      - ``{}``
      - ``{"project-01": "Category 1"}``
+
+
+Plugins
+############
+
+**vdoc** can be extended with plugins. All plugins are inactive by default and need to be enabled with
+environment variables. All environment variables for the plugins are prefixed with ``VDOC_PLUGINS_``.
+
+As soon as plugins are added, this section will be extended with more information.

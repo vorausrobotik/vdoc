@@ -13,8 +13,6 @@ from vdoc.constants import (
     DEFAULT_BIND_ADDRESS,
     DEFAULT_BIND_PORT,
     DEFAULT_DOCS_DIR,
-    DEFAULT_LOGO_DARK_URL,
-    DEFAULT_LOGO_LIGHT_URL,
 )
 from vdoc.models.project_category import ProjectCategory
 
@@ -32,8 +30,6 @@ class VDocSettings(BaseSettings):
 
     project_display_name_mapping: dict[str, str] = {}
 
-    logo_dark_url: str | None = DEFAULT_LOGO_DARK_URL
-    logo_light_url: str | None = DEFAULT_LOGO_LIGHT_URL
     project_categories: list[ProjectCategory] = []
     project_category_mapping: dict[str, str] = {}
 
