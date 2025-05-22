@@ -2,7 +2,10 @@
 
 from pathlib import Path
 
+from pydantic import AnyHttpUrl
+
 CONFIG_ENV_PREFIX = "VDOC_"
+CONFIG_ENV_PREFIX_PLUGINS = f"{CONFIG_ENV_PREFIX}PLUGINS_"
 
 DEFAULT_DOCS_DIR = Path("/srv/vdoc/docs/")
 DEFAULT_API_USERNAME = b"admin"
@@ -10,5 +13,7 @@ DEFAULT_API_PASSWORD = b"admin"
 DEFAULT_BIND_ADDRESS = "0.0.0.0"
 DEFAULT_BIND_PORT = 8080
 
-DEFAULT_LOGO_DARK_URL = "https://logos.vorausrobotik.com/v_rgb.png"
-DEFAULT_LOGO_LIGHT_URL = "https://logos.vorausrobotik.com/v_rgb.png"
+## PLUGIN CONSTANTS
+
+# Theme plugin
+PLUGIN_THEME_DEFAULT_LOGO_URL = AnyHttpUrl("https://logos.vorausrobotik.com/v_rgb.png")

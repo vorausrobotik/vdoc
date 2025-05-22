@@ -9,9 +9,9 @@ from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
+from vdoc.api.routes import plugins as PLUGINS_MODULE
 from vdoc.api.routes import project_categories as PROJECT_CATEGORIES_MODULE
 from vdoc.api.routes import projects as PROJECTS_MODULE
-from vdoc.api.routes import settings as SETTINGS_MODULE
 from vdoc.api.routes import version as VERSION_MODULE
 from vdoc.methods.api.projects import get_project_version_impl
 from vdoc.settings import VDocSettings
@@ -44,9 +44,9 @@ async def routes_loader_lifespan(fastapi: FastAPI) -> AsyncGenerator[None, None]
 
 def _include_static_api_routers(fastapi: FastAPI) -> FastAPI:
     fastapi.include_router(PROJECTS_MODULE.router, prefix="/api")
-    fastapi.include_router(SETTINGS_MODULE.router, prefix="/api")
     fastapi.include_router(PROJECT_CATEGORIES_MODULE.router, prefix="/api")
     fastapi.include_router(VERSION_MODULE.router, prefix="/api")
+    fastapi.include_router(PLUGINS_MODULE.get_router(), prefix="/api")
     return fastapi
 
 
