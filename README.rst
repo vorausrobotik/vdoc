@@ -46,6 +46,12 @@ Run **vdoc** with docker
     docker run -p 8080:8080 -v ./vdoc-docs:/srv/vdoc/docs/ voraus.jfrog.io/docker/vdoc:latest
 
 
+Documentation
+#############
+
+Please read the `documentation <https://vorausrobotik.github.io/vdoc/>`_ for more a more detailed introduction.
+
+
 Building vdoc
 #############
 
