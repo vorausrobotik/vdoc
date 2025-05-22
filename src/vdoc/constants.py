@@ -3,6 +3,7 @@
 from pathlib import Path
 
 CONFIG_ENV_PREFIX = "VDOC_"
+CONFIG_ENV_PREFIX_INTEGRATIONS = f"{CONFIG_ENV_PREFIX}INT_"
 
 DEFAULT_DOCS_DIR = Path("/srv/vdoc/docs/")
 DEFAULT_API_USERNAME = b"admin"

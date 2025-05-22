@@ -76,6 +76,7 @@ ignore-signatures = "yes"
 # Functions need to be annotated
 disallow_untyped_defs = true
 warn_unused_ignores = true
+plugins = ['pydantic.mypy']
 exclude = [
     "vdoc-\\d+",                    # Ignore temporary folder created by setuptools when building an sdist
     "venv.*/",
