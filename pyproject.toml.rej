@@ -1,0 +1,195 @@
+diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
+@@ -6,16 +6,124 @@ build-backend = "setuptools.build_meta"
+ [tool.setuptools_scm]
+ 
+ 
++[project]
++name = "vdoc"
++authors = [
++    { name = "Jan-Frederik Schmidt", email = "jan-frederik.schmidt@vorausrobotik.com" },
++]
++description = "Multi version documentation hosting."
++license = { file = "LICENSE.txt" }
++readme = { file = "README.rst", content-type = "text/x-rst" }
++urls.Repository = "https://github.com/vorausrobotik/vdoc"
++requires-python = ">=3.11"
++dynamic = ["version"]  # Uses setuptools_scm to determine the version
++classifiers = [
++    "Programming Language :: Python",
++    "Programming Language :: Python :: 3",
++    "Programming Language :: Python :: 3 :: Only",
++    "Programming Language :: Python :: 3.11",
++    "Programming Language :: Python :: 3.12",
++    "Programming Language :: Python :: 3.13",
++    "Programming Language :: Python :: Implementation :: PyPy",
++    "Typing :: Typed",
++]
++
++dependencies = [
++    # Begin template-managed dependencies
++    "importlib-metadata",
++    # End template-managed dependencies
++    # Add additional runtime dependencies below this line
++]
++
++# Add CLI entry points here
++[project.scripts]
++# Syntax: <CLI command> = "<import name>.<module>:<object>"
++# For example:
++# vdoc = "vdoc.cli.main:app"
++
++[tool.setuptools.package-data]
++"*" = [
++    "py.typed"
++]
++
++# Optionally: Add more package data here, for example:
++# "vdoc" = [
++#     "assets/**",  # Recursively adds all files in src/vdoc/assets/** to the package
++# ]
++
++[project.optional-dependencies]
++dev = [
++    "vdoc[tox]",
++    "vdoc[lint]",
++    "vdoc[test]",
++    "vdoc[doc]",
++    "vdoc[build]",
++]
++lint = [
++    "vdoc[lint-template]",
++    # Add additional linting dependencies here
++]
++test = [
++    "vdoc[test-template]",
++    # Add additional testing dependencies here
++]
++doc = [
++    "vdoc[doc-template]",
++    # Add additional documentation dependencies below this line
++]
++build = [
++    "vdoc[build-template]",
++    # Add additional build dependencies below this line
++]
++
++###########################################################
++# The following dependencies are managed via the template.#
++# Do not modify them manually to prevent conflicts during #
++# template updates.                                       #
++###########################################################
++
++tox = ["tox==4.11.1"]
++lint-template = [
++    "isort==6.0.0",
++    "black==25.1.0",
++    "mypy==1.15.0",
++    "pylint==3.3.4",
++    "pytest==8.3.4",
++    "types-docutils",
++    "types-setuptools",
++    "jinja2==3.1.5",
++    "ruff==0.9.5",
++]
++test-template = [
++    "pytest==8.3.4",
++    "pytest-randomly==3.16.0",
++    "pytest-cov==6.0.0",
++    "coverage[toml]==7.6.11",
++]
++doc-template = [
++    "sphinx==8.1.3",
++    "sphinxawesome-theme==5.3.2",
++    "sphinx-selective-exclude==1.0.3",
++    "sphinx-autodoc-typehints==3.0.1",
++    "pip-licenses==5.0.0",
++    "jinja2==3.1.5",
++    "doc8==1.1.2",
++    "snowballstemmer==2.2.0",
++]
++
++build-template = ["build[virtualenv]==1.2.2.post1"]
++
++########################################
++# End of template-managed dependencies #
++########################################
++
+ [tool.pyright]
+ exclude = ["build/**"]
+ 
+ [tool.isort]
+ profile = "black"
+ line_length = 120
+-extend_skip_glob = [
+-    "venv*/*",
+-    "log/*"
+-    ]
++extend_skip_glob = ["venv*/*", "log/*"]
+ 
+ [tool.black]
+ line_length = 120
+@@ -25,9 +133,7 @@ extend-exclude = "venv.*"
+ line-length = 120
+ src = ["src"]
+ lint.select = ["C901", "D"]
+-extend-exclude = [
+-    "log",
+-]
++extend-exclude = ["log"]
+ 
+ [tool.ruff.lint.per-file-ignores]
+ "tests/**" = [
+@@ -48,12 +154,12 @@ ignore = [
+     "conf.py", # The Sphinx config file
+     "build",
+     "dist",
+-    "log"
+-    ]
++    "log",
++]
+ ignore-patterns = [
+     "venv.*",
+-    "^\\..+" # Ignore hidden folders or files
+-    ]
++    "^\\..+", # Ignore hidden folders or files
++]
+ 
+ [tool.pylint.messages_control]
+ max-line-length = 120
+@@ -85,8 +191,8 @@ exclude = [
+     "venv.*/",
+     "log/",
+     "build/",
+-    "dist/"
+-    ]
++    "dist/",
++]
+ 
+ [tool.pytest.ini_options]
+ addopts = """
+@@ -108,14 +214,8 @@ branch = true
+ source = ["src/", ".tox/*/lib/python*/site-packages/"]
+ 
+ [tool.coverage.report]
+-exclude_also = [
+-    "\\.\\.\\.",
+-    "if TYPE_CHECKING:"
+-    ]
+-partial_branches = [
+-    "pragma: no branch",
+-    "if not TYPE_CHECKING:"
+-    ]
++exclude_also = ["\\.\\.\\.", "if TYPE_CHECKING:"]
++partial_branches = ["pragma: no branch", "if not TYPE_CHECKING:"]
+ 
+ [tool.coverage.html]
+ directory = "reports/coverage_html"
+@@ -128,7 +228,7 @@ module = [
+     # Ignore packages that do not provide type hints here
+     # For example, add "dash.*" to ignore all imports from Dash
+     "sphinxawesome_theme.postprocess",
+-    ]
++]
+ ignore_missing_imports = true
+ 
+ [tool.doc8]
