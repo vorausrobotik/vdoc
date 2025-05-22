@@ -1,0 +1,94 @@
+import { expect } from '@playwright/test'
+import test, { prepareTestSuite } from '../base'
+import testIDs from '../../../src/ui/interfacesAndTypes/testIDs'
+await prepareTestSuite(test)
+
+const oramaDisabledDataMock = {
+  name: 'orama',
+  active: false,
+}
+
+const oramaEnabledDataMock = {
+  name: 'orama',
+  endpoint: process.env.VDOC_INT_ORAMA_ENDPOINT,
+  api_key: process.env.VDOC_INT_ORAMA_API_KEY,
+  disable_chat: false,
+  facet_property: 'category',
+  dictionary: {
+    search_placeholder: 'Example search placeholder',
+    suggestions: ['Example suggestion 1', 'Example suggestion 2', 'Example suggestion 3'],
+    disclaimer: 'This is a test disclaimer.',
+    chat_button_label: 'Chat button test label',
+  },
+  active: true,
+}
+
+test.describe('Orama integration tests', () => {
+  test('Orama integration must not be visible when disabled', async ({ page }) => {
+    await page.route('*/**/api/integrations/orama/', (route) =>
+      route.fulfill({
+        json: oramaDisabledDataMock,
+      })
+    )
+    await page.goto('/')
+    await page.waitForLoadState()
+
+    await expect(page.getByTestId(testIDs.integrations.orama.searchButton)).not.toBeVisible()
+    await expect(page.getByTestId(testIDs.integrations.orama.searchBox)).not.toBeVisible()
+  })
+
+  test('Orama integration must be visible when enabled', async ({ page }) => {
+    await page.route('*/**/api/integrations/orama/', (route) => route.fulfill({ json: oramaEnabledDataMock }))
+
+    await page.goto('/')
+    await page.waitForLoadState()
+
+    const searchButton = page.getByTestId(testIDs.integrations.orama.searchButton)
+
+    await expect(searchButton).toBeVisible()
+    await expect(page.getByTestId(testIDs.integrations.orama.searchBox)).not.toBeVisible()
+    await expect(searchButton).toContainText(oramaEnabledDataMock.dictionary.search_placeholder)
+  })
+
+  test('Orama integration open via keyboard shortcut', async ({ page }) => {
+    await page.route('*/**/api/integrations/orama/', (route) => route.fulfill({ json: oramaEnabledDataMock }))
+
+    await page.goto('/')
+    await page.waitForLoadState()
+
+    const searchButton = page.getByTestId(testIDs.integrations.orama.searchButton)
+    const searchBox = page.getByTestId(testIDs.integrations.orama.searchBox).locator('#modalContent')
+
+    await expect(searchButton).toBeVisible()
+    await expect(searchBox).not.toBeVisible()
+
+    await page.locator('body').press('ControlOrMeta+k')
+
+    await expect(searchBox).toBeVisible()
+
+    // Test search input
+    const searchInput = searchBox.getByRole('searchbox', { name: 'Example search placeholder' })
+    await expect(searchInput).toBeVisible()
+    await expect(searchInput).toHaveAttribute('placeholder', oramaEnabledDataMock.dictionary.search_placeholder)
+
+    // Test suggestions
+    const suggestions = page.locator('orama-suggestions.sc-orama-search-results')
+    await expect(suggestions).toBeVisible()
+
+    const suggestionButtons = suggestions.getByRole('button')
+    const suggestionsList = oramaEnabledDataMock.dictionary.suggestions
+    await expect(suggestionButtons).toHaveCount(suggestionsList.length)
+    for (let i = 0; i < suggestionsList.length; i++) {
+      await expect(suggestionButtons.nth(i)).toContainText(suggestionsList[i])
+    }
+
+    // Test chat
+    const chatButton = searchBox.getByRole('button', { name: 'Chat button test label' })
+    await expect(chatButton).toBeVisible()
+    await expect(chatButton).toHaveText(oramaEnabledDataMock.dictionary.chat_button_label)
+    await chatButton.click()
+
+    const disclaimer = page.locator('.disclaimer-text').first()
+    await expect(disclaimer).toHaveText(oramaEnabledDataMock.dictionary.disclaimer)
+  })
+})
