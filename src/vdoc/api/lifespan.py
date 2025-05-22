@@ -9,6 +9,7 @@ from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
+from vdoc.api.routes import integrations as INTEGRATIONS_MODULE
 from vdoc.api.routes import project_categories as PROJECT_CATEGORIES_MODULE
 from vdoc.api.routes import projects as PROJECTS_MODULE
 from vdoc.api.routes import settings as SETTINGS_MODULE
@@ -47,6 +48,7 @@ def _include_static_api_routers(fastapi: FastAPI) -> FastAPI:
     fastapi.include_router(SETTINGS_MODULE.router, prefix="/api")
     fastapi.include_router(PROJECT_CATEGORIES_MODULE.router, prefix="/api")
     fastapi.include_router(VERSION_MODULE.router, prefix="/api")
+    fastapi.include_router(INTEGRATIONS_MODULE.get_router(), prefix="/api")
     return fastapi
 
 
