@@ -132,3 +132,53 @@ All configuration environment variables are prefixed with ``VDOC_``:
      - An optional list of of project mappings.
      - ``{}``
      - ``{"project-01": "Category 1"}``
+
+
+Integrations
+############
+
+**vdoc** can be extended with integrations. All integrations are inactive by default and need to be enabled with
+environment variables. All environment variables for the integrations are prefixed with ``VDOC_INT_``.
+
+The following integrations are available.
+
+
+Orama Integration
+*****************
+
+**vdoc** can be extended with an `orama AI search and chat <https://docs.orama.com/>`_ integration.
+
+The following settings are available:
+
+.. list-table:: Orama Integration Environment Variables
+   :widths: 25 25 25 25
+   :header-rows: 1
+
+   * - Environment variable
+     - Explanation
+     - Default
+     - Example
+   * - ``VDOC_INT_ORAMA_ENDPOINT``
+     - The endpoint of the orama index (Mandatory)
+     - ``None``
+     - ``https://cloud.orama.run/v1/indexes/<index-id>``
+   * - ``VDOC_INT_ORAMA_API_KEY``
+     - The API key for the orama API (Mandatory)
+     - ``None``
+     - ``super-secret-key``
+   * - ``VDOC_INT_ORAMA_DISABLE_CHAT``
+     - Disables the AI chat.
+     - ``False``
+     - ``{True, False}``
+   * - ``VDOC_INT_ORAMA_FACET_PROPERTY``
+     - The facet property for the orama index. More information can be found in the orama documentation.
+     - ``None``
+     - ``{'title', 'description', 'category', ...}``
+   * - ``VDOC_INT_ORAMA_DICTIONARY``
+     - Additional dictionary settings for customizing the UI. More information can be found in the
+       `orama-ui-components repository <https://github.com/oramasearch/orama-ui-components>`_.
+       Note that all properties can also be set via
+       `pydantic settings nested parameters <https://docs.pydantic.dev/latest/concepts/pydantic_settings/#parsing-environment-variable-values>`_,
+       e.g. ``VDOC_INT_ORAMA_DICTIONARY__SUGGESTIONS=...``
+     - ``{... None for all configurable dictionary overrides}``
+     - ``{"suggestions": "[\"Example suggestion 1\", \"Example suggestion 2\""}``
