@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import { compression } from 'vite-plugin-compression2'
 import { codecovVitePlugin } from '@codecov/vite-plugin'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,6 +17,12 @@ export default defineConfig({
       bundleName: 'vdoc',
       uploadToken: process.env.CODECOV_TOKEN,
       telemetry: false,
+    }),
+    visualizer({
+      filename: 'reports/bundle-report.html',
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap',
     }),
   ],
   root: 'src/ui',
