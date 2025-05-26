@@ -1,9 +1,9 @@
 import { useMemo, useCallback } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
-import { fetchProjectVersions } from '../../helpers/APIFunctions'
+import { fetchProjectVersions, fetchProjectVersion } from '../../helpers/APIFunctions'
 import { groupVersionsByMajorVersion } from '../../helpers/Versions'
-import { Typography, Container, Chip, Stack, Card, Grid, Box, CardContent } from '@mui/material'
+import { Typography, Container, Chip, Stack, Card, Grid, Box, CardContent, Badge } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
 import testIDs from '../../interfacesAndTypes/testIDs'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
@@ -12,8 +12,8 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 
 export const Route = createFileRoute('/$projectName/')({
   component: ProjectVersionsOverview,
-  loader: async ({ params: { projectName } }) => {
-    return fetchProjectVersions(projectName)
+  loader: async ({ params: { projectName } }): Promise<[string[], string]> => {
+    return Promise.all([fetchProjectVersions(projectName), fetchProjectVersion(projectName, 'latest')])
   },
   pendingComponent: LoadingSpinner,
   errorComponent: ({ error }) => {
@@ -34,7 +34,7 @@ function ProjectVersionsOverview() {
   const { projectName } = Route.useParams()
   const router = useRouter()
 
-  const versions = Route.useLoaderData()
+  const [versions, latestVersion] = Route.useLoaderData()
 
   const groupedVersions: Record<number, string[]> = useMemo(() => {
     return versions ? groupVersionsByMajorVersion(versions) : {}
@@ -58,26 +58,38 @@ function ProjectVersionsOverview() {
                       <Typography variant="h6">v{major}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={1}>
-                      {groupedVersions[Number(major)].map((version) => (
-                        <Chip
-                          data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
-                          key={version}
-                          label={version}
-                          component="a"
-                          onClick={() =>
-                            router.navigate({
-                              to: '/$projectName/$version/$',
-                              from: '/$projectName',
-                              params: {
-                                projectName: projectName,
-                                version: version,
-                              },
-                            })
-                          }
-                          clickable
-                          variant="outlined"
-                        />
-                      ))}
+                      {groupedVersions[Number(major)].map((version) => {
+                        const chip = (
+                          <Chip
+                            data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
+                            key={version}
+                            label={version}
+                            component="a"
+                            onClick={() =>
+                              router.navigate({
+                                to: '/$projectName/$version/$',
+                                from: '/$projectName',
+                                params: {
+                                  projectName: projectName,
+                                  version: version,
+                                },
+                              })
+                            }
+                            clickable
+                          />
+                        )
+                        return version === latestVersion ? (
+                          <Badge
+                            data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.latestBadge}
+                            color="success"
+                            badgeContent="latest"
+                          >
+                            {chip}
+                          </Badge>
+                        ) : (
+                          chip
+                        )
+                      })}
                     </Stack>
                   </CardContent>
                 </Card>

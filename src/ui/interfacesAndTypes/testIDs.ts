@@ -61,6 +61,7 @@ export const testIDs = {
         main: 'project.versionOverview.majorVersionCard',
         versionItem: {
           main: 'project.versionOverview.majorVersionCard.versionItem',
+          latestBadge: 'project.versionOverview.majorVersionCard.versionItem.latestBadge',
         },
       },
     },
