@@ -44,7 +44,7 @@ test('Test navigation index to documentation to version overview', async ({ page
 
   // Navigate to the version overview
   await dropdownItems.showAllItem.click()
-  await assertVersionOverview(page, 'example-project-01', {
+  await assertVersionOverview(page, 'example-project-01', '3.2.0', {
     v3: ['3.0.0', '3.1.0', '3.2.0'],
     v2: ['2.0.0'],
     v1: ['1.0.0'],

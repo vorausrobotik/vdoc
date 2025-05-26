@@ -4,7 +4,6 @@ import type { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTy
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import type { Project } from '../../src/ui/interfacesAndTypes/Project'
 import { themes } from './base'
-
 export const BASE_URL = 'http://localhost:3000'
 
 /**
@@ -317,10 +316,19 @@ export const openProjectDocumentation = async (page: Page, name: string, version
  * @param name The project name.
  * @param expectedVersions The expected versions grouped by major version.
  */
-export const assertVersionOverview = async (page: Page, name: string, expectedVersions: Record<string, string[]>) => {
+export const assertVersionOverview = async (
+  page: Page,
+  name: string,
+  latestVersion: string,
+  expectedVersions: Record<string, string[]>
+) => {
   await expect(page).toHaveURL(`${BASE_URL}/${name}`)
 
   const majorVersionCards = page.getByTestId(testIDs.project.versionOverview.majorVersionCard.main)
+
+  const latestVersionBadge = page.getByTestId(testIDs.project.versionOverview.majorVersionCard.versionItem.latestBadge)
+  await expect(latestVersionBadge).toBeVisible()
+  await expect(latestVersionBadge).toHaveText(`${latestVersion}latest`)
 
   await expect(majorVersionCards).toHaveCount(Object.keys(expectedVersions).length)
 

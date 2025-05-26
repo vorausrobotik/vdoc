@@ -38,7 +38,7 @@ test('Test navigation back to index page from project version overview', async (
   // GIVEN: The user navigates to the version overview of a project
   await page.goto('/example-project-01')
   await page.waitForLoadState()
-  await assertVersionOverview(page, 'example-project-01', {
+  await assertVersionOverview(page, 'example-project-01', '3.2.0', {
     v3: ['3.0.0', '3.1.0', '3.2.0'],
     v2: ['2.0.0'],
     v1: ['1.0.0'],
