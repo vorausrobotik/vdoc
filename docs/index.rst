@@ -1,6 +1,5 @@
 .. include:: ../README.rst
 
-########
 Contents
 ########
 
@@ -8,9 +7,12 @@ Contents
    :maxdepth: 2
 
    vdoc
+   getting_started
+   configuration
+   plugins
+   development
 
 
-##############################
 License Compliance Information
 ##############################
 
