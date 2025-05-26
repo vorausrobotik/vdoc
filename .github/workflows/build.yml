@@ -35,6 +35,12 @@ jobs:
     - name: Build python app
       run: tox run -e build
 
+    - name: Upload rollup visualizer result
+      uses: actions/upload-artifact@v4
+      with:
+        name: rollup-visualizer
+        path: reports/bundle-report.html
+
     - name: Upload python artifacts
       uses: actions/upload-artifact@v4
       with:
