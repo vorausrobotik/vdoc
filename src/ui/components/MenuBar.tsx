@@ -8,6 +8,7 @@ import {
   SelectChangeEvent,
   useTheme,
   Typography,
+  useMediaQuery,
 } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
@@ -22,6 +23,7 @@ import SettingsSidebar from './SettingsSidebar'
 
 function LeftGroup() {
   const theme = useTheme()
+  const useSmallLogo = useMediaQuery(theme.breakpoints.down('md'))
   const [themePluginConfig, setThemePluginConfig] = useState<ThemePluginT | null>(null)
 
   useEffect(() => {
@@ -29,21 +31,27 @@ function LeftGroup() {
   }, [])
 
   const logoUrl = useMemo(() => {
-    return themePluginConfig?.[theme.palette.mode]?.logo_url
-  }, [themePluginConfig, theme.palette.mode])
+    const smallLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url_small
+    const largeLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url
 
-  if (!logoUrl) {
+    if (useSmallLogo && smallLogoUrl) {
+      return smallLogoUrl
+    }
+    } else {
+      return largeLogoUrl ?? smallLogoUrl ?? null
+    }
+
     return null
-  }
+  }, [themePluginConfig, useSmallLogo, theme.palette.mode])
 
   return (
     <Box
-      sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
+      sx={{ display: 'flex', alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
       data-testid={testIDs.header.logo.main}
       component="a"
       href="/"
     >
-      {logoUrl !== null ? (
+      {logoUrl ? (
         <img data-testid={testIDs.header.logo.image} src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
       ) : (
         <Typography data-testid={testIDs.header.logo.text} variant="h6" sx={{ color: theme.palette.text.primary }}>

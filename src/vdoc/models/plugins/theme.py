@@ -2,14 +2,15 @@
 
 from pydantic import AnyHttpUrl, BaseModel
 
-from vdoc.constants import PLUGIN_THEME_DEFAULT_LOGO_URL
+from vdoc.constants import PLUGIN_THEME_DEFAULT_LOGO_URL, PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL
 from vdoc.models.plugins.base import Plugin, ValidPluginsT
 
 
 class ThemeSettings(BaseModel):
     """Mode-based settings for the theme plugin."""
 
-    logo_url: AnyHttpUrl | None = None
+    logo_url: AnyHttpUrl | None = PLUGIN_THEME_DEFAULT_LOGO_URL
+    logo_url_small: AnyHttpUrl | None = PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL
 
 
 class ThemePlugin(Plugin):
@@ -17,8 +18,8 @@ class ThemePlugin(Plugin):
 
     name: ValidPluginsT = "theme"
 
-    light: ThemeSettings = ThemeSettings(logo_url=PLUGIN_THEME_DEFAULT_LOGO_URL)
-    dark: ThemeSettings = ThemeSettings(logo_url=PLUGIN_THEME_DEFAULT_LOGO_URL)
+    light: ThemeSettings = ThemeSettings()
+    dark: ThemeSettings = ThemeSettings()
 
     @property
     def active(self) -> bool:
