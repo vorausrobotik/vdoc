@@ -10,6 +10,40 @@ import VersionDropdown from './VersionDropdown'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SettingsSidebar from './SettingsSidebar'
 
+function LeftGroup() {
+  const theme = useTheme()
+  const [themePluginConfig, setThemePluginConfig] = useState<ThemePluginT | null>(null)
+
+  useEffect(() => {
+    fetchPluginConfig<ThemePluginT>('theme').then((config) => setThemePluginConfig(config))
+  }, [])
+
+  const logoUrl = useMemo(() => {
+    return themePluginConfig?.[theme.palette.mode]?.logo_url
+  }, [themePluginConfig, theme.palette.mode])
+
+  if (!logoUrl) {
+    return null
+  }
+
+  return (
+    <Box
+      sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
+      data-testid={testIDs.header.logo.main}
+      component="a"
+      href="/"
+    >
+      {logoUrl !== null ? (
+        <img data-testid={testIDs.header.logo.image} src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
+      ) : (
+        <Typography data-testid={testIDs.header.logo.text} variant="h6" sx={{ color: theme.palette.text.primary }}>
+          vdoc
+        </Typography>
+      )}
+    </Box>
+  )
+}
+
 export default function MenuBar() {
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
   const params = useParams({ strict: false })
@@ -18,17 +52,12 @@ export default function MenuBar() {
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
   const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
-  const [themePluginConfig, setThemePluginConfig] = useState<ThemePluginT | null>(null)
+
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
+
   useEffect(() => {
-    const fetchData = async (): Promise<[string, ThemePluginT]> => {
-      return await Promise.all([fetchAppVersion(), fetchPluginConfig<ThemePluginT>('theme')])
-    }
-    fetchData().then(([appVersion, themePluginConfig]) => {
-      setAppVersion(appVersion)
-      setThemePluginConfig(themePluginConfig)
-    })
+    fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
   }, [theme])
 
   useEffect(() => {
@@ -75,10 +104,6 @@ export default function MenuBar() {
     return result
   }, [params.version, projectVersions])
 
-  const logoUrl = useMemo(() => {
-    return themePluginConfig?.[theme.palette.mode]?.logo_url
-  }, [themePluginConfig, theme.palette.mode])
-
   return (
     <AppBar
       position="static"
@@ -89,27 +114,8 @@ export default function MenuBar() {
       elevation={0}
     >
       <Toolbar>
-        {/* Logo with Text */}
-        {logoUrl && (
-          <Box
-            sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
-            data-testid={testIDs.header.logo.main}
-            component="a"
-            href="/"
-          >
-            {logoUrl !== null ? (
-              <img data-testid={testIDs.header.logo.image} src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
-            ) : (
-              <Typography
-                data-testid={testIDs.header.logo.text}
-                variant="h6"
-                sx={{ color: theme.palette.text.primary }}
-              >
-                vdoc
-              </Typography>
-            )}
-          </Box>
-        )}
+        {/* Logo and/or Text */}
+        <LeftGroup />
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
         {projectVersions && latestVersion && params.version && (
           <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
