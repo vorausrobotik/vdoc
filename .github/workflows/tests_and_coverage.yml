@@ -106,6 +106,9 @@ jobs:
 
       - name: Run Playwright tests
         run: npm run test:e2e
+        env:
+          VDOC_PLUGINS_ORAMA_ENDPOINT: "${{ secrets.ORAMA_API_ENDPOINT }}"
+          VDOC_PLUGINS_ORAMA_API_KEY: "${{ secrets.ORAMA_API_KEY }}"
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
