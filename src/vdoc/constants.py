@@ -17,3 +17,4 @@ DEFAULT_BIND_PORT = 8080
 
 # Theme plugin
 PLUGIN_THEME_DEFAULT_LOGO_URL = AnyHttpUrl("https://logos.vorausrobotik.com/v_rgb.png")
+PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL = AnyHttpUrl("https://logos.vorausrobotik.com/v_rgb.png")

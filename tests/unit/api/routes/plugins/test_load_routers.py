@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from pytest import FixtureRequest
 
-from vdoc.constants import PLUGIN_THEME_DEFAULT_LOGO_URL
+from vdoc.constants import PLUGIN_THEME_DEFAULT_LOGO_URL, PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL
 from vdoc.models.plugins.theme import ThemePlugin
 
 
@@ -28,8 +28,10 @@ def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: Fixture
         "active": True,
         "dark": {
             "logo_url": str(PLUGIN_THEME_DEFAULT_LOGO_URL),
+            "logo_url_small": str(PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL),
         },
         "light": {
             "logo_url": str(PLUGIN_THEME_DEFAULT_LOGO_URL),
+            "logo_url_small": str(PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL),
         },
     }

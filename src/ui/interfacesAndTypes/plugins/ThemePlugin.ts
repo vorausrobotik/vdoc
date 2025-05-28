@@ -2,6 +2,7 @@ import { PluginBaseT } from './PluginBase'
 
 type ThemeSettingsT = {
   logo_url?: string
+  logo_url_small?: string
 }
 
 type ThemePluginFields = {
