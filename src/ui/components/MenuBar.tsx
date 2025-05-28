@@ -36,7 +36,6 @@ function LeftGroup() {
 
     if (useSmallLogo && smallLogoUrl) {
       return smallLogoUrl
-    }
     } else {
       return largeLogoUrl ?? smallLogoUrl ?? null
     }
