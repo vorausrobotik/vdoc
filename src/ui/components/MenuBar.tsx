@@ -1,4 +1,14 @@
-import { Box, BoxProps, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
+import {
+  Box,
+  BoxProps,
+  Grid,
+  IconButton,
+  AppBar,
+  Toolbar,
+  SelectChangeEvent,
+  useTheme,
+  Typography,
+} from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
 import ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
@@ -102,23 +112,23 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
 
   return (
     <>
-      {projectVersions && latestVersion && params.version && (
-        <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right' }}>
+        {projectVersions && latestVersion && params.version && (
           <VersionDropdown
             selectedVersion={getSelectedVersion}
             latestVersion={latestVersion}
             versions={projectVersions}
             onVersionChange={handleVersionSelectChange}
           />
-        </Box>
-      )}
-      <IconButton
-        data-testid={testIDs.header.settingsButton}
-        aria-label="Open App Settings"
-        onClick={() => setSidebarOpen(true)}
-      >
-        <SettingsOutlinedIcon />
-      </IconButton>
+        )}
+        <IconButton
+          data-testid={testIDs.header.settingsButton}
+          aria-label="Open App Settings"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <SettingsOutlinedIcon />
+        </IconButton>
+      </Box>
     </>
   )
 }
@@ -143,11 +153,18 @@ export default function MenuBar() {
       elevation={0}
     >
       <Toolbar>
-        {/* Logo and/or Text */}
-        <LeftGroup />
-        <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
-        {/* Optional version dropdown and settings button */}
-        <RightGroup setSidebarOpen={setSidebarOpen} />
+        <Grid container alignItems="center" justifyContent="space-between" sx={{ width: '100%' }} wrap="nowrap">
+          {/* Logo and/or Text */}
+          <Grid size="auto">
+            <LeftGroup />
+          </Grid>
+          {/* Spacer */}
+          <Grid size="auto"></Grid>
+          {/* Optional version dropdown and settings button */}
+          <Grid size={{ sm: 12, md: 2 }}>
+            <RightGroup setSidebarOpen={setSidebarOpen} />
+          </Grid>
+        </Grid>
       </Toolbar>
       <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} appVersion={appVersion} />
     </AppBar>
