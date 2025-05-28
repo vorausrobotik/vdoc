@@ -1,4 +1,4 @@
-import { Box, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
+import { Box, BoxProps, IconButton, AppBar, Toolbar, SelectChangeEvent, useTheme, Typography } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
 import ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
@@ -44,21 +44,17 @@ function LeftGroup() {
   )
 }
 
-export default function MenuBar() {
-  const navigate = useNavigate({ from: '/$projectName/$version/$' })
+interface RightGroupPros extends BoxProps {
+  setSidebarOpen: (open: boolean) => void
+}
+
+function RightGroup({ setSidebarOpen }: RightGroupPros) {
   const params = useParams({ strict: false })
-  const theme = useTheme()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const navigate = useNavigate({ from: '/$projectName/$version/$' })
 
   const [projectName, setProjectName] = useState<string | undefined>(undefined)
-  const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
-
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
-  }, [theme])
 
   useEffect(() => {
     const fetchData = async (name: string): Promise<[string[], string]> => {
@@ -105,6 +101,39 @@ export default function MenuBar() {
   }, [params.version, projectVersions])
 
   return (
+    <>
+      {projectVersions && latestVersion && params.version && (
+        <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
+          <VersionDropdown
+            selectedVersion={getSelectedVersion}
+            latestVersion={latestVersion}
+            versions={projectVersions}
+            onVersionChange={handleVersionSelectChange}
+          />
+        </Box>
+      )}
+      <IconButton
+        data-testid={testIDs.header.settingsButton}
+        aria-label="Open App Settings"
+        onClick={() => setSidebarOpen(true)}
+      >
+        <SettingsOutlinedIcon />
+      </IconButton>
+    </>
+  )
+}
+
+export default function MenuBar() {
+  const theme = useTheme()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
+  }, [theme])
+
+  return (
     <AppBar
       position="static"
       data-testid={testIDs.header.main}
@@ -117,23 +146,8 @@ export default function MenuBar() {
         {/* Logo and/or Text */}
         <LeftGroup />
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }} />
-        {projectVersions && latestVersion && params.version && (
-          <Box sx={{ flexGrow: 0, display: { xs: 'flex' } }}>
-            <VersionDropdown
-              selectedVersion={getSelectedVersion}
-              latestVersion={latestVersion}
-              versions={projectVersions}
-              onVersionChange={handleVersionSelectChange}
-            />
-          </Box>
-        )}
-        <IconButton
-          data-testid={testIDs.header.settingsButton}
-          aria-label="Open App Settings"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <SettingsOutlinedIcon />
-        </IconButton>
+        {/* Optional version dropdown and settings button */}
+        <RightGroup setSidebarOpen={setSidebarOpen} />
       </Toolbar>
       <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} appVersion={appVersion} />
     </AppBar>
