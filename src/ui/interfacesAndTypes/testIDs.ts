@@ -78,6 +78,12 @@ export const testIDs = {
     description: 'errorComponent.description',
     actionButton: 'errorComponent.actionButton',
   },
+  plugins: {
+    orama: {
+      searchButton: 'plugins.orama.searchButton',
+      searchBox: 'plugins.orama.searchBox',
+    },
+  },
 } as const
 
 export default testIDs
