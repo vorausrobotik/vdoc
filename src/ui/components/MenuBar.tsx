@@ -34,10 +34,9 @@ function LeftGroup() {
     const smallLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url_small
     const largeLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url
 
-    if (useSmallLogo) {
-      if (smallLogoUrl) {
-        return smallLogoUrl
-      }
+    if (useSmallLogo && smallLogoUrl) {
+      return smallLogoUrl
+    }
     } else {
       return largeLogoUrl ?? smallLogoUrl ?? null
     }
