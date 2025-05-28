@@ -28,11 +28,3 @@ Documentation
 #############
 
 Please read the `documentation <https://vorausrobotik.github.io/vdoc/>`_ for more a more detailed introduction.
-
-
-
-
-
-
-
-

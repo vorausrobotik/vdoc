@@ -20,10 +20,12 @@ import VersionDropdown from './VersionDropdown'
 
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SettingsSidebar from './SettingsSidebar'
+import OramaSearchPlugin from './plugins/OramaSearchPlugin'
+import OramaPluginT from '../interfacesAndTypes/plugins/OramaPluginT'
 
 function LeftGroup() {
   const theme = useTheme()
-  const useSmallLogo = useMediaQuery(theme.breakpoints.down('md'))
+  const useSmallLogo = useMediaQuery(theme.breakpoints.down('lg'))
   const [themePluginConfig, setThemePluginConfig] = useState<ThemePluginT | null>(null)
 
   useEffect(() => {
@@ -59,6 +61,19 @@ function LeftGroup() {
       )}
     </Box>
   )
+}
+
+function MiddleGroup() {
+  const [oramaPluginConfig, setOramaPluginConfig] = useState<OramaPluginT | null>(null)
+
+  useEffect(() => {
+    fetchPluginConfig<OramaPluginT>('orama').then((config) => setOramaPluginConfig(config))
+  }, [])
+
+  if (!oramaPluginConfig?.active) {
+    return null
+  }
+  return <OramaSearchPlugin {...oramaPluginConfig} />
 }
 
 interface RightGroupPros extends BoxProps {
@@ -119,7 +134,7 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right' }}>
+      <Box>
         {projectVersions && latestVersion && params.version && (
           <VersionDropdown
             selectedVersion={getSelectedVersion}
@@ -128,6 +143,8 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
             onVersionChange={handleVersionSelectChange}
           />
         )}
+      </Box>
+      <Box>
         <IconButton
           data-testid={testIDs.header.settingsButton}
           aria-label="Open App Settings"
@@ -160,16 +177,34 @@ export default function MenuBar() {
       elevation={0}
     >
       <Toolbar>
-        <Grid container alignItems="center" justifyContent="space-between" sx={{ width: '100%' }} wrap="nowrap">
+        <Grid
+          container
+          spacing={1}
+          sx={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+          wrap="nowrap"
+        >
           {/* Logo and/or Text */}
-          <Grid size="auto">
-            <LeftGroup />
+          <Grid id="appBarLeftGroup" size={{ xs: 1, sm: 1, md: 1, lg: 3 }}>
+            <Box display="flex" justifyContent="flex-start">
+              <LeftGroup />
+            </Box>
           </Grid>
-          {/* Spacer */}
-          <Grid size="auto"></Grid>
+          {/* Searchbar */}
+          <Grid id="appBarMiddleGroup" size={{ xs: 6, sm: 7, md: 8, lg: 6 }}>
+            <Box display="flex" justifyContent="center">
+              <MiddleGroup />
+            </Box>
+          </Grid>
           {/* Optional version dropdown and settings button */}
-          <Grid size={{ sm: 12, md: 2 }}>
-            <RightGroup setSidebarOpen={setSidebarOpen} />
+          <Grid id="appBarRightGroup" size={{ xs: 5, sm: 4, md: 3, lg: 3 }}>
+            <Box display="flex" justifyContent="flex-end">
+              <RightGroup setSidebarOpen={setSidebarOpen} />
+            </Box>
           </Grid>
         </Grid>
       </Toolbar>
