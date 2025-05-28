@@ -57,26 +57,36 @@ function ProjectVersionsOverview() {
                       <SellIcon />
                       <Typography variant="h6">v{major}</Typography>
                     </Stack>
-                    <Stack direction="row" spacing={1}>
+                    <Grid
+                      container
+                      direction="row"
+                      spacing={1}
+                      sx={{
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
                       {groupedVersions[Number(major)].map((version) => {
                         const chip = (
-                          <Chip
-                            data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
-                            key={version}
-                            label={version}
-                            component="a"
-                            onClick={() =>
-                              router.navigate({
-                                to: '/$projectName/$version/$',
-                                from: '/$projectName',
-                                params: {
-                                  projectName: projectName,
-                                  version: version,
-                                },
-                              })
-                            }
-                            clickable
-                          />
+                          <Grid sx={{ mb: 1 }}>
+                            <Chip
+                              data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
+                              key={version}
+                              label={version}
+                              component="a"
+                              onClick={() =>
+                                router.navigate({
+                                  to: '/$projectName/$version/$',
+                                  from: '/$projectName',
+                                  params: {
+                                    projectName: projectName,
+                                    version: version,
+                                  },
+                                })
+                              }
+                              clickable
+                            />
+                          </Grid>
                         )
                         return version === latestVersion ? (
                           <Badge
@@ -90,7 +100,7 @@ function ProjectVersionsOverview() {
                           chip
                         )
                       })}
-                    </Stack>
+                    </Grid>
                   </CardContent>
                 </Card>
               </Grid>
