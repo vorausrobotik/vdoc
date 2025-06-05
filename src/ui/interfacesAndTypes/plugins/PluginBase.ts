@@ -3,6 +3,10 @@ export interface PluginBaseI {
   name: string
 }
 
+type OptionalNullable<T> = {
+  [K in keyof T]?: T[K] | null
+}
+
 export type PluginBaseT<TFields> =
-  | (PluginBaseI & { name: string; active: false } & { [K in keyof TFields]: TFields[K] | null })
-  | (PluginBaseI & { name: string; active: true } & TFields)
+  | (PluginBaseI & { active: false } & OptionalNullable<TFields>)
+  | (PluginBaseI & { active: true } & TFields)
