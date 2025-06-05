@@ -56,10 +56,7 @@ def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: Fixture
 def test_inactive_plugins(api: TestClient) -> None:
     response = api.get("/api/plugins/")
     assert response.status_code == 200
-    assert response.json() == [
-        "orama",
-        "theme",
-    ]
+    assert response.json() == ["footer", "orama", "theme"]
 
     # Test the Orama plugin endpoint
     assert api.get("/api/plugins/orama/").json() == {
