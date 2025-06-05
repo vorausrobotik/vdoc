@@ -1,6 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import MenuBar from '../components/MenuBar'
+import { FooterPlugin } from '../components/plugins/FooterPlugin'
 import { Box, CssBaseline, ThemeProvider, createTheme, useColorScheme } from '@mui/material'
 const theme = createTheme({
   colorSchemes: {
@@ -18,9 +19,20 @@ function ThemedComponent() {
     return null
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <Box id="rootComponent" sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <MenuBar />
-      <Outlet />
+      <Box
+        sx={{
+          height: '100vh',
+          flex: 1,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Outlet />
+      </Box>
+      <FooterPlugin />
     </Box>
   )
 }

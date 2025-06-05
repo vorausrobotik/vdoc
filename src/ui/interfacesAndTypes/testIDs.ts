@@ -83,6 +83,17 @@ export const testIDs = {
       searchButton: 'plugins.orama.searchButton',
       searchBox: 'plugins.orama.searchBox',
     },
+    footer: {
+      main: 'footer',
+      copyright: 'footer.copyright',
+      linkGroup: {
+        main: 'footer.linkGroup',
+        title: 'footer.linkGroup.title',
+        link: {
+          main: 'footer.linkGroup.link.main',
+        },
+      },
+    },
   },
 } as const
 

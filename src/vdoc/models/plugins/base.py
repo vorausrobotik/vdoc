@@ -15,7 +15,7 @@ from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
 _logger = logging.getLogger(__name__)
 
 
-ValidPluginsT = Literal["theme", "orama"]
+ValidPluginsT = Literal["theme", "orama", "footer"]
 
 
 class Plugin(BaseSettings, ABC):
