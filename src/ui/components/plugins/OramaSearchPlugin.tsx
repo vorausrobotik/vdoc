@@ -63,6 +63,7 @@ export const OramaSearchPlugin = (config: OramaPluginT) => {
           title: 'title',
           section: 'category',
         }}
+        sourceBaseUrl={window.origin}
       />
     </Box>
   )
