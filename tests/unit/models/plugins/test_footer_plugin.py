@@ -40,3 +40,4 @@ def test_footer_plugin_from_env() -> None:
     assert plugin.links[0].links[0].title == "Email"
     assert plugin.links[0].links[0].icon == "email"
     assert plugin.links[0].links[0].href == AnyUrl("mailto:service@example.com")
+    assert plugin.links[0].links[0].target == "_blank"
