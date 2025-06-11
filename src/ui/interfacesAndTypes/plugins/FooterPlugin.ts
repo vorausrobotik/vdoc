@@ -7,6 +7,7 @@ import BugReportIcon from '@mui/icons-material/BugReport'
 import HomeIcon from '@mui/icons-material/Home'
 
 type iconT = 'email' | 'support' | 'public' | 'github' | 'bugs' | 'home'
+type targetT = '_blank' | '_self' | '_parent' | '_top'
 
 export const iconMap: Record<iconT, React.ElementType> = {
   email: EmailIcon,
@@ -21,6 +22,7 @@ export type FooterLinkT = {
   title: string
   icon: iconT
   href: string
+  target: targetT
 }
 
 export type FooterLinkGroupT = {
