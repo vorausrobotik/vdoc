@@ -57,6 +57,7 @@ export const FooterPlugin = () => {
                           sx={{ textTransform: 'none', mr: 1 }}
                           component={Link}
                           href={link.href}
+                          target={link.target}
                           startIcon={<LinkIcon />}
                           variant="outlined"
                         >

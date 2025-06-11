@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from '../base'
+import { assertLinkOpensInNewTab } from '../helpers'
 import testIDs from '../../../src/ui/interfacesAndTypes/testIDs'
 import { FooterPluginT } from '../../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
 await prepareTestSuite(test)
@@ -21,11 +22,13 @@ const footerEnabledDataMock: FooterPluginT = {
           title: 'Email',
           icon: 'email',
           href: 'mailto:service@example.com',
+          target: '_self',
         },
         {
           title: 'Service Board',
           icon: 'support',
-          href: 'https://example.com',
+          href: 'https://example.com/',
+          target: '_blank',
         },
       ],
     },
@@ -36,12 +39,14 @@ const footerEnabledDataMock: FooterPluginT = {
         {
           title: 'example.com',
           icon: 'home',
-          href: 'https://example.com',
+          href: 'https://example.com/',
+          target: '_blank',
         },
         {
           title: 'GitHub',
           icon: 'github',
           href: 'https://github.com/example/',
+          target: '_blank',
         },
       ],
     },
@@ -96,18 +101,22 @@ test.describe('Footer plugin tests', () => {
         {
           title: 'Email',
           href: 'mailto:service@example.com',
+          target: '_self',
         },
         {
           title: 'Service Board',
-          href: 'https://example.com',
+          href: 'https://example.com/',
+          target: '_blank',
         },
         {
           title: 'example.com',
-          href: 'https://example.com',
+          href: 'https://example.com/',
+          target: '_blank',
         },
         {
           title: 'GitHub',
           href: 'https://github.com/example/',
+          target: '_blank',
         },
       ]
       const linkLocators = page.getByTestId(testIDs.plugins.footer.linkGroup.link.main)
@@ -115,6 +124,10 @@ test.describe('Footer plugin tests', () => {
       for (const [index, link] of expectedLinks.entries()) {
         await expect(linkLocators.nth(index)).toHaveText(link.title)
         await expect(linkLocators.nth(index)).toHaveAttribute('href', link.href)
+        await expect(linkLocators.nth(index)).toHaveAttribute('target', link.target)
+        if (link.target === '_blank') {
+          await assertLinkOpensInNewTab(page, linkLocators.nth(index), link.href)
+        }
       }
     })
   })
