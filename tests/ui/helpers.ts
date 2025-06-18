@@ -172,13 +172,14 @@ export const assertIndexPage = async (
         ).toContainText(project.display_name)
 
         // Assert documentation button
-        await expect(
-          projectCards
-            .nth(projectIndex)
-            .getByTestId(
-              testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
-            )
-        ).toBeVisible()
+        const documentationButton = projectCards
+          .nth(projectIndex)
+          .getByTestId(
+            testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
+          )
+        await expect(documentationButton).toBeVisible()
+        await expect(documentationButton).toHaveText('Documentation')
+        await expect(documentationButton).toHaveAttribute('href', `/${project.name}/latest/`)
       }
     }
   }

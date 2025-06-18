@@ -73,7 +73,7 @@ function IndexProjectCard({ project }: { project: Project }) {
               testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
             }
             to={`/$projectName/$version/$`}
-            params={{ projectName: project.name, version: 'latest' }}
+            params={{ projectName: project.name, version: 'latest', _splat: '' }}
             size="small"
           >
             Documentation
