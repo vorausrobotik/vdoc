@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { compression } from 'vite-plugin-compression2'
 import { codecovVitePlugin } from '@codecov/vite-plugin'
 import { visualizer } from 'rollup-plugin-visualizer'
@@ -8,7 +8,10 @@ import { visualizer } from 'rollup-plugin-visualizer'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    TanStackRouterVite({ routesDirectory: 'src/ui/routes/', generatedRouteTree: 'src/ui/routeTree.gen.ts' }),
+    tanstackRouter({
+      routesDirectory: 'src/ui/routes/',
+      generatedRouteTree: 'src/ui/routeTree.gen.ts',
+    }),
     react(),
     compression(),
     // Put the Codecov vite plugin after all other plugins
