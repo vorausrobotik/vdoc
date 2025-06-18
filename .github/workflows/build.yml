@@ -35,6 +35,17 @@ jobs:
     - name: Build python app
       run: tox run -e build
 
+    - name: Require non dirty git workspace
+      run: |
+        CHANGES=$(git status --porcelain)
+        if [[ -n "$CHANGES" ]]; then
+          echo "❌ Workspace is dirty. The following files have been modified:"
+          echo "$CHANGES"
+          exit 1
+        else
+          echo "✅ Workspace is clean."
+        fi
+
     - name: Upload rollup visualizer result
       uses: actions/upload-artifact@v4
       with:
