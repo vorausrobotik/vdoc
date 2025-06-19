@@ -7,6 +7,8 @@ import { testIDs } from '../interfacesAndTypes/testIDs'
 import { useColorScheme } from '@mui/material'
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { sanitizeDocuUri } from '../helpers/RouteHelpers'
+import { toggleDocumentationColorScheme } from '../helpers/IFrame'
+import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
 interface Props {
   src: string
@@ -25,23 +27,8 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
 
   const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
 
-  const setDarkMode = useCallback((mode: 'dark' | 'light') => {
-    iframeRef?.current?.contentWindow?.localStorage.setItem('darkMode', mode as 'light' | 'dark')
-    const documentElement = iframeRef?.current?.contentDocument?.documentElement
-    if (!documentElement) {
-      return
-    }
-    // https://jothepro.github.io/doxygen-awesome-css/md_docs_tricks.html#tricks-darkmode
-    const isDoxygen = documentElement?.getAttribute('xmlns') === 'http://www.w3.org/1999/xhtml'
-    if (isDoxygen) {
-      documentElement.classList.remove('light-mode', 'dark-mode')
-      documentElement.classList.add(mode === 'dark' ? 'dark-mode' : 'light-mode')
-    }
-    // If not Doxygen, use the standard dark class (in our case sphinx awesome using tailwind)
-    // https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually
-    else {
-      documentElement.classList.toggle('dark', mode === 'dark')
-    }
+  const setDarkMode = useCallback((mode: EffectiveColorMode) => {
+    toggleDocumentationColorScheme(iframeRef, mode)
   }, [])
 
   // Update documentation's theme
