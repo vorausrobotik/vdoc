@@ -27,15 +27,15 @@
   "devDependencies": {
     "@codecov/vite-plugin": "^1.9.1",
     "@eslint/js": "^9.29.0",
-    "@playwright/test": "^1.53.0",
-    "@tanstack/eslint-plugin-query": "^5.78.0",
-    "@tanstack/router-devtools": "^1.121.21",
-    "@tanstack/router-plugin": "^1.121.21",
+    "@playwright/test": "^1.53.1",
+    "@tanstack/eslint-plugin-query": "^5.81.2",
+    "@tanstack/router-devtools": "^1.121.33",
+    "@tanstack/router-plugin": "^1.121.33",
     "@types/node": "^24.0.3",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react-swc": "^3.10.2",
-    "@vitest/coverage-v8": "^3.2.3",
+    "@vitest/coverage-v8": "^3.2.4",
     "dotenv": "^16.5.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
@@ -48,7 +48,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^6.3.5",
-    "vite-plugin-compression2": "^2.0.1",
+    "vite-plugin-compression2": "^2.2.0",
     "vitest": "^3.0.5"
   }
 }
