@@ -22,7 +22,7 @@ export const FooterPlugin = () => {
       <Container maxWidth="xl" sx={{ py: 1 }}>
         <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={6}>
           {/* Copyright */}
-          <Grid data-testid={testIDs.plugins.footer.copyright}>
+          <Grid key={'Copyright'} data-testid={testIDs.plugins.footer.copyright}>
             <Typography variant="body2" color="text.secondary">
               © {new Date().getFullYear()} {footerPluginConfig.copyright}
             </Typography>
@@ -30,7 +30,7 @@ export const FooterPlugin = () => {
           {/* Link groups */}
           {footerPluginConfig.links.map((linkGroup) => {
             return (
-              <>
+              <div key={linkGroup.title}>
                 <Divider orientation="vertical" flexItem sx={{ display: { md: 'none', lg: 'block' } }} />
                 <Grid>
                   <Stack
@@ -67,7 +67,7 @@ export const FooterPlugin = () => {
                     })}
                   </Stack>
                 </Grid>
-              </>
+              </div>
             )
           })}
         </Grid>
