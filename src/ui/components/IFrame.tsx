@@ -12,7 +12,7 @@ import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
 interface Props {
   src: string
-  onPageChanged: (page: string, hash: string, title?: string) => void
+  onPageChanged: (page: string) => void
   onHashChanged: (hash: string) => void
   onTitleChanged: (title: string) => void
   onNotFound: () => void
@@ -111,7 +111,9 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
     const urlPage = urlPageAndHash.slice(0, hashIndex)
     const urlHash = urlPageAndHash.slice(hashIndex)
     const title = iframeRef.current?.contentDocument?.title
-    onPageChanged(urlPage, urlHash, title)
+    onPageChanged(urlPage)
+    onHashChanged(urlHash)
+    onTitleChanged(title ?? '')
   }
 
   const hashChangeEventListener = useCallback((): void => {

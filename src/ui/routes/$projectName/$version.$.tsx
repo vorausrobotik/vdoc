@@ -81,44 +81,33 @@ function DocuIFrame(props: DocuIFramePropsI) {
   const [error, setError] = useState<Error | null>(null)
   const router = useRouter()
 
-  const iFrameSrc = useMemo(() => {
-    const hashSuffix = props.hash.trim() !== '' ? `#${props.hash}` : ''
-    return `/static/projects/${props.name}/${props.version}/${props.page}${hashSuffix}`
-  }, [props.name, props.page, props.hash, props.version])
+  const [iframeState, setIFrameState] = useState({
+    name: props.name,
+    page: props.page,
+    hash: props.hash,
+  })
 
-  const updateUrl = (name: string, version: string, page: string, hash: string): void => {
-    const hashSuffix = hash.trim() !== '' ? `#${hash}` : ''
-    const toParams = {
-      projectName: name,
-      version: version,
-      _splat: `${page}${hashSuffix}`,
+  const iFrameSrc = useMemo(() => {
+    const hashSuffix = iframeState.hash.trim() !== '' ? `#${iframeState.hash}` : ''
+    return `/static/projects/${iframeState.name}/${props.version}/${iframeState.page}${hashSuffix}`
+  }, [iframeState.name, props.version, iframeState.page, iframeState.hash])
+
+  const iframeTitleChanged = (newTitle: string | undefined | null): void => {
+    if (newTitle && newTitle !== document.title) {
+      document.title = newTitle
     }
-    router.navigate({
-      from: '/$projectName/$version/$',
-      to: '/$projectName/$version/$',
-      params: toParams,
+  }
+
+  const iFramePageChanged = (newPage: string): void => {
+    setIFrameState((prevState) => {
+      return { ...prevState, page: newPage }
     })
   }
 
-  const updateTitle = (newTitle: string): void => {
-    document.title = newTitle
-  }
-
-  const iFramePageChanged = (urlPage: string, urlHash: string, title?: string): void => {
-    if (title != null && title !== document.title) {
-      updateTitle(title)
-    }
-    if (urlPage === props.page) {
-      return
-    }
-    updateUrl(props.name, props.version, urlPage, urlHash)
-  }
-
   const iFrameHashChanged = (newHash: string): void => {
-    if (newHash === props.hash) {
-      return
-    }
-    updateUrl(props.name, props.version, props.page, newHash)
+    setIFrameState((prevState) => {
+      return { ...prevState, hash: newHash }
+    })
   }
 
   const iFrameNotFound = (): void => {
@@ -130,7 +119,18 @@ function DocuIFrame(props: DocuIFramePropsI) {
     if (error) {
       throw error
     }
-  }, [error])
+    const hashSuffix = iframeState.hash.trim() !== '' ? `#${iframeState.hash}` : ''
+    const toParams = {
+      projectName: iframeState.name,
+      version: props.version,
+      _splat: `${iframeState.page}${hashSuffix}`,
+    }
+    router.navigate({
+      from: '/$projectName/$version/$',
+      to: '/$projectName/$version/$',
+      params: toParams,
+    })
+  }, [error, iframeState.name, props.version, iframeState.page, iframeState.hash, router])
 
   return (
     <div data-testid={testIDs.project.documentation.main} style={{ display: 'contents' }}>
@@ -141,7 +141,7 @@ function DocuIFrame(props: DocuIFramePropsI) {
         src={iFrameSrc}
         onPageChanged={iFramePageChanged}
         onHashChanged={iFrameHashChanged}
-        onTitleChanged={updateTitle}
+        onTitleChanged={iframeTitleChanged}
         onNotFound={iFrameNotFound}
       />
     </div>
