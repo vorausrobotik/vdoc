@@ -291,13 +291,18 @@ export const switchColorMode = async (page: Page, mode: ColorMode) => {
  * @param version The project version.
  * @returns The iframe locator.
  */
-export const openProjectDocumentation = async (page: Page, name: string, version: string): Promise<Locator> => {
+export const openProjectDocumentation = async (
+  page: Page,
+  name: string,
+  version: string,
+  latestVersion?: string
+): Promise<Locator> => {
   const docIframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
 
   await page.goto(`/${name}/${version}`)
   await page.waitForLoadState()
 
-  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version}`)
+  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version === 'latest' ? latestVersion : version}`)
 
   await expect(docIframe).toBeVisible({ timeout: 10000 })
 

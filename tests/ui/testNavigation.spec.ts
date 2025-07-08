@@ -22,7 +22,7 @@ test('Test navigation back to index page from index page (stay on same page)', a
 
 test('Test navigation back to index page from project documentation', async ({ page }) => {
   // GIVEN: The user navigates to the documentation of a project
-  await openProjectDocumentation(page, 'example-project-01', 'latest')
+  await openProjectDocumentation(page, 'example-project-01', 'latest', '3.2.0')
   await assertMenuBar(page, `${BASE_URL}/`)
 
   // WHEN: The user clicks on the logo

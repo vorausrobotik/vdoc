@@ -34,7 +34,7 @@ test('Test navigation index to documentation to version overview', async ({ page
   // Navigate to the latest documentation of example-project-01
   await documentationButton.click()
   await page.waitForLoadState()
-  await expect(page).toHaveURL(/.*example-project-01\/latest/)
+  await expect(page).toHaveURL(/.*example-project-01\/3.2.0/)
 
   // Ensure documentation is rendered in the iframe
   await expect(docIframe.contentFrame().locator('html')).toContainText(expectedDocumentationContent)

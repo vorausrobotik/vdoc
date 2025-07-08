@@ -5,7 +5,7 @@ import { openProjectDocumentation, assertLinksOnPage, assertLinkOpensInNewTab, B
 await prepareTestSuite(test)
 
 test('Test link substitution', async ({ page }) => {
-  const documentation = await openProjectDocumentation(page, 'example-project-01', 'latest')
+  const documentation = await openProjectDocumentation(page, 'example-project-01', 'latest', '3.2.0')
 
   // Expect the documentation iframe to display the mocked documentation page
   await expect(documentation).toContainText('Hello, this is a mocked documentation component.')
