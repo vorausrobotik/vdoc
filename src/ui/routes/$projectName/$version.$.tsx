@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { useRef } from 'react'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useRouter, useLocation } from '@tanstack/react-router'
 
 import { fetchProjectVersion } from '../../helpers/APIFunctions'
@@ -13,19 +12,28 @@ import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
 import IFrame from '../../components/IFrame'
 
-const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<[string, string]> => {
+const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown
   await fetchProjectVersion(projectName, version)
 
-  const latestVersion = await fetchProjectVersion(projectName, 'latest')
-
-  return [version, latestVersion]
+  return await fetchProjectVersion(projectName, 'latest')
 }
 
 export const Route = createFileRoute('/$projectName/$version/$')({
   component: DocumentationComponent,
-  loader: async ({ params: { projectName, version } }) => {
-    return fetchVersionAndLatestVersion(projectName, version)
+  loader: async ({ params: { projectName, version, _splat } }) => {
+    const latestVersion = await fetchVersionAndLatestVersion(projectName, version)
+    if (version === 'latest') {
+      throw redirect({
+        to: '/$projectName/$version/$',
+        params: {
+          projectName,
+          version: latestVersion,
+          _splat: _splat || '',
+        },
+      })
+    }
+    return [version, latestVersion]
   },
   pendingComponent: LoadingSpinner,
   errorComponent: ({ error }) => {
@@ -72,13 +80,11 @@ interface DocuIFramePropsI {
 function DocuIFrame(props: DocuIFramePropsI) {
   const [error, setError] = useState<Error | null>(null)
   const router = useRouter()
-  const resolvedVersion = useRef<string>(props.version === 'latest' ? props.latestVersion : props.version)
 
   const iFrameSrc = useMemo(() => {
-    const resolvedVersion = props.version === 'latest' ? props.latestVersion : props.version
     const hashSuffix = props.hash.trim() !== '' ? `#${props.hash}` : ''
-    return `/static/projects/${props.name}/${resolvedVersion}/${props.page}${hashSuffix}`
-  }, [props.name, props.page, props.hash, props.version, props.latestVersion])
+    return `/static/projects/${props.name}/${props.version}/${props.page}${hashSuffix}`
+  }, [props.name, props.page, props.hash, props.version])
 
   const updateUrl = (name: string, version: string, page: string, hash: string): void => {
     const hashSuffix = hash.trim() !== '' ? `#${hash}` : ''
@@ -105,14 +111,14 @@ function DocuIFrame(props: DocuIFramePropsI) {
     if (urlPage === props.page) {
       return
     }
-    updateUrl(props.name, resolvedVersion.current, urlPage, urlHash)
+    updateUrl(props.name, props.version, urlPage, urlHash)
   }
 
   const iFrameHashChanged = (newHash: string): void => {
     if (newHash === props.hash) {
       return
     }
-    updateUrl(props.name, resolvedVersion.current, props.page, newHash)
+    updateUrl(props.name, props.version, props.page, newHash)
   }
 
   const iFrameNotFound = (): void => {
