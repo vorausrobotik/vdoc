@@ -302,7 +302,7 @@ export const openProjectDocumentation = async (
   await page.goto(`/${name}/${version}`)
   await page.waitForLoadState()
 
-  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version === 'latest' ? latestVersion : version}`)
+  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version === 'latest' ? latestVersion : version}/`)
 
   await expect(docIframe).toBeVisible({ timeout: 10000 })
 
