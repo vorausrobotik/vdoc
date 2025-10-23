@@ -1,0 +1,57 @@
+diff a/tox.ini b/tox.ini	(rejected hunks)
+@@ -5,12 +5,21 @@ envlist =
+     combine-test-reports
+ isolated_build = True
+ 
++[testenv]
++# Passes host environment variables to the tox environment.
++passenv =
++    CODEMETER_HOST
++    SOURCE_DATE_EPOCH
++# Define additional environment variables for all test environments.
++setenv = []
+ 
+ [testenv:lint]
+ description = Run static checkers.
+ basepython = py311
++setenv =
++    {[testenv]setenv}
++    DOCSDIR = {toxinidir}/docs
+ extras = lint
+-passenv = CODEMETER_HOST
+ commands =
+     # Check import ordering
+     isort . --check
+@@ -23,6 +32,8 @@ commands =
+     pylint . {posargs}
+     # Check that function argument names are consistent between function signatures and docstrings
+     pylint --load-plugins pylint.extensions.docparams src {posargs}
++    # Check .rst files
++    doc8 {env:DOCSDIR}
+ 
+ 
+ [testenv:py311-test]
+@@ -32,7 +43,6 @@ extras = test
+ setenv =
+     PY_IGNORE_IMPORTMISMATCH=1
+     COVERAGE_FILE = reports{/}.coverage.{envname}
+-passenv = CODEMETER_HOST
+ commands =
+     # Run tests and doctests from .py files
+     pytest --junitxml=reports/pytest.xml.{envname} {posargs} src/ tests/
+@@ -60,7 +70,6 @@ setenv =
+     DOCSDIR = {toxinidir}/docs
+     BUILDDIR = {toxinidir}/docs/build
+ extras = doc
+-passenv = CODEMETER_HOST
+ commands =
+     # Remove build directory
+     python -c 'import shutil; shutil.rmtree("{env:BUILDDIR}", ignore_errors=True);'
+@@ -84,7 +91,6 @@ commands =
+ [testenv:build]
+ description = Build the package.
+ extras = build
+-passenv = CODEMETER_HOST
+ commands =
+     # Clean up build directories
+     python -c 'from shutil import rmtree; rmtree("build", True); rmtree("dist", True)'

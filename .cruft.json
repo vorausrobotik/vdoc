@@ -1,6 +1,6 @@
 {
   "template": "git@github.com:vorausrobotik/voraus-cookiecutter-pypackage.git",
-  "commit": "dcfe4ff456a0d832507cb3d27b30961f2ad79885",
+  "commit": "8f9dafa4df4f1b67949954e150254200487ac5f9",
   "checkout": "development",
   "context": {
     "cookiecutter": {
@@ -22,7 +22,7 @@
         "jreleaser.yml"
       ],
       "_template": "git@github.com:vorausrobotik/voraus-cookiecutter-pypackage.git",
-      "_commit": "dcfe4ff456a0d832507cb3d27b30961f2ad79885"
+      "_commit": "8f9dafa4df4f1b67949954e150254200487ac5f9"
     }
   },
   "directory": null
