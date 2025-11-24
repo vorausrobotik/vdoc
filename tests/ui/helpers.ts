@@ -179,7 +179,7 @@ export const assertIndexPage = async (
           )
         await expect(documentationButton).toBeVisible()
         await expect(documentationButton).toHaveText('Documentation')
-        await expect(documentationButton).toHaveAttribute('href', `/${project.name}/latest/`)
+        await expect(documentationButton).toHaveAttribute('href', `/${project.name}/latest`)
       }
     }
   }
@@ -302,7 +302,7 @@ export const openProjectDocumentation = async (
   await page.goto(`/${name}/${version}`)
   await page.waitForLoadState()
 
-  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version === 'latest' ? latestVersion : version}/`)
+  await expect(page).toHaveURL(`${BASE_URL}/${name}/${version === 'latest' ? latestVersion : version}`)
 
   await expect(docIframe).toBeVisible({ timeout: 10000 })
 
