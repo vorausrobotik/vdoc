@@ -30,7 +30,7 @@
     "@playwright/test": "^1.57.0",
     "@tanstack/eslint-plugin-query": "^5.91.2",
     "@tanstack/router-devtools": "^1.140.0",
-    "@tanstack/router-plugin": "^1.140.0",
+    "@tanstack/router-plugin": "1.121.34",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
