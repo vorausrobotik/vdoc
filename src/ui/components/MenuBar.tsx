@@ -84,7 +84,6 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
   const params = useParams({ strict: false })
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
 
-  const [projectName, setProjectName] = useState<string | undefined>(undefined)
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
 
@@ -94,15 +93,11 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
     }
     if (params.projectName) {
       fetchData(params.projectName).then(([versions, latestVersion]) => {
-        setProjectName(params.projectName)
         setProjectVersions(versions)
         setLatestVersion(latestVersion)
       })
-    } else {
-      setProjectVersions(undefined)
-      setLatestVersion(undefined)
     }
-  }, [params, projectName])
+  }, [params.projectName])
 
   const handleVersionSelectChange = (event: SelectChangeEvent) => {
     const selectedVersion = event.target.value
@@ -135,7 +130,7 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
   return (
     <>
       <Box>
-        {projectVersions && latestVersion && params.version && (
+        {projectVersions && latestVersion && params.projectName && params.version && (
           <VersionDropdown
             selectedVersion={getSelectedVersion}
             latestVersion={latestVersion}
