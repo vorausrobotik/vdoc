@@ -50,5 +50,10 @@
     "vite": "^7.2.7",
     "vite-plugin-compression2": "^2.4.0",
     "vitest": "^4.0.15"
+  },
+  "overrides": {
+    "@codecov/vite-plugin": {
+      "vite": "^7.0.0"
+    }
   }
 }
