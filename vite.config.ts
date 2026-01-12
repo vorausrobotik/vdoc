@@ -9,8 +9,8 @@ import { visualizer } from 'rollup-plugin-visualizer'
 export default defineConfig({
   plugins: [
     tanstackRouter({
-      routesDirectory: 'src/ui/routes/',
-      generatedRouteTree: 'src/ui/routeTree.gen.ts',
+      routesDirectory: 'routes/',
+      generatedRouteTree: 'routeTree.gen.ts',
     }),
     react(),
     compression(),
