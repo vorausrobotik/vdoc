@@ -77,7 +77,7 @@ function ProjectVersionsOverview() {
                               onClick={() =>
                                 router.navigate({
                                   to: '/$projectName/$version/$',
-                                  from: '/$projectName',
+                                  from: '/$projectName/',
                                   params: {
                                     projectName: projectName,
                                     version: version,
