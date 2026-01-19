@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { BASE_URL, assertIndexPage, assertMenuBar, openProjectDocumentation, assertVersionOverview } from './helpers'
@@ -52,4 +53,38 @@ test('Test navigation back to index page from project version overview', async (
   await page.waitForLoadState()
   await assertIndexPage(page)
   await assertMenuBar(page, `${BASE_URL}/`)
+})
+
+test('Test forward and backward browser navigation', async ({ page }) => {
+  // GIVEN: The user opens a documentation
+  const documentation = await openProjectDocumentation(page, 'example-project-01', 'latest', '3.2.0')
+  const baseUrl = `${BASE_URL}/example-project-01/3.2.0`
+
+  // THEN: The documentation main (index) page must be shown
+  await expect(page).toHaveURL(baseUrl)
+  await expect(documentation).toContainText('Hello, this is a mocked documentation component.')
+
+  // WHEN: The user navigates to a sub (example) page of the documentation
+  await documentation.getByRole('link', { name: /examples\.html/i }).click()
+  await page.waitForLoadState()
+
+  // THEN: The sub page must be shown
+  await expect(page).toHaveURL(`${baseUrl}/examples.html`)
+  await expect(documentation).toContainText('This is a mocked examples page')
+
+  // WHEN: The user uses the "navigate back" browser button / feature
+  await page.goBack()
+  await page.waitForLoadState()
+
+  // THEN: The documentation main (index) page must be shown again
+  await expect(page).toHaveURL(baseUrl)
+  await expect(documentation).toContainText('Hello, this is a mocked documentation component.')
+
+  // WHEN: The user uses the "navigate forward" browser button / feature
+  await page.goForward()
+  await page.waitForLoadState()
+
+  // THEN: The sub page must be shown again
+  await expect(page).toHaveURL(`${baseUrl}/examples.html`)
+  await expect(documentation).toContainText('This is a mocked examples page')
 })
