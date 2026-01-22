@@ -3,6 +3,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useRouter, useLocation } from '@tanstack/react-router'
 
 import { fetchProjectVersion } from '../../helpers/APIFunctions'
+import { IFrameLocation } from '../../helpers/IFrame'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 import testIDs from '../../interfacesAndTypes/testIDs'
@@ -81,9 +82,11 @@ function DocuIFrame(props: DocuIFramePropsI) {
   const [error, setError] = useState<Error | null>(null)
   const router = useRouter()
 
-  const [iframeState, setIFrameState] = useState({
+  const [iframeState, setIFrameState] = useState<IFrameLocation>({
     name: props.name,
+    version: props.version,
     page: props.page,
+    title: '',
     hash: props.hash,
   })
 

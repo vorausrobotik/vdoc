@@ -7,6 +7,7 @@ import { testIDs } from '../interfacesAndTypes/testIDs'
 import { useColorScheme } from '@mui/material'
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { sanitizeDocuUri } from '../helpers/RouteHelpers'
+import { parseIFrameHref } from '../helpers/IFrame'
 import { toggleDocumentationColorScheme } from '../helpers/IFrame'
 import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
@@ -48,8 +49,8 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
     // Apply dark mode
     setDarkMode(colorScheme as 'light' | 'dark')
 
-    const iframeHref = iframeRef.current?.contentDocument?.location.href
-    if (iframeHref == null) {
+    const iframeLocation = parseIFrameHref(iframeRef, stripPrefix)
+    if (iframeLocation == null) {
       console.warn('IFrame onload event triggered, but url is null')
       return
     }
@@ -105,15 +106,9 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
       }
     })
 
-    const parts = iframeHref.split(stripPrefix).slice(1).join(stripPrefix).split('/')
-    const urlPageAndHash = parts.slice(2).join('/')
-    const hashIndex = urlPageAndHash.includes('#') ? urlPageAndHash.indexOf('#') : urlPageAndHash.length
-    const urlPage = urlPageAndHash.slice(0, hashIndex)
-    const urlHash = urlPageAndHash.slice(hashIndex + 1) // +1 to skip the '#' character
-    const title = iframeRef.current?.contentDocument?.title
-    onPageChanged(urlPage)
-    onHashChanged(urlHash)
-    onTitleChanged(title ?? '')
+    onPageChanged(iframeLocation.page)
+    onHashChanged(iframeLocation.hash)
+    onTitleChanged(iframeLocation.title ?? '')
   }
 
   const hashChangeEventListener = useCallback((): void => {
