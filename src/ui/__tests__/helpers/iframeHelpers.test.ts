@@ -94,7 +94,7 @@ describe('toggleDocumentationColorScheme', () => {
 })
 
 describe('parseIFrameHref', () => {
-  let iframeRef: React.RefObject<HTMLIFrameElement>
+  let iframeRef: React.RefObject<HTMLIFrameElement | null>
   const stripPrefix = '/static/projects/'
 
   beforeEach(() => {
@@ -154,6 +154,7 @@ describe('parseIFrameHref', () => {
         name: 'example-project',
         version: '1.0.0',
         page: 'index.html',
+        search: new URLSearchParams(''),
         hash: '',
         title: 'Index Page',
       },
@@ -166,6 +167,7 @@ describe('parseIFrameHref', () => {
         name: 'example-project',
         version: '1.0.0',
         page: 'docs.html',
+        search: new URLSearchParams(''),
         hash: 'section',
         title: 'Documentation',
       },
@@ -178,6 +180,7 @@ describe('parseIFrameHref', () => {
         name: 'example-project',
         version: '2.0.0',
         page: 'api/modules/core.html',
+        search: new URLSearchParams(''),
         hash: '',
         title: 'Core Module',
       },
@@ -190,6 +193,7 @@ describe('parseIFrameHref', () => {
         name: 'project',
         version: '1.0.0',
         page: 'api/classes/MyClass.html',
+        search: new URLSearchParams(''),
         hash: 'method',
         title: 'MyClass',
       },
@@ -202,6 +206,7 @@ describe('parseIFrameHref', () => {
         name: 'example',
         version: '1.0.0',
         page: 'page.html',
+        search: new URLSearchParams(''),
         hash: '',
         title: '',
       },
@@ -214,6 +219,7 @@ describe('parseIFrameHref', () => {
         name: 'example',
         version: '1.0.0',
         page: '',
+        search: new URLSearchParams(''),
         hash: '',
         title: 'Project Root',
       },
@@ -226,8 +232,61 @@ describe('parseIFrameHref', () => {
         name: 'proj',
         version: '1.0.0',
         page: 'page.html',
+        search: new URLSearchParams(''),
         hash: 'section-1.2.3',
         title: 'Page',
+      },
+    },
+    {
+      description: 'parses URL with search parameters only',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?highlight=term',
+      title: 'Page',
+      expected: {
+        name: 'proj',
+        version: '1.0.0',
+        page: 'page.html',
+        search: new URLSearchParams('highlight=term'),
+        hash: '',
+        title: 'Page',
+      },
+    },
+    {
+      description: 'parses URL with multiple search parameters and hash',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search&filter=all#foo',
+      title: 'Page',
+      expected: {
+        name: 'proj',
+        version: '1.0.0',
+        page: 'page.html',
+        search: new URLSearchParams('q=search&filter=all'),
+        hash: 'foo',
+        title: 'Page',
+      },
+    },
+    {
+      description: 'parses URL with search and hash',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=test#section',
+      title: 'Page',
+      expected: {
+        name: 'proj',
+        version: '1.0.0',
+        page: 'page.html',
+        search: new URLSearchParams('q=test'),
+        hash: 'section',
+        title: 'Page',
+      },
+    },
+    {
+      description: 'parses URL with nested path, search and hash',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/api/docs.html?tab=examples#code',
+      title: 'API Docs',
+      expected: {
+        name: 'proj',
+        version: '1.0.0',
+        page: 'api/docs.html',
+        search: new URLSearchParams('tab=examples'),
+        hash: 'code',
+        title: 'API Docs',
       },
     },
   ])('$description', ({ href, title, expected }) => {

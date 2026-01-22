@@ -6,57 +6,17 @@
   <body>
     <div class="container mx-auto">
       <h1 class="text-3xl">Search Results</h1>
-      <div class="search-container">
-        <form id="search-form" action="search.html" method="get">
-          <input
-            type="text"
-            name="q"
-            id="search-input"
-            placeholder="Search documentation..."
-            class="w-full p-2 border rounded"
-          />
-          <button type="submit" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded">Search</button>
-        </form>
-      </div>
-      <div id="search-results" class="mt-4">
-        <!-- Search results will be displayed here based on query parameter -->
-      </div>
+      <form id="search-form" action="search.html" method="get">
+        <input type="text" name="q" id="search-input" class="w-full p-2 border rounded" />
+        <button type="submit" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded">Search</button>
+      </form>
+      <div id="search-results" class="mt-4"></div>
     </div>
     <script>
-      // Extract search query from URL
-      const urlParams = new URLSearchParams(window.location.search)
-      const query = urlParams.get('q')
-      const searchInput = document.getElementById('search-input')
-      const searchResults = document.getElementById('search-results')
-
+      const query = new URLSearchParams(window.location.search).get('q')
       if (query) {
-        searchInput.value = query
-        // Display mock search results
-        searchResults.innerHTML = `
-          <h2 class="text-2xl mb-4">Results for "${query}"</h2>
-          <ul role="list" class="divide-y divide-gray-100">
-            <li class="flex justify-between py-5">
-              <div>
-                <a href="index.html" class="font-bold">Introduction</a>
-                <p class="text-sm">Found match for "${query}" in the introduction...</p>
-              </div>
-            </li>
-            <li class="flex justify-between py-5">
-              <div>
-                <a href="examples.html#example-${query}">Example: ${query}</a>
-                <p class="text-sm">Example demonstrating ${query} functionality...</p>
-              </div>
-            </li>
-            <li class="flex justify-between py-5">
-              <div>
-                <a href="api.html#${query}">API Reference: ${query}</a>
-                <p class="text-sm">API documentation for ${query}...</p>
-              </div>
-            </li>
-          </ul>
-        `
-      } else {
-        searchResults.innerHTML = '<p class="text-gray-500">Enter a search term to find results.</p>'
+        document.getElementById('search-input').value = query
+        document.getElementById('search-results').innerHTML = `<h2 class="text-2xl">Results for "${query}"</h2>`
       }
     </script>
   </body>

@@ -17,6 +17,7 @@ test('Test link substitution', async ({ page }) => {
     `${baseUrl}/#`,
     `${baseUrl}/index.html`,
     `${baseUrl}/examples.html`,
+    `${baseUrl}/search.html`,
     'https://www.sphinx-doc.org/',
     'https://example.com/',
   ])
@@ -38,6 +39,7 @@ test('Test link substitution', async ({ page }) => {
     `${baseUrl}/index.html#`,
     `${baseUrl}/index.html`,
     `${baseUrl}/examples.html`,
+    `${baseUrl}/search.html`,
     'https://www.sphinx-doc.org/',
     'https://example.com/',
   ])
