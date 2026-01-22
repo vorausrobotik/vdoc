@@ -109,7 +109,7 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
     const urlPageAndHash = parts.slice(2).join('/')
     const hashIndex = urlPageAndHash.includes('#') ? urlPageAndHash.indexOf('#') : urlPageAndHash.length
     const urlPage = urlPageAndHash.slice(0, hashIndex)
-    const urlHash = urlPageAndHash.slice(hashIndex)
+    const urlHash = urlPageAndHash.slice(hashIndex + 1) // +1 to skip the '#' character
     const title = iframeRef.current?.contentDocument?.title
     onPageChanged(urlPage)
     onHashChanged(urlHash)

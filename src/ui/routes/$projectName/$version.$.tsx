@@ -88,9 +88,9 @@ function DocuIFrame(props: DocuIFramePropsI) {
   })
 
   const iFrameSrc = useMemo(() => {
-    const hashSuffix = iframeState.hash.trim() !== '' ? `#${iframeState.hash}` : ''
-    return `/static/projects/${iframeState.name}/${props.version}/${iframeState.page}${hashSuffix}`
-  }, [iframeState.name, props.version, iframeState.page, iframeState.hash])
+    const hashSuffix = props.hash.trim() !== '' ? `#${props.hash}` : ''
+    return `/static/projects/${props.name}/${props.version}/${props.page}${hashSuffix}`
+  }, [props.name, props.version, props.page, props.hash])
 
   const iframeTitleChanged = (newTitle: string | undefined | null): void => {
     if (newTitle && newTitle !== document.title) {
