@@ -348,3 +348,33 @@ export const assertVersionOverview = async (
     expect(await minorAndPatchVersionItems.allTextContents()).toStrictEqual(expectedMinorAndPatchVersions)
   })
 }
+
+/**
+ * Fills in the search form in the iframe and submits it.
+ *
+ * @param iframeDocument The iframe document locator.
+ * @param searchTerm The term to search for.
+ */
+export const performSearch = async (iframeDocument: Locator, searchTerm: string) => {
+  const searchInput = iframeDocument.locator('#search-input')
+  await expect(searchInput).toBeVisible()
+  await searchInput.fill(searchTerm)
+
+  const searchForm = iframeDocument.locator('#search-form')
+  await searchForm.evaluate((form: HTMLFormElement) => form.submit())
+}
+
+/**
+ * Asserts that the search results page is displayed with the expected search term.
+ *
+ * @param iframeDocument The iframe document locator.
+ * @param searchTerm The expected search term.
+ */
+export const assertSearchResults = async (iframeDocument: Locator, searchTerm: string) => {
+  await expect(iframeDocument.locator('h1')).toContainText('Search Results')
+  await expect(iframeDocument.locator('h2')).toContainText(`Results for "${searchTerm}"`)
+
+  // Verify search input is populated with the search term
+  const searchInput = iframeDocument.locator('#search-input')
+  await expect(searchInput).toHaveValue(searchTerm)
+}
