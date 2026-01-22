@@ -1,7 +1,15 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import { BASE_URL, assertIndexPage, assertMenuBar, openProjectDocumentation, assertVersionOverview } from './helpers'
+import {
+  BASE_URL,
+  assertIndexPage,
+  assertMenuBar,
+  openProjectDocumentation,
+  assertVersionOverview,
+  performSearch,
+  assertSearchResults,
+} from './helpers'
 
 await prepareTestSuite(test)
 
@@ -87,4 +95,52 @@ test('Test forward and backward browser navigation', async ({ page }) => {
   // THEN: The sub page must be shown again
   await expect(page).toHaveURL(`${baseUrl}/examples.html`)
   await expect(documentation).toContainText('This is a mocked examples page')
+})
+
+test('Test search feature with URL parameter synchronization', async ({ page }) => {
+  // GIVEN: The user opens a documentation
+  const documentation = await openProjectDocumentation(page, 'example-project-01', 'latest', '3.2.0')
+  const baseUrl = `${BASE_URL}/example-project-01/3.2.0`
+
+  // WHEN: The user navigates to the search page
+  await documentation.getByRole('link', { name: /search documentation/i }).click()
+  await page.waitForLoadState()
+
+  // THEN: The search page must be shown without query parameters
+  await expect(page).toHaveURL(`${baseUrl}/search.html`)
+  await expect(documentation.locator('h1')).toContainText('Search Results')
+
+  // WHEN: The user performs a search
+  const searchTerm = 'test-query'
+  await performSearch(documentation, searchTerm)
+  await page.waitForLoadState()
+
+  // THEN: The search results must be shown with the query parameter in the browser URL
+  await expect(page).toHaveURL(`${baseUrl}/search.html?q=${searchTerm}`)
+  await assertSearchResults(documentation, searchTerm)
+
+  // WHEN: The user performs another search with a different term
+  const newSearchTerm = 'another-search'
+  await performSearch(documentation, newSearchTerm)
+  await page.waitForLoadState()
+
+  // THEN: The browser URL must update with the new search parameter
+  await expect(page).toHaveURL(`${baseUrl}/search.html?q=${newSearchTerm}`)
+  await assertSearchResults(documentation, newSearchTerm)
+
+  // WHEN: The user uses the "navigate back" browser button
+  await page.goBack()
+  await page.waitForLoadState()
+
+  // THEN: The previous search results must be shown with the original query parameter
+  await expect(page).toHaveURL(`${baseUrl}/search.html?q=${searchTerm}`)
+  await assertSearchResults(documentation, searchTerm)
+
+  // WHEN: The user uses the "navigate forward" browser button
+  await page.goForward()
+  await page.waitForLoadState()
+
+  // THEN: The newer search results must be shown again
+  await expect(page).toHaveURL(`${baseUrl}/search.html?q=${newSearchTerm}`)
+  await assertSearchResults(documentation, newSearchTerm)
 })

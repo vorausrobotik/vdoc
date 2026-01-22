@@ -30,15 +30,19 @@ export const mockAPIRequests = async (page: Page) => {
       response: { body: fs.readFileSync(path.resolve('tests/ui/resources/mockedIndex.html')) },
     },
     {
-      pattern: '*/**/static/projects/**/examples.html',
+      pattern: '*/**/static/projects/**/examples.html*',
       response: { body: fs.readFileSync(path.resolve('tests/ui/resources/mockedExamples.html')) },
+    },
+    {
+      pattern: '*/**/static/projects/**/search.html*',
+      response: { body: fs.readFileSync(path.resolve('tests/ui/resources/mockedSearch.html')) },
     },
     {
       pattern: '*/**/static/projects/**/style.css',
       response: { body: fs.readFileSync(path.resolve('tests/ui/resources/style.css')) },
     },
     {
-      pattern: '*/**/static/projects/example-project-03/1.0.0/nonexisting.html',
+      pattern: '*/**/static/projects/example-project-03/1.0.0/nonexisting.html*',
       response: { body: fs.readFileSync(path.resolve('tests/ui/resources/nonExisting.html')) },
     },
     {
