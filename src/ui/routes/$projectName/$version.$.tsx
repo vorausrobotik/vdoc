@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useRouter, useLocation } from '@tanstack/react-router'
+import { object, optional, string } from 'valibot'
 
 import { fetchProjectVersion } from '../../helpers/APIFunctions'
 import { IFrameLocation } from '../../helpers/IFrame'
@@ -13,6 +14,11 @@ import DeprecatedVersionBanner from '../../components/DeprecatedVersionBanner'
 import SearchOffIcon from '@mui/icons-material/SearchOff'
 import IFrame from '../../components/IFrame'
 
+// Schema for search parameters
+const searchSchema = object({
+  q: optional(string()),
+})
+
 const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown
   await fetchProjectVersion(projectName, version)
@@ -22,6 +28,7 @@ const fetchVersionAndLatestVersion = async (projectName: string, version: string
 
 export const Route = createFileRoute('/$projectName/$version/$')({
   component: DocumentationComponent,
+  validateSearch: searchSchema,
   loader: async ({ params: { projectName, version, _splat } }) => {
     const latestVersion = await fetchVersionAndLatestVersion(projectName, version)
     if (version === 'latest') {
@@ -63,8 +70,9 @@ function DocumentationComponent() {
       latestVersion: latestVersion,
       page: _splat || '',
       hash: location.hash,
+      search: location.search,
     }),
-    [_splat, location.hash, latestVersion, projectName, resolvedVersion]
+    [_splat, location.hash, location.search, latestVersion, projectName, resolvedVersion]
   )
 
   return <DocuIFrame {...iframeProps} />
@@ -76,6 +84,7 @@ interface DocuIFramePropsI {
   latestVersion: string
   page: string
   hash: string
+  search: object
 }
 
 function DocuIFrame(props: DocuIFramePropsI) {
@@ -88,12 +97,16 @@ function DocuIFrame(props: DocuIFramePropsI) {
     page: props.page,
     title: '',
     hash: props.hash,
+    search: new URLSearchParams(),
   })
 
   const iFrameSrc = useMemo(() => {
     const hashSuffix = props.hash.trim() !== '' ? `#${props.hash}` : ''
-    return `/static/projects/${props.name}/${props.version}/${props.page}${hashSuffix}`
-  }, [props.name, props.version, props.page, props.hash])
+    const searchParams = new URLSearchParams(props.search as Record<string, string>)
+    const searchString = searchParams.toString()
+    const searchSuffix = searchString ? `?${searchString}` : ''
+    return `/static/projects/${props.name}/${props.version}/${props.page}${searchSuffix}${hashSuffix}`
+  }, [props.name, props.version, props.page, props.hash, props.search])
 
   const iframeTitleChanged = (newTitle: string | undefined | null): void => {
     if (newTitle && newTitle !== document.title) {
@@ -113,6 +126,12 @@ function DocuIFrame(props: DocuIFramePropsI) {
     })
   }
 
+  const iFrameSearchChanged = (newSearch: URLSearchParams): void => {
+    setIFrameState((prevState) => {
+      return { ...prevState, search: newSearch }
+    })
+  }
+
   const iFrameNotFound = (): void => {
     setError(new Error("Whoops! This page doesn't seem to exist..."))
   }
@@ -128,12 +147,26 @@ function DocuIFrame(props: DocuIFramePropsI) {
       version: props.version,
       _splat: `${iframeState.page}${hashSuffix}`,
     }
+
+    // Convert URLSearchParams to search object for TanStack Router
+    // Only include non-empty values
+    const searchObject: Record<string, string | undefined> = {}
+    iframeState.search.forEach((value, key) => {
+      if (value) {
+        searchObject[key] = value
+      }
+    })
+
     router.navigate({
       from: '/$projectName/$version/$',
       to: '/$projectName/$version/$',
       params: toParams,
+      search: (prev) => ({
+        ...prev,
+        ...searchObject,
+      }),
     })
-  }, [error, iframeState.name, props.version, iframeState.page, iframeState.hash, router])
+  }, [error, iframeState.name, props.version, iframeState.page, iframeState.hash, iframeState.search, router])
 
   return (
     <div data-testid={testIDs.project.documentation.main} style={{ display: 'contents' }}>
@@ -144,6 +177,7 @@ function DocuIFrame(props: DocuIFramePropsI) {
         src={iFrameSrc}
         onPageChanged={iFramePageChanged}
         onHashChanged={iFrameHashChanged}
+        onSearchChanged={iFrameSearchChanged}
         onTitleChanged={iframeTitleChanged}
         onNotFound={iFrameNotFound}
       />

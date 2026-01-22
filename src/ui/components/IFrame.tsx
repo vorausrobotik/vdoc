@@ -15,11 +15,19 @@ interface Props {
   src: string
   onPageChanged: (page: string) => void
   onHashChanged: (hash: string) => void
+  onSearchChanged: (search: URLSearchParams) => void
   onTitleChanged: (title: string) => void
   onNotFound: () => void
 }
 
-export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChanged, onNotFound }: Props) {
+export default function IFrame({
+  src,
+  onPageChanged,
+  onHashChanged,
+  onSearchChanged,
+  onTitleChanged,
+  onNotFound,
+}: Props) {
   const { colorScheme } = useColorScheme()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
@@ -108,6 +116,7 @@ export default function IFrame({ src, onPageChanged, onHashChanged, onTitleChang
 
     onPageChanged(iframeLocation.page)
     onHashChanged(iframeLocation.hash)
+    onSearchChanged(iframeLocation.search)
     onTitleChanged(iframeLocation.title ?? '')
   }
 

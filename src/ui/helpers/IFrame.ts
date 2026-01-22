@@ -5,6 +5,7 @@ export interface IFrameLocation {
   name: string
   version: string
   page: string
+  search: URLSearchParams
   hash: string
   title: string
 }
@@ -49,15 +50,29 @@ export function parseIFrameHref(
   }
 
   try {
-    const parts = iframeHref.split(stripPrefix).slice(1).join(stripPrefix).split('/')
-    const urlPageAndHash = parts.slice(2).join('/')
-    const hashIndex = urlPageAndHash.includes('#') ? urlPageAndHash.indexOf('#') : urlPageAndHash.length
+    const url = new URL(iframeHref)
+
+    // Extract path after the prefix
+    const pathAfterPrefix = url.pathname.split(stripPrefix)[1]
+    if (!pathAfterPrefix) {
+      return null
+    }
+
+    // Split into: name/version/rest-of-path
+    const pathParts = pathAfterPrefix.split('/')
+    const [name, version, ...pageParts] = pathParts
+    const page = pageParts.join('/')
+
+    // Extract search as URLSearchParams object and hash without the '#' prefix
+    const search = new URLSearchParams(url.search)
+    const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
 
     return {
-      name: parts[0],
-      version: parts[1],
-      page: urlPageAndHash.slice(0, hashIndex),
-      hash: urlPageAndHash.slice(hashIndex + 1), // +1 to skip the '#' character
+      name,
+      version,
+      page,
+      search,
+      hash,
       title: iframeRef.current?.contentDocument?.title ?? '',
     }
   } catch {
