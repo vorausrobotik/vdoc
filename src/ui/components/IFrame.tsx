@@ -106,6 +106,13 @@ export default function IFrame({
         return
       }
 
+      // Let browser handle download links natively. Restore href to the original (pre-sanitized) URL
+      // because the sanitized URL strips the /static/projects/ prefix, making the file unreachable.
+      if (anchor.hasAttribute('download')) {
+        anchor.href = originalLink
+        return
+      }
+
       // From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
       anchor.onclick = () => {
         iframeRef.current?.contentWindow?.location.replace(originalLink)
