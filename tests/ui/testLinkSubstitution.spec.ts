@@ -20,16 +20,19 @@ test('Test link substitution', async ({ page }) => {
     `${baseUrl}/search.html`,
     'https://www.sphinx-doc.org/',
     'https://example.com/',
+    `${baseUrl}/#section1`,
+    `${baseUrl}/#section2`,
+    `${baseUrl}/#section3`,
   ])
 
-  await (await assertLinkOpensInNewTab(page, linkLocators.last(), 'https://example.com/')).close()
+  await (await assertLinkOpensInNewTab(page, linkLocators.nth(5), 'https://example.com/')).close()
 
   // Go to the examples page
   await linkLocators.nth(2).click()
   await page.waitForLoadState()
   await expect(page).toHaveURL(`${baseUrl}/examples.html`)
 
-  linkLocators = await assertLinksOnPage(documentation, [`${baseUrl}/index.html`])
+  linkLocators = await assertLinksOnPage(documentation, [`${baseUrl}/index.html`, `${baseUrl}/examples.html#example2`])
 
   await linkLocators.first().click()
   await page.waitForLoadState()
@@ -42,6 +45,9 @@ test('Test link substitution', async ({ page }) => {
     `${baseUrl}/search.html`,
     'https://www.sphinx-doc.org/',
     'https://example.com/',
+    `${baseUrl}/index.html#section1`,
+    `${baseUrl}/index.html#section2`,
+    `${baseUrl}/index.html#section3`,
   ])
-  await (await assertLinkOpensInNewTab(page, linkLocators.last(), 'https://example.com/')).close()
+  await (await assertLinkOpensInNewTab(page, linkLocators.nth(5), 'https://example.com/')).close()
 })

@@ -141,11 +141,10 @@ function DocuIFrame(props: DocuIFramePropsI) {
     if (error) {
       throw error
     }
-    const hashSuffix = iframeState.hash.trim() !== '' ? `#${iframeState.hash}` : ''
     const toParams = {
       projectName: iframeState.name,
       version: props.version,
-      _splat: `${iframeState.page}${hashSuffix}`,
+      _splat: iframeState.page,
     }
 
     // Convert URLSearchParams to search object for TanStack Router
@@ -165,6 +164,7 @@ function DocuIFrame(props: DocuIFramePropsI) {
         ...prev,
         ...searchObject,
       }),
+      hash: iframeState.hash.trim() !== '' ? iframeState.hash : '',
     })
   }, [error, iframeState.name, props.version, iframeState.page, iframeState.hash, iframeState.search, router])
 
