@@ -69,7 +69,7 @@ function DocumentationComponent() {
       version: resolvedVersion,
       latestVersion: latestVersion,
       page: _splat || '',
-      hash: location.hash,
+      hash: location.hash.startsWith('#') ? location.hash.slice(1) : location.hash,
       search: location.search,
     }),
     [_splat, location.hash, location.search, latestVersion, projectName, resolvedVersion]
