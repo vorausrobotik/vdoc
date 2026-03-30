@@ -39,6 +39,8 @@ export const Route = createFileRoute('/$projectName/$version/$')({
           version: latestVersion,
           _splat: _splat || '',
         },
+        hash: true, // Preserve the hash from the original URL
+        search: true, // Preserve the search params from the original URL
       })
     }
     return [version, latestVersion]
