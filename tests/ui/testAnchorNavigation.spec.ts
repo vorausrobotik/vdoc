@@ -11,6 +11,11 @@ test('Test anchor navigation - direct URL with hash', async ({ page }) => {
 
   // THEN: The URL should contain the hash
   await expect(page).toHaveURL(`${BASE_URL}/example-project-01/3.2.0/index.html#section1`)
+
+  // AND: The page should have scrolled to the section
+  const iframe = page.getByTestId('project.documentation.documentationIframe')
+  const section1 = iframe.contentFrame().locator('#section1')
+  await expect(section1).toBeInViewport()
 })
 
 test('Test anchor navigation - clicking anchor link on same page', async ({ page }) => {
