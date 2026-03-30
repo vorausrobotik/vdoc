@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { compression } from 'vite-plugin-compression2'
 import { codecovVitePlugin } from '@codecov/vite-plugin'
