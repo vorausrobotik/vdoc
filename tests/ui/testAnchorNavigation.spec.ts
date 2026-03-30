@@ -121,3 +121,49 @@ test('Test anchor navigation - empty hash should be removed', async ({ page }) =
   // THEN: The URL should not have a hash
   await expect(page).toHaveURL(baseUrl)
 })
+
+const latestRedirectTestCases = [
+  {
+    name: 'hash only',
+    url: '/example-project-01/latest/index.html#section2',
+    expectedUrl: '/example-project-01/3.2.0/index.html#section2',
+    elementToCheck: '#section2',
+  },
+  {
+    name: 'hash without page',
+    url: '/example-project-01/latest/#section1',
+    expectedUrl: '/example-project-01/3.2.0#section1',
+    elementToCheck: '#section1',
+  },
+  {
+    name: 'search params only',
+    url: '/example-project-01/latest/index.html?foo=bar&baz=qux',
+    expectedUrl: '/example-project-01/3.2.0/index.html?foo=bar&baz=qux',
+    elementToCheck: null,
+  },
+  {
+    name: 'search params and hash',
+    url: '/example-project-01/latest/index.html?search=test#section2',
+    expectedUrl: '/example-project-01/3.2.0/index.html?search=test#section2',
+    elementToCheck: '#section2',
+  },
+]
+
+for (const testCase of latestRedirectTestCases) {
+  test(`/latest/ redirect preserves ${testCase.name}`, async ({ page }) => {
+    await page.goto(testCase.url)
+    await page.waitForLoadState()
+
+    await expect(page).toHaveURL(`${BASE_URL}${testCase.expectedUrl}`)
+
+    const iframe = page.getByTestId('project.documentation.documentationIframe')
+    await expect(iframe.contentFrame().locator('html')).toContainText(
+      'Hello, this is a mocked documentation component.'
+    )
+
+    if (testCase.elementToCheck) {
+      const element = iframe.contentFrame().locator(testCase.elementToCheck)
+      await expect(element).toBeInViewport()
+    }
+  })
+}
