@@ -10,6 +10,7 @@ import { sanitizeDocuUri } from '../helpers/RouteHelpers'
 import { parseIFrameHref } from '../helpers/IFrame'
 import { toggleDocumentationColorScheme } from '../helpers/IFrame'
 import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 
 interface Props {
   src: string
@@ -29,6 +30,7 @@ export default function IFrame({
   onNotFound,
 }: Props) {
   const { colorScheme } = useColorScheme()
+  const { setScrollY } = useIFrameScroll()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
   const [contentWindow, setContentWindow] = useState<Window | null>()
@@ -56,6 +58,19 @@ export default function IFrame({
 
     // Apply dark mode
     setDarkMode(colorScheme as 'light' | 'dark')
+
+    // Set up scroll listener
+    const contentWindow = iframeRef.current.contentWindow
+    if (contentWindow) {
+      // Reset scroll position when iframe loads
+      setScrollY(0)
+
+      const handleScroll = () => {
+        const scrollY = contentWindow.document.documentElement.scrollTop || contentWindow.document.body.scrollTop
+        setScrollY(scrollY)
+      }
+      contentWindow.addEventListener('scroll', handleScroll, { passive: true })
+    }
 
     const iframeLocation = parseIFrameHref(iframeRef, stripPrefix)
     if (iframeLocation == null) {

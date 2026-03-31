@@ -32,6 +32,7 @@ export const testIDs = {
   loadingIndicator: {
     main: 'loadingIndicator',
   },
+  scrollToTop: 'scrollToTop',
   landingPage: {
     main: 'landingPage',
     projectCategories: {
