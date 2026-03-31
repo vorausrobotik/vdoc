@@ -9,6 +9,7 @@ import {
   useTheme,
   Typography,
   useMediaQuery,
+  Slide,
 } from '@mui/material'
 import { useState, useEffect, useMemo } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
@@ -152,7 +153,7 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
   )
 }
 
-export default function MenuBar() {
+export default function MenuBar({ hide = false }: { hide?: boolean }) {
   const theme = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -163,47 +164,50 @@ export default function MenuBar() {
   }, [theme])
 
   return (
-    <AppBar
-      position="static"
-      data-testid={testIDs.header.main}
-      sx={{
-        background: theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.default,
-      }}
-      elevation={0}
-    >
-      <Toolbar>
-        <Grid
-          container
-          spacing={1}
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-          wrap="nowrap"
-        >
-          {/* Logo and/or Text */}
-          <Grid id="appBarLeftGroup" size={{ xs: 1, sm: 1, md: 1, lg: 3 }}>
-            <Box display="flex" justifyContent="flex-start">
-              <LeftGroup />
-            </Box>
+    <Slide appear={false} direction="down" in={!hide}>
+      <AppBar
+        position="fixed"
+        data-testid={testIDs.header.main}
+        sx={{
+          background: theme.palette.background.default,
+          zIndex: 1200,
+        }}
+        elevation={0}
+      >
+        <Toolbar>
+          <Grid
+            container
+            spacing={1}
+            sx={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+            wrap="nowrap"
+          >
+            {/* Logo and/or Text */}
+            <Grid id="appBarLeftGroup" size={{ xs: 1, sm: 1, md: 1, lg: 3 }}>
+              <Box display="flex" justifyContent="flex-start">
+                <LeftGroup />
+              </Box>
+            </Grid>
+            {/* Searchbar */}
+            <Grid id="appBarMiddleGroup" size={{ xs: 6, sm: 7, md: 8, lg: 6 }}>
+              <Box display="flex" justifyContent="center">
+                <MiddleGroup />
+              </Box>
+            </Grid>
+            {/* Optional version dropdown and settings button */}
+            <Grid id="appBarRightGroup" size={{ xs: 5, sm: 4, md: 3, lg: 3 }}>
+              <Box display="flex" justifyContent="flex-end">
+                <RightGroup setSidebarOpen={setSidebarOpen} />
+              </Box>
+            </Grid>
           </Grid>
-          {/* Searchbar */}
-          <Grid id="appBarMiddleGroup" size={{ xs: 6, sm: 7, md: 8, lg: 6 }}>
-            <Box display="flex" justifyContent="center">
-              <MiddleGroup />
-            </Box>
-          </Grid>
-          {/* Optional version dropdown and settings button */}
-          <Grid id="appBarRightGroup" size={{ xs: 5, sm: 4, md: 3, lg: 3 }}>
-            <Box display="flex" justifyContent="flex-end">
-              <RightGroup setSidebarOpen={setSidebarOpen} />
-            </Box>
-          </Grid>
-        </Grid>
-      </Toolbar>
-      <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} appVersion={appVersion} />
-    </AppBar>
+        </Toolbar>
+        <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} appVersion={appVersion} />
+      </AppBar>
+    </Slide>
   )
 }
