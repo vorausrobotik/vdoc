@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Generator, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from fastapi import APIRouter
 from pydantic import PrivateAttr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 _logger = logging.getLogger(__name__)
 
@@ -25,7 +28,7 @@ class Plugin(BaseSettings, ABC):
 
     name: ValidPluginsT
 
-    def __init_subclass__(cls: type[Plugin], **kwargs: Any) -> None:
+    def __init_subclass__(cls: type[Plugin], **kwargs: Any) -> None:  # noqa: ANN401
         """Dynamically set the model_config for each subclass.
 
         Args:
@@ -53,11 +56,11 @@ class Plugin(BaseSettings, ABC):
         for plugin_cls in plugins:
             try:
                 plugin = plugin_cls()
-                _logger.info(f"Loaded plugin: '{plugin_cls.__name__}'")
+                _logger.info("Loaded plugin: '%s'", plugin_cls.__name__)
                 yield plugin
             except Exception as error:
-                _logger.exception(f"Failed to load plugin '{plugin_cls.__name__}': {error}")
-                raise error
+                _logger.exception("Failed to load plugin '%s': %s", plugin_cls.__name__, error)  # noqa: TRY401
+                raise
 
     @computed_field  # type: ignore[prop-decorator]
     @property

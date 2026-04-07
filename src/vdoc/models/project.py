@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from pathlib import Path
-from typing import Dict
+from typing import TYPE_CHECKING
 
 from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
@@ -12,6 +11,9 @@ from pydantic import BaseModel, computed_field, field_validator
 
 from vdoc.exceptions import InvalidVersion, ProjectNotFound, ProjectVersionNotFound
 from vdoc.settings import VDocSettings
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class Project(BaseModel):
@@ -93,7 +95,7 @@ class Project(BaseModel):
             except PackagingInvalidVersion as error:
                 raise InvalidVersion(version=version) from error
             # Version("1") == Version("1.0.0") validates to True, comparing the plain public string mitigates this issue
-            if parsed_version.public not in map(lambda version: version.public, project.versions):
+            if parsed_version.public not in (version.public for version in project.versions):
                 raise ProjectVersionNotFound(name=name, version=parsed_version)
 
         return return_version, project._base_path / return_version  # Path existence is validated at object construction
@@ -123,7 +125,7 @@ class Project(BaseModel):
         return None
 
     @property
-    def versions(self) -> Dict[Version, str]:
+    def versions(self) -> dict[Version, str]:
         """Returns a list of all available project versions.
 
         Raises:
@@ -133,7 +135,7 @@ class Project(BaseModel):
             A list of all versions of the project.
         """
         versions = self._base_path.glob("[!.]*")  # Path existence is validated at object construction
-        parsed_versions: Dict[Version, str] = {}
+        parsed_versions: dict[Version, str] = {}
         for path in versions:
             if not path.is_dir():
                 continue

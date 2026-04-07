@@ -1,7 +1,7 @@
 """Contains the main CLI entry point."""
 
 import logging
-from enum import Enum
+from enum import StrEnum
 
 import typer
 from rich.logging import RichHandler
@@ -18,7 +18,7 @@ app = typer.Typer()
 app.command(name="run", help="Runs the application")(_cli_run)
 
 
-class LogLevel(str, Enum):
+class LogLevel(StrEnum):
     """Enum for log levels for typer."""
 
     DEBUG = "DEBUG"
@@ -35,7 +35,7 @@ class LogLevel(str, Enum):
         return self.value
 
 
-def print_version(do_print: bool) -> None:
+def print_version(do_print: bool) -> None:  # noqa: FBT001
     """Prints the version of the software.
 
     Args:
@@ -45,8 +45,8 @@ def print_version(do_print: bool) -> None:
         typer.Exit: After the version was printed.
     """
     if do_print:
-        print(get_app_version())
-        raise typer.Exit()
+        print(get_app_version())  # noqa: T201
+        raise typer.Exit
 
 
 def check_for_default_credentials() -> None:
@@ -60,21 +60,21 @@ def check_for_default_credentials() -> None:
 
 @app.callback()
 def _common(
-    _: bool = typer.Option(
-        False,
+    _: bool = typer.Option(  # noqa: FBT001
+        False,  # noqa: FBT003
         "--version",
         callback=print_version,
         is_eager=True,
         help="Print the installed version of the software.",
     ),
-    log_level: LogLevel = typer.Option(LogLevel.INFO, help="The log level"),
+    log_level: LogLevel = typer.Option(LogLevel.INFO, help="The log level"),  # noqa: B008
 ) -> None:
     rich_handler = RichHandler()
     rich_handler.setFormatter(logging.Formatter("%(message)s"))
     logger = logging.getLogger()
     logger.handlers = [rich_handler]
     logger.setLevel(log_level)
-    _logger.info(f"Starting {get_app_name()}@{get_app_version()}")
+    _logger.info("Starting %s@%s", get_app_name(), get_app_version())
     check_for_default_credentials()
 
 

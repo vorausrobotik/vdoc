@@ -30,7 +30,7 @@ class ProjectNotFound(VDocException):
 class InvalidVersion(VDocException):
     """Exception when a requested version has an invalid format."""
 
-    def __init__(self, version: str):  # noqa: D107
+    def __init__(self, version: str) -> None:  # noqa: D107
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST, detail=f"'{version}' is not a valid version identifier."
         )
@@ -39,7 +39,7 @@ class InvalidVersion(VDocException):
 class InvalidProjectName(VDocException):
     """Exception when a requested project name is invalid."""
 
-    def __init__(self, name: str):  # noqa: D107
+    def __init__(self, name: str) -> None:  # noqa: D107
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=f"'{name}' is not a valid project name.")
 
 

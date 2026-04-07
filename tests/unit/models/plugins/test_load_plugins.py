@@ -5,14 +5,13 @@ from unittest.mock import patch
 
 import pytest
 from pydantic import ValidationError
-from pytest import LogCaptureFixture
 
 from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
 from vdoc.models.plugins import FooterPlugin, OramaPlugin, ThemePlugin
 from vdoc.models.plugins.base import Plugin
 
 
-def test_load_plugins_defaults(caplog: LogCaptureFixture) -> None:
+def test_load_plugins_defaults(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"):
         plugins = list(Plugin.load_plugins())
 
@@ -40,7 +39,7 @@ def test_load_plugins_defaults(caplog: LogCaptureFixture) -> None:
         f"{CONFIG_ENV_PREFIX_PLUGINS}FOOTER_COPYRIGHT": "foo",
     },
 )
-def test_load_plugins_orama_active(caplog: LogCaptureFixture) -> None:
+def test_load_plugins_orama_active(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"):
         plugins = list(Plugin.load_plugins())
 
@@ -66,7 +65,7 @@ def test_load_plugins_orama_active(caplog: LogCaptureFixture) -> None:
         f"{CONFIG_ENV_PREFIX_PLUGINS}THEME_LIGHT__LOGO_URL": "this-is-not-a-valid-url",
     },
 )
-def test_load_plugins_error(caplog: LogCaptureFixture) -> None:
+def test_load_plugins_error(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"), pytest.raises(ValidationError, match="Input should be a valid URL"):
         list(Plugin.load_plugins())
     assert caplog.messages[0] == "Loaded plugin: 'FooterPlugin'"

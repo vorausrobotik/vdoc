@@ -11,4 +11,4 @@ from vdoc.cli.main import app
 def test_main_cli_prints_version(get_app_version_mock: MagicMock, cli_runner: CliRunner) -> None:
     get_app_version_mock.return_value = 42
     result = cli_runner.invoke(app, ["--version"])
-    assert "42\n" == result.stdout
+    assert result.stdout == "42\n"

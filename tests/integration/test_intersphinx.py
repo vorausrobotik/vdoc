@@ -10,7 +10,5 @@ from vdoc.constants import CONFIG_ENV_PREFIX
 
 @pytest.mark.skip("Not fully implemented yet")
 def test_intersphinx(sample_docs: Path) -> None:
-    with start_vdoc_server_and_get_uri(
-        env={f"{CONFIG_ENV_PREFIX}DOCS_DIR": sample_docs.as_posix()}
-    ) as server_uri:  # pylint: disable=unused-variable
+    with start_vdoc_server_and_get_uri(env={f"{CONFIG_ENV_PREFIX}DOCS_DIR": sample_docs.as_posix()}):  # pylint: disable=unused-variable
         print()

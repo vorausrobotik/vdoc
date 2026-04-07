@@ -3,8 +3,8 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
-from pytest import MonkeyPatch
 
 
 @patch("vdoc.api.routes.version.get_app_version")
@@ -26,7 +26,7 @@ def test_sphinx_inventory_non_existing(api: TestClient) -> None:
     assert response.status_code == 404
 
 
-def test_serve_frontend_assets(monkeypatch: MonkeyPatch, tmp_path: Path, api: TestClient) -> None:
+def test_serve_frontend_assets(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, api: TestClient) -> None:
     (tmp_path / "style.css").write_text("dummy style sheet")
     monkeypatch.setattr("vdoc.api.lifespan.webapp_path", tmp_path)
     response = api.get("/style.css")
@@ -34,7 +34,7 @@ def test_serve_frontend_assets(monkeypatch: MonkeyPatch, tmp_path: Path, api: Te
     assert response.text == "dummy style sheet"
 
 
-def test_serve_frontend_assets_index_fallback(monkeypatch: MonkeyPatch, tmp_path: Path, api: TestClient) -> None:
+def test_serve_frontend_assets_index_fallback(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, api: TestClient) -> None:
     (tmp_path / "index.html").write_text("dummy index.html content")
     monkeypatch.setattr("vdoc.api.lifespan.webapp_path", tmp_path)
     response = api.get("/style.css")

@@ -1,18 +1,18 @@
 """Defines the FastAPI lifespan and route loading."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
-from vdoc.api.routes import plugins as PLUGINS_MODULE
-from vdoc.api.routes import project_categories as PROJECT_CATEGORIES_MODULE
-from vdoc.api.routes import projects as PROJECTS_MODULE
-from vdoc.api.routes import version as VERSION_MODULE
+from vdoc.api.routes import plugins as plugins_module
+from vdoc.api.routes import project_categories as project_categories_module
+from vdoc.api.routes import projects as projects_module
+from vdoc.api.routes import version as version_module
 from vdoc.methods.api.projects import get_project_version_impl
 from vdoc.settings import VDocSettings
 
@@ -43,10 +43,10 @@ async def routes_loader_lifespan(fastapi: FastAPI) -> AsyncGenerator[None, None]
 
 
 def _include_static_api_routers(fastapi: FastAPI) -> FastAPI:
-    fastapi.include_router(PROJECTS_MODULE.router, prefix="/api")
-    fastapi.include_router(PROJECT_CATEGORIES_MODULE.router, prefix="/api")
-    fastapi.include_router(VERSION_MODULE.router, prefix="/api")
-    fastapi.include_router(PLUGINS_MODULE.get_router(), prefix="/api")
+    fastapi.include_router(projects_module.router, prefix="/api")
+    fastapi.include_router(project_categories_module.router, prefix="/api")
+    fastapi.include_router(version_module.router, prefix="/api")
+    fastapi.include_router(plugins_module.get_router(), prefix="/api")
     return fastapi
 
 

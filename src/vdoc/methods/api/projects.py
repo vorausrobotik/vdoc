@@ -82,13 +82,16 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
         raise ProjectVersionAlreadyExists(name=name, version=version)
 
     if file.content_type != "application/zip":
-        raise UploadedFileInvalid("Content type is not 'application/zip'")
+        msg = "Content type is not 'application/zip'"
+        raise UploadedFileInvalid(msg)
     if file.filename is None:
-        raise UploadedFileInvalid("Uploaded filename is None")
+        msg = "Uploaded filename is None"
+        raise UploadedFileInvalid(msg)
     try:
         with zipfile.ZipFile(file=file.file, mode="r") as archive:
             if "index.html" not in archive.namelist():
-                raise UploadedFileInvalid("The archive doesn't contain an index.html file")
+                msg = "The archive doesn't contain an index.html file"
+                raise UploadedFileInvalid(msg)
             target_path.mkdir(parents=True, exist_ok=True)
             archive.extractall(target_path)
     except zipfile.BadZipFile as error:

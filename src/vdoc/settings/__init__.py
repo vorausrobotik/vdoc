@@ -49,17 +49,20 @@ class VDocSettings(BaseSettings):
         Returns:
             Self: The validated model.
         """
-        project_category_ids = list(map(lambda category: category.id, self.project_categories))
-        project_category_names = list(map(lambda category: category.name, self.project_categories))
+        project_category_ids = [category.id for category in self.project_categories]
+        project_category_names = [category.name for category in self.project_categories]
         if len(set(project_category_ids)) != len(project_category_ids):
-            raise ValueError("Duplicate category IDs are not allowed in `project_categories`")
+            msg = "Duplicate category IDs are not allowed in `project_categories`"
+            raise ValueError(msg)
         if len(set(project_category_names)) != len(project_category_names):
-            raise ValueError("Duplicate category names are not allowed in `project_categories`")
+            msg = "Duplicate category names are not allowed in `project_categories`"
+            raise ValueError(msg)
         for category_name in self.project_category_mapping.values():
             if category_name not in project_category_names:
-                raise ValueError(
+                msg = (
                     f"Category name '{category_name}' in `project_category_mapping` is "
                     "not defined in `project_categories`"
                 )
+                raise ValueError(msg)
 
         return self
