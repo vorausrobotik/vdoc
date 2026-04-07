@@ -26,5 +26,5 @@ def _cli_run(
     except KeyboardInterrupt as error:
         raise typer.Exit(0) from error
     except Exception as error:
-        _logger.error(error)
+        _logger.exception(error)  # noqa: TRY401
         raise typer.Exit(1) from error

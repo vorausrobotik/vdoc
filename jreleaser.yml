@@ -35,12 +35,14 @@ release:
   github:
     owner: vorausrobotik
     tagName: '{{projectVersion}}'
-    skipTag: true
     changelog:
       formatted: ALWAYS
       sort: ASC
       preset: conventional-commits
-      extraProperties:
-        categorizeScopes: true
+      format: '- {{commitShortHash}} {{#commitIsConventional}}{{#conventionalCommitIsBreakingChange}}🚨 {{/conventionalCommitIsBreakingChange}}{{#conventionalCommitScope}}**{{conventionalCommitScope}}**: {{/conventionalCommitScope}}{{conventionalCommitDescription}}{{#conventionalCommitBreakingChangeContent}} - *{{conventionalCommitBreakingChangeContent}}*{{/conventionalCommitBreakingChangeContent}}{{/commitIsConventional}}{{^commitIsConventional}}{{commitTitle}}{{/commitIsConventional}}'
       contributors:
         format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
+      hide:
+        contributors:
+          - 'GitHub'
+          - '[bot]'

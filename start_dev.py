@@ -15,7 +15,7 @@ def run_vite(port: int = 8090) -> None:
     env = os.environ.copy()
     env["USE_VITE_PROXY"] = "1"
 
-    subprocess.check_call(f"npm run dev -- --port {port}", shell=True, env=env)
+    subprocess.check_call(f"npm run dev -- --port {port}", shell=True, env=env)  # noqa: S602
 
 
 def run_uvicorn(port: int = 8080) -> None:

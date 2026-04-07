@@ -2,10 +2,10 @@
 
 import os
 import sys
+from collections.abc import Generator
 from pathlib import Path
 from subprocess import check_output
 from tempfile import TemporaryDirectory
-from typing import Generator
 from unittest.mock import patch
 from zipfile import ZipFile
 
@@ -41,13 +41,13 @@ def resource_dir_fixture() -> Path:
     return Path(__file__).parent.joinpath("resources")
 
 
-@pytest.fixture(scope="function", name="api")
+@pytest.fixture(name="api")
 def api_client_fixture() -> Generator[TestClient, None, None]:
     with TestClient(create_app()) as client:
         yield client
 
 
-@pytest.fixture(scope="function", name="authenticated_api")
+@pytest.fixture(name="authenticated_api")
 def authenticated_api_client_fixture(api: TestClient) -> TestClient:
     api.auth = BasicAuth(username=DEFAULT_API_USERNAME, password=DEFAULT_API_PASSWORD)
     return api
@@ -63,7 +63,7 @@ def cli_runner_fixture() -> CliRunner:
     return CliRunner(env={"COLUMNS": "120"})
 
 
-@pytest.fixture(scope="function", name="dummy_projects_dir")
+@pytest.fixture(name="dummy_projects_dir")
 def dummy_projects_dir_fixture(tmp_path: Path) -> Generator[Path, None, None]:
     with patch.dict(os.environ, {f"{CONFIG_ENV_PREFIX}DOCS_DIR": str(tmp_path)}):
         for project_name, versions in DUMMY_DOCS_STRUCTURE.items():
@@ -78,15 +78,15 @@ def dummy_projects_dir_fixture(tmp_path: Path) -> Generator[Path, None, None]:
         yield tmp_path
 
 
-@pytest.fixture(scope="function", name="example_docs_zip")
-def example_docs_zip_fixture(tmp_path: Path) -> Generator[Path, None, None]:
+@pytest.fixture(name="example_docs_zip")
+def example_docs_zip_fixture(tmp_path: Path) -> Path:
     zip_file_path = tmp_path / "test_file.zip"
     html_file_content = b"<html><body>Test File</body></html>"
 
     with ZipFile(file=zip_file_path, mode="w") as archive:
         archive.writestr("index.html", html_file_content)
 
-    yield zip_file_path
+    return zip_file_path
 
 
 @pytest.fixture(scope="session", name="sample_docs")
@@ -107,7 +107,7 @@ def sample_docs_fixture(resource_dir: Path) -> Generator[Path, None, None]:
     with TemporaryDirectory() as _tmp_dir:
         tmp_dir = Path(_tmp_dir)
         sample_docs_root = resource_dir / "sample-docs"
-        sample_doc_projects = sorted(list(sample_docs_root.glob("project*")))
+        sample_doc_projects = sorted(sample_docs_root.glob("project*"))
         assert len(sample_doc_projects) == 2, "Expected 2 sample projects"
         for index, project_root in enumerate(sample_doc_projects):
             project_name = project_root.name

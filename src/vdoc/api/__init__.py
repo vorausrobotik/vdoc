@@ -30,7 +30,7 @@ def create_app() -> FastAPI:
         """Catches all ``VDocException`` exceptions and returns them as properly formatted JSONResponse.
 
         Args:
-            exc: The catched exception.
+            exc: The caught exception.
 
         Returns:
             The exception as formatted JSONResponse.

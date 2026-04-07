@@ -1,65 +1,117 @@
 name: Build
 
-on: [workflow_call]
+on:
+  workflow_call:
+    inputs:
+      vpu_docker_registry:
+        required: true
+        type: string
+      vpu_docker_image_name:
+        required: true
+        type: string
+      vpu_docker_repositories:
+        required: true
+        type: string
+      build_name:
+        required: true
+        type: string
+      build_number:
+        required: true
+        type: string
 
 jobs:
-  build-wheel:
+  build-python:
     runs-on: ubuntu-latest
+    env:
+      COLUMNS: 160
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+      - uses: astral-sh/setup-uv@v7
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: 3.13
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
 
-    - name: Install npm dependencies
-      run: npm ci
+      - name: Sync project
+        run: uv sync --frozen
 
-    - name: Install tox
-      run: python -m pip install --upgrade tox==4.23.2 tox-uv~=1.16.0
+      - name: Install npm dependencies
+        run: npm ci
 
-    - name: Build docs
-      run: tox run -e docs
+      - name: Build docs
+        run: uv run tox run -e docs
 
-    - name: Build UI
-      run: npm run build
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Build UI
+        run: npm run build
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-    - name: Build python app
-      run: tox run -e build
+      - name: Build python app
+        run: uv run tox run -e build
 
-    - name: Require non dirty git workspace
-      run: |
-        CHANGES=$(git status --porcelain)
-        if [[ -n "$CHANGES" ]]; then
-          echo "❌ Workspace is dirty. The following files have been modified:"
-          echo "$CHANGES"
-          exit 1
-        else
-          echo "✅ Workspace is clean."
-        fi
+      - name: Upload rollup visualizer result
+        uses: actions/upload-artifact@v7
+        with:
+          name: rollup-visualizer
+          path: reports/bundle-report.html
 
-    - name: Upload rollup visualizer result
-      uses: actions/upload-artifact@v4
-      with:
-        name: rollup-visualizer
-        path: reports/bundle-report.html
+      - name: Upload python artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/*
 
-    - name: Upload python artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: dist/*
+      - name: Upload docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs
+          path: docs/build/html/*
 
-    - name: Upload docs
-      uses: actions/upload-artifact@v4
-      with:
-        name: docs
-        path: src/vdoc/docs/*
+  build-docker:
+    needs:
+      - build-python
+    runs-on: ubuntu-latest
+    env:
+      VPU_DOCKER_REGISTRY: ${{ inputs.vpu_docker_registry }}
+      VPU_DOCKER_IMAGE_NAME: ${{ inputs.vpu_docker_image_name }}
+      VPU_DOCKER_REPOSITORIES: ${{ inputs.vpu_docker_repositories }}
+      COLUMNS: 160
+      JFROG_CLI_BUILD_NAME: ${{ inputs.build_name }}
+      JFROG_CLI_BUILD_NUMBER: ${{ inputs.build_number }}
+      JFROG_CLI_TEMP_DIR: ${{ github.workspace }}/.jfrog-build"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-jfrog
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Install VPU
+        run: uv tool install voraus-pipeline-utils
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Download python artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Build Docker Image(s)
+        run: vpu docker build -f Dockerfile.prod
+
+      - name: Save Docker Image(s)
+        run: vpu docker save --output docker-images.tar
+
+      - name: Upload docker images
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-images
+          path: docker-images.tar
+

@@ -41,6 +41,7 @@ custom_extensions: list[str] = []
 
 # DO NOT ADD ANY EXTENSIONS TO THIS LIST, USE THE `custom_extensions` list for your extensions
 template_extensions: list[str] = [
+    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.napoleon",
@@ -53,7 +54,10 @@ extensions = template_extensions + custom_extensions
 templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
 
 # The encoding of source files.
 # source_encoding = "utf-8-sig"
@@ -96,7 +100,7 @@ exclude_patterns = ["_build"]
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-# add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -110,6 +114,8 @@ pygments_style = "sphinx"
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
+
+myst_enable_extensions = ["colon_fence"]
 
 
 # -- Options for HTML output ---------------------------------------------------
@@ -127,7 +133,6 @@ html_theme_options = {
     "logo_light": "_static/default/logos/voraus_logo_small.svg",
     "logo_dark": "_static/default/logos/voraus_logo_small.svg",
 }
-
 
 html_permalinks_icon = Icons.permalinks_icon
 
@@ -171,7 +176,7 @@ html_favicon = "_static/default/logos/voraus_logo_small.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_css_files = ["default/css/custom.css", "custom.css"]
+html_css_files = ["default/css/custom.css"]
 
 # If not "", a "Last updated on:" timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -270,6 +275,9 @@ latex_documents = [
 # If false, no module index is generated.
 # latex_domain_indices = True
 
+# Defines if class inits are also documented
+autoclass_content = "init"
+
 
 # -- Options for manual page output --------------------------------------------
 
@@ -317,3 +325,7 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
+
+# Allow myst to create reference targets for heading anchors `h1`, `h2` and `h3`.
+# See: https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#auto-generated-header-anchors
+myst_heading_anchors = 3

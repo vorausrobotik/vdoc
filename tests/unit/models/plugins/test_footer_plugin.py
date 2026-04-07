@@ -26,8 +26,7 @@ def test_footer_plugin_inactive() -> None:
     os.environ,
     {
         "VDOC_PLUGINS_FOOTER_COPYRIGHT": "Example GmbH",
-        # pylint: disable-next=line-too-long
-        "VDOC_PLUGINS_FOOTER_LINKS": '[{"title": "Contact", "links": [{"title": "Email", "icon": "email", "href": "mailto:service@example.com"}]}]',
+        "VDOC_PLUGINS_FOOTER_LINKS": '[{"title": "Contact", "links": [{"title": "Email", "icon": "email", "href": "mailto:service@example.com"}]}]',  # noqa: E501
     },
 )
 def test_footer_plugin_from_env() -> None:

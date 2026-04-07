@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, Field
 
 from vdoc.models.plugins.base import Plugin, ValidPluginsT
 
@@ -37,7 +37,7 @@ class FooterPlugin(Plugin):
 
     name: ValidPluginsT = "footer"
 
-    links: list[FooterLinkGroup] = []
+    links: list[FooterLinkGroup] = Field(default_factory=list)
     copyright: str | None = None
 
     @property

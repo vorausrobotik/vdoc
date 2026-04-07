@@ -2,14 +2,14 @@
 
 from unittest.mock import MagicMock, patch
 
-from pytest import LogCaptureFixture
+import pytest
 
 from vdoc.methods.cli.cli_run_method import run_impl
 
 
 @patch("vdoc.methods.cli.cli_run_method.uvicorn_run")
 @patch("vdoc.methods.cli.cli_run_method.create_app")
-def test_run_impl(create_app_mock: MagicMock, uvicorn_run_mock: MagicMock, caplog: LogCaptureFixture) -> None:
+def test_run_impl(create_app_mock: MagicMock, uvicorn_run_mock: MagicMock, caplog: pytest.LogCaptureFixture) -> None:
     app_mock = MagicMock()
     create_app_mock.return_value = app_mock
     with caplog.at_level("INFO"):

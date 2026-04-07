@@ -1,10 +1,10 @@
 """This module contains utility functions for tests."""
 
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from subprocess import Popen
-from typing import Generator
 
 import requests
 from httpx import Response

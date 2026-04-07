@@ -2,16 +2,16 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
 from pydantic import AnyHttpUrl
-from pytest import FixtureRequest
 
 from vdoc.constants import PLUGIN_THEME_DEFAULT_LOGO_URL, PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL
 from vdoc.models.plugins import OramaPlugin, ThemePlugin
 
 
 @patch("vdoc.api.routes.plugins.Plugin.load_plugins")
-def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: FixtureRequest) -> None:
+def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: pytest.FixtureRequest) -> None:
     load_plugins_mock.return_value = [
         ThemePlugin(),
         OramaPlugin(

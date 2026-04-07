@@ -16,5 +16,5 @@ def run_impl(bind_address: str, bind_port: int) -> None:
         bind_address: The bind address of the application.
         bind_port: The bind port of the application.
     """
-    _logger.info(f"Starting service on '{bind_address}:{bind_port}'")
+    _logger.info("Starting service on '%s:%s'", bind_address, bind_port)
     uvicorn_run(app=create_app(), host=bind_address, port=bind_port)

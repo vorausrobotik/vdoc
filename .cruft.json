@@ -1,0 +1,33 @@
+{
+  "template": "https://github.com/vorausrobotik/voraus-python-template.git",
+  "commit": "7c61728e1b8138875ec8269e4c23b0ffa3c9dade",
+  "checkout": "release/2.X",
+  "context": {
+    "cookiecutter": {
+      "full_name": "Jan-Frederik Schmidt",
+      "email": "jan-frederik.schmidt@vorausrobotik.com",
+      "github_user": "g3n35i5",
+      "project_name": "vdoc",
+      "repo_name": "vdoc",
+      "package_name": "vdoc",
+      "import_name": "vdoc",
+      "project_short_description": "Multi version documentation hosting.",
+      "url": "https://github.com/vorausrobotik/vdoc",
+      "use_github_pr_lint": true,
+      "use_github_dependabot": true,
+      "protect_wheel": false,
+      "ci_tool": "github_actions",
+      "_debug": "False",
+      "_extensions": [
+        "extensions.git_extension.GitExtension"
+      ],
+      "_copy_without_render": [
+        "docs/_templates/license_compliance.rst.j2",
+        "jreleaser.yml"
+      ],
+      "_template": "https://github.com/vorausrobotik/voraus-python-template.git",
+      "_commit": "7c61728e1b8138875ec8269e4c23b0ffa3c9dade"
+    }
+  },
+  "directory": null
+}

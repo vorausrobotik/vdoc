@@ -16,7 +16,7 @@ def require_authentication(credentials: Annotated[HTTPBasicCredentials, Depends(
     """FastAPI dependency that checks for HTTP Basic Auth credentials in the request header.
 
     Args:
-        credentials: The HTTPBasicAuth credentials sent with the request heder.
+        credentials: The HTTPBasicAuth credentials sent with the request header.
 
     Raises:
         HTTPException: If the credentials are not valid.
@@ -28,5 +28,5 @@ def require_authentication(credentials: Annotated[HTTPBasicCredentials, Depends(
     is_correct_username = secrets.compare_digest(credentials.username.encode("utf8"), settings.api_username)
     is_correct_password = secrets.compare_digest(credentials.password.encode("utf8"), settings.api_password)
     if not (is_correct_username and is_correct_password):
-        raise InvalidCredentials()
+        raise InvalidCredentials
     return True
