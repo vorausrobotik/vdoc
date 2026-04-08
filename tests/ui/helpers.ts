@@ -378,3 +378,73 @@ export const assertSearchResults = async (iframeDocument: Locator, searchTerm: s
   const searchInput = iframeDocument.locator('#search-input')
   await expect(searchInput).toHaveValue(searchTerm)
 }
+
+/**
+ * Waits for an iframe to be fully loaded and its scroll listener to be attached.
+ *
+ * @param iframe The iframe locator.
+ */
+export async function waitForIframeReady(iframe: Locator) {
+  await iframe.waitFor({ state: 'attached' })
+  await iframe.evaluate((el: HTMLIFrameElement) => {
+    return new Promise<void>((resolve) => {
+      if (el.contentDocument?.readyState === 'complete') {
+        setTimeout(resolve, 100)
+      } else {
+        el.contentWindow?.addEventListener('load', () => setTimeout(resolve, 100), { once: true })
+      }
+    })
+  })
+}
+
+/**
+ * Scrolls the content inside an iframe to the given vertical position.
+ *
+ * @param iframe The iframe locator.
+ * @param y The vertical scroll position in pixels.
+ */
+export async function scrollIframe(iframe: Locator, y: number) {
+  await iframe.evaluate((el: HTMLIFrameElement, scrollY: number) => {
+    el.contentWindow?.scrollTo(0, scrollY)
+  }, y)
+}
+
+/**
+ * Scrolls the iframe content to just below the show-threshold (2.5% of viewport height),
+ * which triggers the app bar to slide back into view.
+ *
+ * @param iframe The iframe locator.
+ */
+export async function scrollIframeBelowShowThreshold(iframe: Locator) {
+  await iframe.evaluate((el: HTMLIFrameElement) => {
+    const showThreshold = el.contentWindow!.innerHeight * 0.025
+    el.contentWindow!.scrollTo(0, showThreshold - 5)
+  })
+}
+
+/**
+ * Asserts that the header is hidden (slid out of view, y < -50).
+ *
+ * @param header The header locator.
+ */
+export async function expectHeaderHidden(header: Locator) {
+  await expect(async () => {
+    const rect = await header.boundingBox()
+    expect(rect).toBeTruthy()
+    expect(rect!.y).toBeLessThan(-50)
+  }).toPass({ timeout: 3000 })
+}
+
+/**
+ * Asserts that the header is visible and positioned near the top of the viewport (0 <= y < 20).
+ *
+ * @param header The header locator.
+ */
+export async function expectHeaderVisible(header: Locator) {
+  await expect(async () => {
+    const rect = await header.boundingBox()
+    expect(rect).toBeTruthy()
+    expect(rect!.y).toBeGreaterThanOrEqual(0)
+    expect(rect!.y).toBeLessThan(20)
+  }).toPass({ timeout: 5000 })
+}
