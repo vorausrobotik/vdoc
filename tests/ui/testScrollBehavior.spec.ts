@@ -7,7 +7,9 @@ import {
   scrollIframeBelowShowThreshold,
   expectHeaderHidden,
   expectHeaderVisible,
+  getContentPadding,
 } from './helpers'
+import { FooterPluginT } from '../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
 
 await prepareTestSuite(test)
 
@@ -79,5 +81,53 @@ test.describe('Scroll behavior', () => {
         expect(scrollTop).toBeLessThan(50)
       }).toPass({ timeout: 3000 })
     })
+  })
+
+  const footerEnabledMock: FooterPluginT = {
+    name: 'footer',
+    active: true,
+    links: [
+      {
+        title: 'Links',
+        icon: 'public',
+        links: [{ title: 'Home', icon: 'home', href: 'https://example.com', target: '_blank' }],
+      },
+    ],
+    copyright: 'Test GmbH',
+  }
+
+  const footerDisabledMock: FooterPluginT = {
+    name: 'footer',
+    active: false,
+  }
+
+  test('content padding should match app bar and footer height when footer is enabled', async ({ page }) => {
+    await page.route('*/**/api/plugins/footer/', (route) => route.fulfill({ json: footerEnabledMock }))
+    await page.goto('/example-project-01/1.0.0/')
+    const footer = page.getByTestId(testIDs.plugins.footer.main)
+    await expect(footer).toBeVisible()
+
+    await expect(async () => {
+      const { paddingTop, paddingBottom } = await getContentPadding(page)
+      const headerBox = (await header.boundingBox())!
+      const footerBox = (await footer.boundingBox())!
+
+      expect(paddingTop).toBeCloseTo(headerBox.height, 0)
+      expect(paddingBottom).toBeCloseTo(footerBox.height, 0)
+    }).toPass({ timeout: 5000 })
+  })
+
+  test('content padding should match app bar height when footer is disabled', async ({ page }) => {
+    await page.route('*/**/api/plugins/footer/', (route) => route.fulfill({ json: footerDisabledMock }))
+    await page.goto('/example-project-01/1.0.0/')
+    await expect(page.getByTestId(testIDs.plugins.footer.main)).not.toBeVisible()
+
+    await expect(async () => {
+      const { paddingTop, paddingBottom } = await getContentPadding(page)
+      const headerBox = (await header.boundingBox())!
+
+      expect(paddingTop).toBeCloseTo(headerBox.height, 0)
+      expect(paddingBottom).toBe(0)
+    }).toPass({ timeout: 5000 })
   })
 })

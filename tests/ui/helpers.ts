@@ -448,3 +448,16 @@ export async function expectHeaderVisible(header: Locator) {
     expect(rect!.y).toBeLessThan(20)
   }).toPass({ timeout: 5000 })
 }
+
+/**
+ * Returns the computed top and bottom padding of the content area.
+ *
+ * @param page The playwright page object.
+ * @returns An object with `paddingTop` and `paddingBottom` in pixels.
+ */
+export async function getContentPadding(page: Page) {
+  const contentBox = page.getByTestId(testIDs.contentArea)
+  const paddingTop = await contentBox.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop))
+  const paddingBottom = await contentBox.evaluate((el) => parseFloat(getComputedStyle(el).paddingBottom))
+  return { paddingTop, paddingBottom }
+}
