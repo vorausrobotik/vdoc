@@ -4,7 +4,7 @@ import MenuBar from '../components/MenuBar'
 import { FooterPlugin } from '../components/plugins/FooterPlugin'
 import ScrollToTop from '../components/ScrollToTop'
 import { Box, CssBaseline, ThemeProvider, createTheme, useColorScheme, Slide } from '@mui/material'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { IFrameScrollProvider, useIFrameScroll } from '../contexts/IFrameScrollContext'
 
 const theme = createTheme({
@@ -56,6 +56,19 @@ function ThemedComponent() {
   const lastScrollY = useRef(0)
   const [hideElements, setHideElements] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
+  const [footerHeight, setFooterHeight] = useState(0)
+
+  const footerRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) {
+      setFooterHeight(0)
+      return
+    }
+    const observer = new ResizeObserver(() => {
+      setFooterHeight(node.getBoundingClientRect().height)
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const isScrollingDown = scrollY > lastScrollY.current
@@ -88,20 +101,21 @@ function ThemedComponent() {
     <Box id="rootComponent" sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <MenuBar hide={hideElements} />
       <Box
+        data-testid="contentArea"
         sx={{
           flex: 1,
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
           pt: hideElements ? 0 : '64px',
-          pb: hideElements ? 0 : '64px',
+          pb: hideElements ? 0 : `${footerHeight}px`,
           transition: 'padding 0.3s',
         }}
       >
         <Outlet />
       </Box>
       <Slide appear={false} direction="up" in={!hideElements}>
-        <Box sx={{ position: 'fixed', bottom: 0, width: '100%', zIndex: 1100 }}>
+        <Box ref={footerRef} sx={{ position: 'fixed', bottom: 0, width: '100%', zIndex: 1100 }}>
           <FooterPlugin />
         </Box>
       </Slide>

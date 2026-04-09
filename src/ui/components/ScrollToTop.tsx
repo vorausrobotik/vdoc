@@ -20,7 +20,7 @@ export default function ScrollToTop({ visible, onScrollToTop }: ScrollToTopProps
         aria-label="scroll to top"
         sx={{
           position: 'fixed',
-          bottom: theme.spacing(8),
+          bottom: theme.spacing(2),
           right: theme.spacing(2),
         }}
       >

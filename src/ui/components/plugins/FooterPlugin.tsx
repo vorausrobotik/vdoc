@@ -1,4 +1,4 @@
-import { Container, Typography, Button, Link, Grid, Stack, Paper, Divider } from '@mui/material'
+import { Container, Typography, Button, Link, Grid, Stack, Paper, Divider, useTheme } from '@mui/material'
 import { useEffect, useState } from 'react'
 import FooterPluginT, { iconMap } from '../../interfacesAndTypes/plugins/FooterPlugin'
 import testIDs from '../../interfacesAndTypes/testIDs'
@@ -6,6 +6,8 @@ import { fetchPluginConfig } from '../../helpers/APIFunctions'
 
 export const FooterPlugin = () => {
   const [footerPluginConfig, setFooterPluginConfig] = useState<FooterPluginT | null>(null)
+
+  const theme = useTheme()
 
   useEffect(() => {
     fetchPluginConfig<FooterPluginT>('footer').then((config) => setFooterPluginConfig(config))
@@ -17,7 +19,12 @@ export const FooterPlugin = () => {
 
   return (
     // For the elevation effect
-    <Paper data-testid={testIDs.plugins.footer.main} component="footer" elevation={4}>
+    <Paper
+      data-testid={testIDs.plugins.footer.main}
+      component="footer"
+      elevation={4}
+      sx={{ background: theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.default }}
+    >
       {/* Centers content horizontally and restricts the width */}
       <Container maxWidth="xl" sx={{ py: 1 }}>
         <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={6}>
