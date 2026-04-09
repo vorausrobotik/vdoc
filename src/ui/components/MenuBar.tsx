@@ -169,8 +169,7 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
         position="fixed"
         data-testid={testIDs.header.main}
         sx={{
-          background: theme.palette.background.default,
-          zIndex: 1200,
+          background: theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.default,
         }}
         elevation={0}
       >
