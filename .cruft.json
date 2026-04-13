@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/vorausrobotik/voraus-python-template.git",
-  "commit": "7c61728e1b8138875ec8269e4c23b0ffa3c9dade",
+  "commit": "5de4415e1ecbcebfd973563e586a067da23a3ca3",
   "checkout": "release/2.X",
   "context": {
     "cookiecutter": {
@@ -26,7 +26,7 @@
         "jreleaser.yml"
       ],
       "_template": "https://github.com/vorausrobotik/voraus-python-template.git",
-      "_commit": "7c61728e1b8138875ec8269e4c23b0ffa3c9dade"
+      "_commit": "5de4415e1ecbcebfd973563e586a067da23a3ca3"
     }
   },
   "directory": null
