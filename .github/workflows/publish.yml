@@ -25,45 +25,18 @@ on:
 jobs:
   publish-pypi:
     runs-on: ubuntu-latest
-    env:
-      JFROG_CLI_BUILD_NAME: ${{ inputs.build_name }}
-      JFROG_CLI_BUILD_NUMBER: ${{ inputs.build_number }}
-      JFROG_CLI_TEMP_DIR: ${{ github.workspace }}/.jfrog-build
     steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-jfrog
-
-      - name: Add Git info to build
-        run: jf rt build-add-git
-
-      - uses: astral-sh/setup-uv@v7
-
-      - name: Install twine
-        run: uv tool install twine
-
-      - name: Configure jf pip
-        run: jf pip-config --repo-resolve pypi --repo-deploy ${{ inputs.pypi_deploy_repo }}
-
-      - name: Download python artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
 
-      - name: Publish PyPI
-        run: jf twine --module=voraus-pipeline-playground upload dist/*
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        env:
+          url: https://pypi.org/p/vdoc
 
-      - name: Upload build info partials
-        if: success()
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-partials-${{ github.job }}
-          path: ${{ env.JFROG_CLI_TEMP_DIR }}
-          include-hidden-files: true
-          if-no-files-found: error
 
   publish-docker:
     runs-on: ubuntu-latest
