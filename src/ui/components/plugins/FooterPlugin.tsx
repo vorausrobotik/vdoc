@@ -27,7 +27,7 @@ export const FooterPlugin = () => {
     >
       {/* Centers content horizontally and restricts the width */}
       <Container maxWidth="xl" sx={{ py: 1 }}>
-        <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={6}>
+        <Grid container direction="row" columnSpacing={6} sx={{ alignItems: 'center', justifyContent: 'center' }}>
           {/* Copyright */}
           {footerPluginConfig.copyright && (
             <Grid key={'Copyright'} data-testid={testIDs.plugins.footer.copyright}>
@@ -52,7 +52,7 @@ export const FooterPlugin = () => {
                       data-testid={testIDs.plugins.footer.linkGroup.title}
                       variant="body2"
                       color="text.secondary"
-                      mr={2}
+                      sx={{ mr: 2 }}
                     >
                       {linkGroup.title}
                     </Typography>
