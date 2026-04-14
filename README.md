@@ -14,6 +14,11 @@
 
 Multi version documentation hosting.
 
+## See it in action
+
+The vdoc instance serving the [voraus robotik GmbH](https://www.vorausrobotik.com/) software documentation is available
+at [docs.vorausrobotik.com](https://docs.vorausrobotik.com/).
+
 ## Documentation
 
 Please read the [documentation](https://vorausrobotik.github.io/vdoc/>) for more a more detailed introduction.
