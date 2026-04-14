@@ -23,21 +23,6 @@ on:
         type: string
 
 jobs:
-  publish-pypi:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: dist
-
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        env:
-          url: https://pypi.org/p/vdoc
-
-
   publish-docker:
     runs-on: ubuntu-latest
     env:
@@ -88,7 +73,6 @@ jobs:
 
   publish-build-info:
     needs:
-      - publish-pypi
       - publish-docker
     runs-on: ubuntu-latest
     env:
@@ -120,7 +104,6 @@ jobs:
   create-github-release:
     runs-on: ubuntu-latest
     needs:
-      - publish-pypi
       - publish-docker
     steps:
       - name: Checkout
@@ -137,7 +120,6 @@ jobs:
   publish-docs:
     runs-on: ubuntu-latest
     needs:
-      - publish-pypi
       - publish-docker
     steps:
       - name: Download all artifacts
