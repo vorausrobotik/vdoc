@@ -187,19 +187,19 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
           >
             {/* Logo and/or Text */}
             <Grid id="appBarLeftGroup" size={{ xs: 1, sm: 1, md: 1, lg: 3 }}>
-              <Box display="flex" justifyContent="flex-start">
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <LeftGroup />
               </Box>
             </Grid>
             {/* Searchbar */}
             <Grid id="appBarMiddleGroup" size={{ xs: 6, sm: 7, md: 8, lg: 6 }}>
-              <Box display="flex" justifyContent="center">
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <MiddleGroup />
               </Box>
             </Grid>
             {/* Optional version dropdown and settings button */}
             <Grid id="appBarRightGroup" size={{ xs: 5, sm: 4, md: 3, lg: 3 }}>
-              <Box display="flex" justifyContent="flex-end">
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <RightGroup setSidebarOpen={setSidebarOpen} />
               </Box>
             </Grid>

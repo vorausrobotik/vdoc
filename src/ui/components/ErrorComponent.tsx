@@ -69,14 +69,18 @@ const ErrorComponent = ({
   }
   return (
     <Box
-      sx={boxProps.sx}
+      sx={[
+        {
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          height: '100%',
+        },
+        ...(Array.isArray(boxProps.sx) ? boxProps.sx : [boxProps.sx]),
+      ]}
       data-testid={testIDs.errorComponent.main}
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      textAlign="center"
-      height="100%"
     >
       <SvgIcon
         data-testid={testIDs.errorComponent.icon}
@@ -84,13 +88,13 @@ const ErrorComponent = ({
         color={iconColor}
         sx={{ fontSize: iconFontSize }}
       />
-      <Typography variant={titleVariant} marginTop={2} data-testid={testIDs.errorComponent.title}>
+      <Typography variant={titleVariant} sx={{ marginTop: 2 }} data-testid={testIDs.errorComponent.title}>
         {getErrorMessage(error, title)}
       </Typography>
       <Typography
         variant={descriptionVariant}
         color="textSecondary"
-        marginTop={1}
+        sx={{ marginTop: 1 }}
         data-testid={testIDs.errorComponent.description}
       >
         {description ?? getDescription()}

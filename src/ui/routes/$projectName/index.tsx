@@ -53,7 +53,7 @@ function ProjectVersionsOverview() {
               <Grid size={6} key={major}>
                 <Card key={major} data-testid={testIDs.project.versionOverview.majorVersionCard.main}>
                   <CardContent>
-                    <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
+                    <Stack direction="row" sx={{ alignItems: 'center', gap: 2, mb: 2 }}>
                       <SellIcon />
                       <Typography variant="h6">v{major}</Typography>
                     </Stack>
