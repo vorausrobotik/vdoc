@@ -21,4 +21,4 @@ at [docs.vorausrobotik.com](https://docs.vorausrobotik.com/).
 
 ## Documentation
 
-Please read the [documentation](https://vorausrobotik.github.io/vdoc/>) for more a more detailed introduction.
+Please read the [documentation](https://vorausrobotik.github.io/vdoc/) for more a more detailed introduction.
