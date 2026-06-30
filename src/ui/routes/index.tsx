@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { fetchProjects, fetchProjectCategories } from '../helpers/APIFunctions'
 import ErrorComponent from '../components/ErrorComponent'
-import { SentimentDissatisfied } from '@mui/icons-material'
+import SentimentDissatisfied from '@mui/icons-material/SentimentDissatisfied'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
