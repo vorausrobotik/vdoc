@@ -5,6 +5,7 @@
 
 import { testIDs } from '../interfacesAndTypes/testIDs'
 import { useColorScheme } from '@mui/material'
+import { useRouterState } from '@tanstack/react-router'
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { sanitizeDocuUri } from '../helpers/RouteHelpers'
 import { parseIFrameHref } from '../helpers/IFrame'
@@ -189,13 +190,23 @@ export default function IFrame({
     }
   }, [contentWindow, titleChangeEventListener, hashChangeEventListener])
 
+  // While a navigation is pending, the router state is transiently inconsistent:
+  // the location already points at the target while the matched params still hold
+  // the previous page, so `src` can be a mix of both. Syncing the iframe with such
+  // a value force-loads the wrong document and bounces the iframe back to the
+  // previous page (BUGS-7690). Only sync once the router has settled.
+  const isNavigationPending = useRouterState({ select: (state) => state.status === 'pending' })
+
   useEffect(() => {
+    if (isNavigationPending) {
+      return
+    }
     const srcWithOrigin = `${window.location.origin}${src}`
     if (sourceRef.current !== srcWithOrigin) {
       iframeRef.current?.contentWindow?.location.replace(srcWithOrigin)
       sourceRef.current = srcWithOrigin
     }
-  }, [src])
+  }, [src, isNavigationPending])
 
   return (
     <iframe
