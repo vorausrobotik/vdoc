@@ -5,8 +5,8 @@
 # - The vdoc self-documentation (/static/docs) is not built (requires the full
 #   Sphinx toolchain and isn't needed to preview the app).
 # - The tsc type-check from `npm run build` is skipped; CI gates types.
-# - setuptools_scm can't derive a version without git metadata in the build
-#   context, so a placeholder version is injected (override via build arg).
+# - The version is derived by setuptools_scm from the git metadata in the
+#   build context (Dokploy builds from a full git clone).
 
 # --- Build the web UI ---------------------------------------------------------
 FROM node:lts-alpine AS ui-build
@@ -21,12 +21,16 @@ RUN npx vite build
 
 # --- Build the python wheel ---------------------------------------------------
 FROM python:3.14-alpine AS py-build
-ARG VDOC_VERSION=0.0.0.dev0+preview
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=$VDOC_VERSION
 WORKDIR /build
 
-COPY pyproject.toml README.md LICENSE.txt ./
-COPY src/vdoc/ src/vdoc/
+# Restore the tracked working tree from the git metadata instead of copying
+# individual files: setuptools_scm needs .git to derive the version and would
+# flag any difference between working tree and HEAD as dirty. Requires a
+# non-shallow clone as the build context so that the version tags are present.
+RUN apk add --no-cache git
+COPY .git/ .git/
+RUN git checkout -- .
+
 COPY --from=ui-build /build/src/vdoc/webapp/ src/vdoc/webapp/
 RUN pip wheel --no-deps --no-cache-dir --wheel-dir /dist .
 
