@@ -1,0 +1,56 @@
+# Dockerfile for Dokploy preview deployments.
+#
+# Unlike Dockerfile.prod, which installs a pre-built wheel from CI, this builds
+# everything needed directly from a git checkout. Kept to the bare minimum:
+# - The vdoc self-documentation (/static/docs) is not built (requires the full
+#   Sphinx toolchain and isn't needed to preview the app).
+# - The tsc type-check from `npm run build` is skipped; CI gates types.
+# - The version is derived by setuptools_scm from the git metadata in the
+#   build context (Dokploy builds from a full git clone).
+
+# --- Build the web UI ---------------------------------------------------------
+FROM node:lts-alpine AS ui-build
+WORKDIR /build
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json ./
+COPY src/ui/ src/ui/
+RUN npx vite build
+
+# --- Build the python wheel ---------------------------------------------------
+FROM python:3.14-alpine AS py-build
+WORKDIR /build
+
+# Restore the tracked working tree from the git metadata instead of copying
+# individual files: setuptools_scm needs .git to derive the version and would
+# flag any difference between working tree and HEAD as dirty.
+RUN apk add --no-cache git
+COPY .git/ .git/
+# Dokploy clones with a hardcoded --depth 1, which strips the history and tags
+# setuptools_scm needs. Re-fetch them from the public repository (also avoids
+# relying on any credentials embedded in the cloned remote URL).
+RUN git remote set-url origin https://github.com/vorausrobotik/vdoc.git \
+    && (git fetch --quiet --unshallow --tags origin || git fetch --quiet --tags origin) \
+    && git checkout -- .
+
+COPY --from=ui-build /build/src/vdoc/webapp/ src/vdoc/webapp/
+RUN pip wheel --no-deps --no-cache-dir --wheel-dir /dist .
+
+# --- Runtime (mirrors Dockerfile.prod) -----------------------------------------
+FROM python:3.14-alpine
+
+ENV PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8080
+ENTRYPOINT [ "vdoc" ]
+CMD ["run"]
+
+RUN --mount=type=bind,from=py-build,source=/dist,target=/pip-packages/ \
+    pip install \
+    --no-cache-dir \
+    --no-compile \
+    /pip-packages/*.whl \
+    # Default projects directory (mount a volume here in Dokploy)
+    && mkdir -p /srv/vdoc/docs
