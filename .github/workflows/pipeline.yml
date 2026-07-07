@@ -88,3 +88,34 @@ jobs:
         pypi_deploy_repo: ${{ needs.setup.outputs.pypi_deploy_repo }}
         build_name: ${{ needs.setup.outputs.build_name }}
         build_number: ${{ needs.setup.outputs.build_number }}
+
+    deploy:
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      needs:
+        - publish
+        - publish-pypi
+      runs-on: ubuntu-latest
+      environment:
+        name: production
+        url: https://docs.vorausrobotik.com
+      steps:
+        - name: Trigger Dokploy deployment
+          run: curl --fail --silent --show-error --max-time 30 "$DOKPLOY_WEBHOOK_URL"
+          env:
+            DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+
+        - name: Verify deployed version
+          run: |
+            for attempt in $(seq 1 12); do
+              sleep 5
+              # /api/version/ returns the version as a JSON string, e.g. "0.24.0"
+              deployed="$(curl -fsSL --max-time 10 http://docs.vorausrobotik.com/api/version/ | tr -d '"')" || deployed="<unreachable>"
+              echo "Attempt ${attempt}/12: Deployed version is '${deployed}', expecting '${EXPECTED_VERSION}'"
+              if [ "$deployed" = "$EXPECTED_VERSION" ]; then
+                exit 0
+              fi
+            done
+            echo "::error::Deployment did not serve version '${EXPECTED_VERSION}' within 60 seconds"
+            exit 1
+          env:
+            EXPECTED_VERSION: ${{ github.ref_name }}
