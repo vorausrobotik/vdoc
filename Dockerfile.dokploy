@@ -25,11 +25,15 @@ WORKDIR /build
 
 # Restore the tracked working tree from the git metadata instead of copying
 # individual files: setuptools_scm needs .git to derive the version and would
-# flag any difference between working tree and HEAD as dirty. Requires a
-# non-shallow clone as the build context so that the version tags are present.
+# flag any difference between working tree and HEAD as dirty.
 RUN apk add --no-cache git
 COPY .git/ .git/
-RUN git checkout -- .
+# Dokploy clones with a hardcoded --depth 1, which strips the history and tags
+# setuptools_scm needs. Re-fetch them from the public repository (also avoids
+# relying on any credentials embedded in the cloned remote URL).
+RUN git remote set-url origin https://github.com/vorausrobotik/vdoc.git \
+    && (git fetch --quiet --unshallow --tags origin || git fetch --quiet --tags origin) \
+    && git checkout -- .
 
 COPY --from=ui-build /build/src/vdoc/webapp/ src/vdoc/webapp/
 RUN pip wheel --no-deps --no-cache-dir --wheel-dir /dist .
