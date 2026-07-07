@@ -1,0 +1,48 @@
+# Dockerfile for Dokploy preview deployments.
+#
+# Unlike Dockerfile.prod, which installs a pre-built wheel from CI, this builds
+# everything needed directly from a git checkout. Kept to the bare minimum:
+# - The vdoc self-documentation (/static/docs) is not built (requires the full
+#   Sphinx toolchain and isn't needed to preview the app).
+# - The tsc type-check from `npm run build` is skipped; CI gates types.
+# - setuptools_scm can't derive a version without git metadata in the build
+#   context, so a placeholder version is injected (override via build arg).
+
+# --- Build the web UI ---------------------------------------------------------
+FROM node:lts-alpine AS ui-build
+WORKDIR /build
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json ./
+COPY src/ui/ src/ui/
+RUN npx vite build
+
+# --- Build the python wheel ---------------------------------------------------
+FROM python:3.14-alpine AS py-build
+ARG VDOC_VERSION=0.0.0.dev0+preview
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=$VDOC_VERSION
+WORKDIR /build
+
+COPY pyproject.toml README.md LICENSE.txt ./
+COPY src/vdoc/ src/vdoc/
+COPY --from=ui-build /build/src/vdoc/webapp/ src/vdoc/webapp/
+RUN pip wheel --no-deps --no-cache-dir --wheel-dir /dist .
+
+# --- Runtime (mirrors Dockerfile.prod) -----------------------------------------
+FROM python:3.14-alpine
+
+ENV PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8080
+ENTRYPOINT [ "vdoc" ]
+CMD ["run"]
+
+RUN --mount=type=bind,from=py-build,source=/dist,target=/pip-packages/ \
+    pip install \
+    --no-cache-dir \
+    --no-compile \
+    /pip-packages/*.whl \
+    # Default projects directory (mount a volume here in Dokploy)
+    && mkdir -p /srv/vdoc/docs
