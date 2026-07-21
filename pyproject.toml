@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]~=9.0"]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]~=10.2"]
 build-backend = "setuptools.build_meta"
 
 # Enables the usage of setuptools_scm
@@ -116,7 +116,7 @@ ci = [
 
 tox = ["tox~=4.0", "tox-uv~=1.0"]
 lint-template = [
-    "mypy~=1.0",
+    "mypy~=2.3",
     "pytest~=9.0",
     "types-docutils",
     "types-setuptools",
@@ -137,7 +137,7 @@ doc-template = [
     "sphinx-autodoc-typehints~=3.0",
     "pymarkdownlnt~=0.0",
     "doc8~=2.0",
-    "pip-licenses-cli~=3.0",
+    "pip-licenses-cli~=4.1",
     "jinja2~=3.0",
     "snowballstemmer~=3.0",
     "myst-parser~=5.0",
