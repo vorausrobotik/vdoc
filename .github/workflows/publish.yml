@@ -115,7 +115,7 @@ jobs:
           persist-credentials: false
 
       - name: Run JReleaser
-        uses: jreleaser/release-action@v2
+        uses: jreleaser/release-action@97b5e2f0e845de2fe1dbbdf451ac6a21233fafff # v2
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_PROJECT_VERSION: ${{ github.ref_name }}
