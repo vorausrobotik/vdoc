@@ -1,0 +1,23 @@
+name: Auto-label preview
+
+# Adds the `preview` label to human-opened PRs so Dokploy creates a preview
+# deployment. Bot PRs (Renovate, Dependabot, ...) are skipped so they don't
+# spin up previews.
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+jobs:
+  label:
+    # Skip every bot actor: GitHub sets user.type to "Bot" for bot accounts.
+    if: github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add preview label
+        run: gh pr edit "$PR" --repo "$REPO" --add-label preview
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
