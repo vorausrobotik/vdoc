@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { Box, Card, CardActions, CardContent, Container, Grid, Typography } from '@mui/material'
 import { getRouteApi } from '@tanstack/react-router'
-import { LinkButton } from '../interfacesAndTypes/LinkButton'
+import { useMemo } from 'react'
 import { groupProjectsByCategories } from '../helpers/Projects'
-import { Box, Container, Card, CardActions, CardContent, Grid, Typography } from '@mui/material'
+import { LinkButton } from '../interfacesAndTypes/LinkButton'
+import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 import testIDs from '../interfacesAndTypes/testIDs'
-import { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 
 const route = getRouteApi('/')
 

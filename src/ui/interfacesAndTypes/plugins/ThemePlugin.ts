@@ -1,4 +1,4 @@
-import { PluginBaseT } from './PluginBase'
+import type { PluginBaseT } from './PluginBase'
 
 type ThemeSettingsT = {
   logo_url?: string

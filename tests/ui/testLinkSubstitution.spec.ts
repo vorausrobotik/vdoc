@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
-import { openProjectDocumentation, assertLinksOnPage, assertLinkOpensInNewTab, BASE_URL } from './helpers'
+import { assertLinkOpensInNewTab, assertLinksOnPage, BASE_URL, openProjectDocumentation } from './helpers'
 
 await prepareTestSuite(test)
 

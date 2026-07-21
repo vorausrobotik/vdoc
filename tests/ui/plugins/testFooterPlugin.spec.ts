@@ -1,8 +1,9 @@
 import { expect } from '@playwright/test'
+import type { FooterPluginT } from '../../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
+import testIDs from '../../../src/ui/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from '../base'
 import { assertLinkOpensInNewTab } from '../helpers'
-import testIDs from '../../../src/ui/interfacesAndTypes/testIDs'
-import { FooterPluginT } from '../../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
+
 await prepareTestSuite(test)
 
 const footerDisabledDataMock: FooterPluginT = {

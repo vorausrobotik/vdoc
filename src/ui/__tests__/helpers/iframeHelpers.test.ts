@@ -1,5 +1,5 @@
-import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { toggleDocumentationColorScheme, parseIFrameHref } from '../../helpers/IFrame'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { parseIFrameHref, toggleDocumentationColorScheme } from '../../helpers/IFrame'
 
 describe('toggleDocumentationColorScheme', () => {
   let mockSetItem: ReturnType<typeof vi.fn>

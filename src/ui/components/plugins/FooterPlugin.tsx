@@ -1,8 +1,9 @@
-import { Container, Typography, Button, Link, Grid, Stack, Paper, Divider, useTheme } from '@mui/material'
+import { Button, Container, Divider, Grid, Link, Paper, Stack, Typography, useTheme } from '@mui/material'
 import { useEffect, useState } from 'react'
-import FooterPluginT, { iconMap } from '../../interfacesAndTypes/plugins/FooterPlugin'
-import testIDs from '../../interfacesAndTypes/testIDs'
 import { fetchPluginConfig } from '../../helpers/APIFunctions'
+import type FooterPluginT from '../../interfacesAndTypes/plugins/FooterPlugin'
+import { iconMap } from '../../interfacesAndTypes/plugins/FooterPlugin'
+import testIDs from '../../interfacesAndTypes/testIDs'
 
 export const FooterPlugin = () => {
   const [footerPluginConfig, setFooterPluginConfig] = useState<FooterPluginT | null>(null)

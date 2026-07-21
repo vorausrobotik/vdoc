@@ -1,4 +1,4 @@
-import { PluginBaseT } from './PluginBase'
+import type { PluginBaseT } from './PluginBase'
 
 type OramaDictionaryT = {
   search_placeholder?: string

@@ -1,7 +1,7 @@
+import fs from 'node:fs'
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
 import { openProjectDocumentation } from './helpers'
-import fs from 'fs'
 
 await prepareTestSuite(test)
 

@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
-import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import test, { prepareTestSuite } from './base'
 import { openSettingsSidebar } from './helpers'
 
 await prepareTestSuite(test)

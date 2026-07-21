@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
-import test, { prepareTestSuite } from './base'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import { assertIndexPage, assertVersionOverview, assertVersionDropdown } from './helpers'
+import test, { prepareTestSuite } from './base'
+import { assertIndexPage, assertVersionDropdown, assertVersionOverview } from './helpers'
 
 await prepareTestSuite(test)
 

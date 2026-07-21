@@ -8,4 +8,5 @@ type OptionalNullable<T> = {
 }
 
 export type PluginBaseT<TFields> =
-  (PluginBaseI & { active: false } & OptionalNullable<TFields>) | (PluginBaseI & { active: true } & TFields)
+  | (PluginBaseI & { active: false } & OptionalNullable<TFields>)
+  | (PluginBaseI & { active: true } & TFields)

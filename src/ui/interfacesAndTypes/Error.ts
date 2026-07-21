@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios'
+import type { AxiosError } from 'axios'
 
 export interface FastAPIErrorResponse {
   message: string

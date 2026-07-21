@@ -1,28 +1,26 @@
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import {
+  AppBar,
   Box,
-  BoxProps,
+  type BoxProps,
   Grid,
   IconButton,
-  AppBar,
+  type SelectChangeEvent,
+  Slide,
   Toolbar,
-  SelectChangeEvent,
-  useTheme,
   Typography,
   useMediaQuery,
-  Slide,
+  useTheme,
 } from '@mui/material'
-import { useState, useEffect, useMemo } from 'react'
-import testIDs from '../interfacesAndTypes/testIDs'
-import ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
-import { fetchProjectVersions, fetchProjectVersion, fetchAppVersion, fetchPluginConfig } from '../helpers/APIFunctions'
-
 import { useNavigate, useParams } from '@tanstack/react-router'
-import VersionDropdown from './VersionDropdown'
-
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import { useEffect, useMemo, useState } from 'react'
+import { fetchAppVersion, fetchPluginConfig, fetchProjectVersion, fetchProjectVersions } from '../helpers/APIFunctions'
+import type OramaPluginT from '../interfacesAndTypes/plugins/OramaPluginT'
+import type ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
+import testIDs from '../interfacesAndTypes/testIDs'
+import { OramaSearchPlugin } from './plugins/OramaSearchPlugin'
 import SettingsSidebar from './SettingsSidebar'
-import OramaSearchPlugin from './plugins/OramaSearchPlugin'
-import OramaPluginT from '../interfacesAndTypes/plugins/OramaPluginT'
+import VersionDropdown from './VersionDropdown'
 
 function LeftGroup() {
   const theme = useTheme()
@@ -39,11 +37,8 @@ function LeftGroup() {
 
     if (useSmallLogo && smallLogoUrl) {
       return smallLogoUrl
-    } else {
-      return largeLogoUrl ?? smallLogoUrl ?? null
     }
-
-    return null
+    return largeLogoUrl ?? smallLogoUrl ?? null
   }, [themePluginConfig, useSmallLogo, theme.palette.mode])
 
   return (
@@ -114,7 +109,7 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
   }
 
   const getSelectedVersion = useMemo(() => {
-    let result
+    let result: string | undefined
     if (params.version && projectVersions) {
       if (params.version !== 'latest' && !projectVersions?.includes(params.version)) {
         result = ''
@@ -161,7 +156,7 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
 
   useEffect(() => {
     fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
-  }, [theme])
+  }, [])
 
   return (
     <Slide appear={false} direction="down" in={!hide}>

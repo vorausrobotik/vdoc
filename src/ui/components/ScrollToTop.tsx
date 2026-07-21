@@ -1,5 +1,5 @@
-import { Fab, Fade, useTheme } from '@mui/material'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import { Fab, Fade, useTheme } from '@mui/material'
 import testIDs from '../interfacesAndTypes/testIDs'
 
 interface ScrollToTopProps {

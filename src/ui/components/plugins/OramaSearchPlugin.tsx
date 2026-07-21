@@ -1,7 +1,7 @@
-import { OramaSearchButton, OramaSearchBox } from '@orama/react-components'
-import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
 import { Box, useColorScheme } from '@mui/material'
-import OramaPluginT from '../../interfacesAndTypes/plugins/OramaPluginT'
+import { OramaSearchBox, OramaSearchButton } from '@orama/react-components'
+import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
+import type OramaPluginT from '../../interfacesAndTypes/plugins/OramaPluginT'
 import testIDs from '../../interfacesAndTypes/testIDs'
 
 export const OramaSearchPlugin = (config: OramaPluginT) => {
@@ -68,5 +68,3 @@ export const OramaSearchPlugin = (config: OramaPluginT) => {
     </Box>
   )
 }
-
-export default OramaSearchPlugin

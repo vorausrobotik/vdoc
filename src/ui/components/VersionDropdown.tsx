@@ -1,4 +1,4 @@
-import { Chip, MenuItem, Select, FormControl, InputLabel, SelectChangeEvent } from '@mui/material'
+import { Chip, FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material'
 import testIDs from '../interfacesAndTypes/testIDs'
 
 interface VersionDropdownProps extends React.ComponentProps<'div'> {
@@ -20,7 +20,7 @@ export default function VersionDropdown({
   const renderVersion = (version: string) => (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <span>{version}</span>
-      {latestVersion && latestVersion == version && (
+      {latestVersion && latestVersion === version && (
         <Chip label="latest" size="small" color="success" style={{ marginLeft: 8 }} />
       )}
     </div>
