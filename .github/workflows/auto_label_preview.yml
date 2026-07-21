@@ -1,16 +1,24 @@
 name: Auto-label preview
 
-# Adds the `preview` label to human-opened PRs so Dokploy creates a preview
-# deployment. Bot PRs (Renovate, Dependabot, ...) are skipped so they don't
-# spin up previews.
+# Adds the `preview` label to internal human PRs so Dokploy creates a preview
+# deployment; bot PRs (Renovate, ...) are skipped so they don't spin up previews.
+#
+# This is a PUBLIC repo, so:
+#  - pull_request (not pull_request_target) is used: it never grants fork PRs a
+#    write-capable token — pull_request_target is the trigger zizmor flags.
+#  - the job is gated to SAME-REPO PRs. Fork PRs get a read-only token that
+#    cannot add labels, and external forks should not trigger preview
+#    deployments anyway, so they are skipped rather than failed.
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, reopened]
 
 jobs:
   label:
-    # Skip every bot actor: GitHub sets user.type to "Bot" for bot accounts.
-    if: github.event.pull_request.user.type != 'Bot'
+    # Skip bots (user.type == 'Bot') and fork PRs (head repo != this repo).
+    if: >-
+      github.event.pull_request.user.type != 'Bot' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
