@@ -1,10 +1,7 @@
 name: CI pipeline
 
-permissions:
-  contents: write
-  id-token: write
-  issues: write
-  pages: write
+# No workflow-level permissions; each job requests only what it needs below.
+permissions: {}
 
 on:
   pull_request:
@@ -18,6 +15,8 @@ on:
 
 jobs:
     setup:
+      permissions:
+        contents: read
       uses: ./.github/workflows/setup.yml
       with:
         package_name: 'vdoc'
@@ -30,6 +29,9 @@ jobs:
     build:
       needs:
         - setup
+      permissions:
+        contents: read
+        id-token: write # JFrog CLI OIDC auth (setup-jfrog)
       uses: ./.github/workflows/build.yml
       secrets: inherit
       with:
@@ -40,12 +42,16 @@ jobs:
         build_number: ${{ needs.setup.outputs.build_number }}
 
     tests-and-coverage:
+      permissions:
+        contents: read
       uses: ./.github/workflows/tests_and_coverage.yml
       needs:
         - build
       secrets: inherit
 
     lint:
+      permissions:
+        contents: read
       uses: ./.github/workflows/lint.yml
       needs:
         - setup
@@ -60,6 +66,9 @@ jobs:
       - tests-and-coverage
       - lint
       runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        id-token: write # PyPI Trusted Publishing
       steps:
         - name: Download all artifacts
           uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -79,6 +88,10 @@ jobs:
       - build
       - tests-and-coverage
       - lint
+      permissions:
+        contents: write # JReleaser creates the GitHub release/tag
+        id-token: write # JFrog CLI OIDC auth (setup-jfrog)
+        pages: write # GitHub Pages docs deployment
       uses: ./.github/workflows/publish.yml
       secrets: inherit
       with:
@@ -95,6 +108,8 @@ jobs:
         - publish
         - publish-pypi
       runs-on: ubuntu-latest
+      permissions:
+        contents: read
       environment:
         name: production
         url: https://docs.vorausrobotik.com
