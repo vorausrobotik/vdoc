@@ -4,7 +4,7 @@ description: Configure JFrog CLI with OIDC authentication
 runs:
   using: composite
   steps:
-    - uses: jfrog/setup-jfrog-cli@5a4fbe1e30dbb570cc62d2513421c4b9bc3c9959 # v4
+    - uses: jfrog/setup-jfrog-cli@deda456d982fc5e9a7a020b63eb0d2968aedd33e # v5
       env:
         JF_URL: https://voraus.jfrog.io
       with:
