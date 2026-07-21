@@ -54,15 +54,25 @@ jobs:
     steps:
       - name: Set VPU variables
         id: vars
+        # Inputs are passed via env (not interpolated into the script) to avoid
+        # template-injection; the shell reads them as plain environment values.
+        env:
+          PACKAGE_NAME: ${{ inputs.package_name }}
+          REGISTRY: ${{ inputs.registry }}
+          PROJECT: ${{ inputs.project }}
+          SCOPE: ${{ inputs.scope }}
+          MATURITY: ${{ inputs.maturity }}
+          LOCATION: ${{ inputs.location }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
-          VPU_DOCKER_IMAGE_NAME=${{ inputs.package_name }}
-          VPU_DOCKER_REGISTRY="${{ inputs.registry }}"
-          VPU_DOCKER_REPOSITORIES="${{ inputs.project }}-docker-${{ inputs.scope }}-${{ inputs.maturity }}-${{ inputs.location }}-local"
-          PYPI_DEPLOY_REPO="${{ inputs.project }}-pypi-${{ inputs.scope }}-${{ inputs.maturity }}-${{ inputs.location }}-local"
+          VPU_DOCKER_IMAGE_NAME="${PACKAGE_NAME}"
+          VPU_DOCKER_REGISTRY="${REGISTRY}"
+          VPU_DOCKER_REPOSITORIES="${PROJECT}-docker-${SCOPE}-${MATURITY}-${LOCATION}-local"
+          PYPI_DEPLOY_REPO="${PROJECT}-pypi-${SCOPE}-${MATURITY}-${LOCATION}-local"
 
           # Unified build name and number for all stages
-          BUILD_NAME="${{ inputs.package_name }}"
-          BUILD_NUMBER="${{ github.run_number }}"
+          BUILD_NAME="${PACKAGE_NAME}"
+          BUILD_NUMBER="${RUN_NUMBER}"
 
           # Output for other jobs
           echo "vpu_docker_image_name=${VPU_DOCKER_IMAGE_NAME}" >> $GITHUB_OUTPUT
