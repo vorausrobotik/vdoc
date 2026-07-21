@@ -1,0 +1,23 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  // ---------------------------------------------------------------------------
+  // Org-wide defaults are inherited from the vorausrobotik/* preset and are NOT
+  // repeated here. For reference, they provide:
+  //   :semanticCommits, :timezone(Europe/Berlin), schedule:nonOfficeHours,
+  //   :disableDependencyDashboard, prHourlyLimit: 0,
+  //   labels: [renovate, dependencies], monthly lockFileMaintenance,
+  //   rebaseWhen: conflicted, and immediate/unscheduled vulnerabilityAlerts.
+  // Only repo-specific overrides live below.
+  // ---------------------------------------------------------------------------
+
+  packageRules: [
+    {
+      // Combine all Python (uv/pep621) and npm updates into a single PR.
+      // Trade-off: everything lands in ONE squashed commit — Renovate cannot
+      // split a grouped PR into one commit per dependency.
+      matchManagers: ["pep621", "npm"],
+      groupName: "all dependencies",
+    }
+  ],
+}
