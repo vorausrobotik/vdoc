@@ -1,0 +1,49 @@
+name: zizmor
+
+# Static security analysis of our own GitHub Actions workflows with zizmor
+# (https://docs.zizmor.sh). This repo is private and does not have GitHub
+# Advanced Security, so SARIF upload to the code-scanning ("Security") tab is
+# unavailable (it errors with "Code Security must be enabled"). We therefore run
+# zizmor in annotations mode: findings render as inline annotations on the PR
+# diff and in the job summary, and zizmor's own exit code fails the check when
+# it finds anything — a hard merge gate. Mark `zizmor` as a required status
+# check in the `main` branch protection rule to enforce it. If this repo ever
+# gains Advanced Security, flip `advanced-security: true` (and drop
+# `annotations` — the two are mutually exclusive) to get stateful triage in the
+# Security tab instead, and add back `security-events: write` below.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: zizmor-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# No ambient permissions; the job grants only what it needs.
+permissions: {}
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout + zizmor's online audits read this repo
+      actions: read # zizmor resolves referenced reusable workflows/actions
+    steps:
+      # Actions in this security workflow are hash-pinned: zizmor's default
+      # unpinned-uses policy requires SHA pins, so pinning here keeps zizmor's
+      # own workflow finding-free. Version comments track the human-readable tag.
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@192e21d79ab29983730a13d1382995c2307fbcaa # v0.5.7
+        with:
+          # No Advanced Security on this private repo, so emit inline PR
+          # annotations instead of uploading SARIF (mutually exclusive options).
+          advanced-security: false
+          annotations: true
