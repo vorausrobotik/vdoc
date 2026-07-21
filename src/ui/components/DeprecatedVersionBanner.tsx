@@ -1,5 +1,5 @@
+import { Grid, Typography, useTheme } from '@mui/material'
 import { Link } from '@tanstack/react-router'
-import { useTheme, Typography, Grid } from '@mui/material'
 import testIDs from '../interfacesAndTypes/testIDs'
 
 interface DeprecatedVersionBannerPropsI {
@@ -32,5 +32,3 @@ export const DeprecatedVersionBanner = ({ name, version }: DeprecatedVersionBann
     </Link>
   )
 }
-
-export default DeprecatedVersionBanner

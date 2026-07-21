@@ -1,5 +1,5 @@
-import { RefObject } from 'react'
-import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+import type { RefObject } from 'react'
+import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 
 export interface IFrameLocation {
   name: string

@@ -1,6 +1,7 @@
-import test, { prepareTestSuite } from '../base'
 import type { EffectiveColorMode } from '../../../src/ui/interfacesAndTypes/ColorModes'
+import test, { prepareTestSuite } from '../base'
 import { assertMenuBar, BASE_URL } from '../helpers'
+
 await prepareTestSuite(test)
 
 test.describe('Theme plugin tests', () => {

@@ -1,9 +1,9 @@
-import { useState, useEffect, ElementType } from 'react'
-import { AxiosError } from 'axios'
-import { Box, Typography, Button, SvgIcon } from '@mui/material'
+import { Box, Button, SvgIcon, Typography } from '@mui/material'
+import type { SvgIconProps } from '@mui/material/SvgIcon'
 import type { TypographyVariant } from '@mui/material/styles'
-import { SvgIconProps } from '@mui/material/SvgIcon'
-import { BoxProps } from '@mui/system'
+import type { BoxProps } from '@mui/system'
+import { AxiosError } from 'axios'
+import { type ElementType, useEffect, useState } from 'react'
 import testIDs from '../interfacesAndTypes/testIDs'
 
 type SvgIconColor = SvgIconProps['color']

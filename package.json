@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc -b",
-    "lint": "eslint . && prettier --check .",
+    "lint": "biome check . && prettier --check \"**/*.{md,yml,yaml}\"",
+    "format": "biome check --write . && prettier --write \"**/*.{md,yml,yaml}\"",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "preview": "vite preview"
@@ -26,10 +27,9 @@
     "valibot": "^1.4.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.5",
     "@codecov/vite-plugin": "2.0.1",
-    "@eslint/js": "10.0.1",
     "@playwright/test": "1.61.1",
-    "@tanstack/eslint-plugin-query": "5.101.2",
     "@tanstack/router-devtools": "1.167.0",
     "@tanstack/router-plugin": "1.168.19",
     "@types/node": "26.1.0",
@@ -38,16 +38,10 @@
     "@vitejs/plugin-react": "6.0.3",
     "@vitest/coverage-v8": "4.1.10",
     "dotenv": "17.4.2",
-    "eslint": "10.6.0",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-react-hooks": "7.1.1",
-    "eslint-plugin-react-refresh": "0.5.3",
-    "globals": "17.7.0",
     "jsdom": "29.1.1",
     "prettier": "3.9.5",
     "rollup-plugin-visualizer": "7.0.1",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.63.0",
     "vite": "8.1.3",
     "vite-plugin-compression2": "2.5.3",
     "vitest": "4.1.10"
@@ -55,16 +49,6 @@
   "overrides": {
     "@codecov/vite-plugin": {
       "vite": "^8.0.0"
-    },
-    "@tanstack/eslint-plugin-query": {
-      "eslint": "^10.0.0",
-      "typescript": "~6.0.0"
-    },
-    "eslint-plugin-react-hooks": {
-      "eslint": "^10.0.0"
-    },
-    "typescript-eslint": {
-      "typescript": "~6.0.0"
     }
   }
 }

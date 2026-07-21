@@ -3,15 +3,14 @@
  * Licensed under the MIT License.
  */
 
-import { testIDs } from '../interfacesAndTypes/testIDs'
 import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
-import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
-import { sanitizeDocuUri } from '../helpers/RouteHelpers'
-import { parseIFrameHref } from '../helpers/IFrame'
-import { toggleDocumentationColorScheme } from '../helpers/IFrame'
-import { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
+import { parseIFrameHref, toggleDocumentationColorScheme } from '../helpers/IFrame'
+import { sanitizeDocuUri } from '../helpers/RouteHelpers'
+import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+import { testIDs } from '../interfacesAndTypes/testIDs'
 
 interface Props {
   src: string
@@ -87,7 +86,7 @@ export default function IFrame({
     // Make all external links in iframe open in new tab and make internal links replace the iframe url so that change
     // doesn't show up in the page history (we'd need to click back twice)
     iframeRef.current.contentDocument?.querySelectorAll('a').forEach((anchor: HTMLAnchorElement) => {
-      let linkProjectName: string | undefined = undefined
+      let linkProjectName: string | undefined
       // The href might be external or something else. The function is allowed to fail at this point.
       /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
       try {

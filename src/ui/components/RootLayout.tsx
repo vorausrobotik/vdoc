@@ -1,12 +1,12 @@
-import { Outlet } from '@tanstack/react-router'
+import { Box, CssBaseline, createTheme, Slide, ThemeProvider, useColorScheme } from '@mui/material'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
+import { Outlet } from '@tanstack/react-router'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useIFrameScroll } from '../contexts/IFrameScrollContext'
+import { IFrameScrollProvider } from '../contexts/IFrameScrollProvider'
 import MenuBar from './MenuBar'
 import { FooterPlugin } from './plugins/FooterPlugin'
 import ScrollToTop from './ScrollToTop'
-import { Box, CssBaseline, ThemeProvider, createTheme, useColorScheme, Slide } from '@mui/material'
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { IFrameScrollProvider } from '../contexts/IFrameScrollProvider'
-import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 
 const theme = createTheme({
   colorSchemes: {

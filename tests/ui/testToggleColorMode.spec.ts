@@ -1,5 +1,5 @@
-import test, { prepareTestSuite } from './base'
 import type { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import test, { prepareTestSuite } from './base'
 import { assertCurrentColorModeButton, assertTheme, switchColorMode } from './helpers'
 
 await prepareTestSuite(test)

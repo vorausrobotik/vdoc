@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { groupProjectsByCategories } from '../../helpers/Projects'
-import { Project, ProjectCategory } from '../../interfacesAndTypes/Project'
+import type { Project, ProjectCategory } from '../../interfacesAndTypes/Project'
 
 describe('groupProjectsByCategories', () => {
   const baseProjects: Project[] = [

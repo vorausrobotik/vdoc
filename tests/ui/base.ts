@@ -1,15 +1,15 @@
-import test from '@playwright/test'
+import fs from 'node:fs'
+import path from 'node:path'
 import type {
-  TestType,
+  Page,
   PlaywrightTestArgs,
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
   PlaywrightWorkerOptions,
+  TestType,
 } from '@playwright/test'
-import type { Page } from '@playwright/test'
+import test from '@playwright/test'
 import type { ColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
-import fs from 'fs'
-import path from 'path'
 
 export const prepareTestSuite = async (
   test: TestType<PlaywrightTestArgs & PlaywrightTestOptions, PlaywrightWorkerArgs & PlaywrightWorkerOptions>

@@ -1,9 +1,9 @@
+import { getRouteApi, useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
-import { getRouteApi, useRouter, useLocation } from '@tanstack/react-router'
 
-import { IFrameLocation } from '../helpers/IFrame'
+import type { IFrameLocation } from '../helpers/IFrame'
 import testIDs from '../interfacesAndTypes/testIDs'
-import DeprecatedVersionBanner from './DeprecatedVersionBanner'
+import { DeprecatedVersionBanner } from './DeprecatedVersionBanner'
 import IFrame from './IFrame'
 
 const route = getRouteApi('/$projectName/$version/$')

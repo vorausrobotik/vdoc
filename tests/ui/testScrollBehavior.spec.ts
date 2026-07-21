@@ -1,15 +1,15 @@
-import { expect, Locator } from '@playwright/test'
-import test, { prepareTestSuite } from './base'
+import { expect, type Locator } from '@playwright/test'
+import type { FooterPluginT } from '../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import test, { prepareTestSuite } from './base'
 import {
-  waitForIframeReady,
-  scrollIframe,
-  scrollIframeBelowShowThreshold,
   expectHeaderHidden,
   expectHeaderVisible,
   getContentPadding,
+  scrollIframe,
+  scrollIframeBelowShowThreshold,
+  waitForIframeReady,
 } from './helpers'
-import { FooterPluginT } from '../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
 
 await prepareTestSuite(test)
 

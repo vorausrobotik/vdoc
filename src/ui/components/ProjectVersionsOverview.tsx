@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
-import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { groupVersionsByMajorVersion } from '../helpers/Versions'
-import { Typography, Container, Chip, Stack, Card, Grid, Box, CardContent, Badge } from '@mui/material'
 import SellIcon from '@mui/icons-material/Sell'
+import { Badge, Box, Card, CardContent, Chip, Container, Grid, Stack, Typography } from '@mui/material'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { useMemo } from 'react'
+import { groupVersionsByMajorVersion } from '../helpers/Versions'
 import testIDs from '../interfacesAndTypes/testIDs'
 
 const route = getRouteApi('/$projectName/')

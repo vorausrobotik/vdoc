@@ -1,14 +1,12 @@
-import { useCallback } from 'react'
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
-import { object, optional, string } from 'valibot'
-
-import { fetchProjectVersion } from '../../helpers/APIFunctions'
-import LoadingSpinner from '../../components/LoadingSpinner'
-import { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
-import ErrorComponent from '../../components/ErrorComponent'
-
 import SearchOffIcon from '@mui/icons-material/SearchOff'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { useCallback } from 'react'
+import { object, optional, string } from 'valibot'
 import { DocumentationComponent } from '../../components/DocumentationComponent'
+import ErrorComponent from '../../components/ErrorComponent'
+import { LoadingSpinner } from '../../components/LoadingSpinner'
+import { fetchProjectVersion } from '../../helpers/APIFunctions'
+import type { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
 
 // Schema for search parameters
 const searchSchema = object({
