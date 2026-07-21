@@ -1,6 +1,14 @@
 name: Tests & Coverage
 
-on: [workflow_call]
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+      ORAMA_API_ENDPOINT:
+        required: false
+      ORAMA_API_KEY:
+        required: false
 
 
 jobs:

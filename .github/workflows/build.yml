@@ -18,6 +18,9 @@ on:
       build_number:
         required: true
         type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: false
 
 jobs:
   build-python:
