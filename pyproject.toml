@@ -1,9 +1,6 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]~=10.2"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
-
-# Enables the usage of setuptools_scm
-[tool.setuptools_scm]
 
 
 [project]
@@ -17,7 +14,9 @@ license-files = ["LICEN[CS]E*"]
 readme = { file = "README.md", content-type = "text/markdown" }
 urls.Repository = "https://github.com/vorausrobotik/vdoc"
 requires-python = ">=3.11"
-dynamic = ["version"]  # Uses setuptools_scm to determine the version
+# Managed by release-please: the release pull request bumps this line, `uv.lock` and
+# `.release-please-manifest.json` together. Do not edit it by hand.
+version = "0.24.2"
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -73,6 +72,7 @@ dev = [
     {include-group = "tox"},
     {include-group = "lint"},
     {include-group = "test"},
+    {include-group = "coverage"},
     {include-group = "doc"},
     {include-group = "build"},
     {include-group = "ci"},
@@ -108,6 +108,11 @@ ci = [
     # Add additional CI dependencies below this line
 ]
 
+coverage = [
+    {include-group = "coverage-template"},
+    # Add additional coverage dependencies below this line
+]
+
 ###########################################################
 # The following dependencies are managed via the template.#
 # Do not modify them manually to prevent conflicts during #
@@ -127,7 +132,10 @@ lint-template = [
 test-template = [
     "pytest~=9.0",
     "pytest-randomly~=4.0",
-    "pytest-cov~=7.0",
+    "pytest-cov~=7.0"
+]
+coverage-template = [
+    "junitparser~=4.0",
     "coverage[toml]~=7.0",
 ]
 doc-template = [
