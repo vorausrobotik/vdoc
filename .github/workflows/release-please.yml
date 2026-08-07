@@ -1,0 +1,46 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+# No workflow-level permissions; the job requests only what it needs below.
+permissions: {}
+
+jobs:
+  release-please:
+    name: Maintain the release PR and tag releases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Create the release commit, tag and GitHub release
+      pull-requests: write # Maintain the release pull request
+    steps:
+      # The org GitHub App identity is REQUIRED here, not merely preferred. vdoc's entire
+      # release -- PyPI, Docker, docs and the Dokploy deployment -- hangs off the
+      # `push: tags` trigger in `pipeline.yml`. GitHub deliberately does not start
+      # workflows for refs pushed with the built-in `GITHUB_TOKEN`, so falling back to it
+      # would produce tags and releases that nothing ever builds, silently. Failing here
+      # is the correct outcome: it is loud, and it is fixed by configuring the app.
+      #
+      # Needs the org variable GH_AUTOMATIONS_APP_ID and the org secret
+      # GH_AUTOMATIONS_PRIVATE_KEY, with this repository in the app's installation scope.
+      - name: Mint app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          # The numeric App ID is a valid issuer too; client-id is the non-deprecated input name.
+          client-id: ${{ vars.GH_AUTOMATIONS_APP_ID }}
+          private-key: ${{ secrets.GH_AUTOMATIONS_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      # Maintains a release pull request that bumps the version (`pyproject.toml` and
+      # `uv.lock`) and `CHANGELOG.md` from the Conventional Commits merged into main.
+      # Merging that pull request creates the git tag and the GitHub release; the tag then
+      # triggers `pipeline.yml`, which builds, publishes and deploys.
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

@@ -15,7 +15,7 @@ jobs:
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
       - name: Run static checks
-        run: uv run tox run -e lint
+        run: uv run --locked tox run -e lint
   lint-ts:
     runs-on: ubuntu-latest
     steps:

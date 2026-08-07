@@ -26,6 +26,38 @@ jobs:
         location: 'cloud'
         registry: 'voraus.jfrog.io'
 
+    # Fast-feedback check only. Every job that installs anything already passes
+    # `--locked` to `uv sync`/`uv run`, so a stale lockfile can never cause a re-resolve
+    # regardless of this job. It exists to surface that failure within seconds, with an
+    # unambiguous message, instead of midway through a build. It therefore runs
+    # independently: no other job needs it, so it never serialises the pipeline.
+    verify-lock:
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+      steps:
+        - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+          with:
+            persist-credentials: false
+
+        - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+          with:
+            # Cache on pull request and main builds, but never on tag builds. A tag run
+            # can restore the default branch's cache, so a poisoned main cache could
+            # otherwise reach a release; skipping the cache on `refs/tags/*` closes that
+            # path while keeping the cache everywhere it pays off.
+            #
+            # This exact spelling matters: it is the shape zizmor's `cache-poisoning`
+            # audit recognizes as a legitimate opt-out. Equivalent-looking alternatives
+            # such as `github.ref_type != 'tag'`, or dropping the trailing slash from
+            # `refs/tags/`, are NOT recognized and re-trigger the finding.
+            enable-cache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+        - name: Verify uv.lock is up to date
+          # Re-resolves in memory and writes nothing. Fails if the lockfile is stale;
+          # the fix is to run `uv lock` locally and commit the result.
+          run: uv lock --check
+
     build:
       needs:
         - setup
@@ -80,7 +112,7 @@ jobs:
             path: dist
 
         - name: Publish package distributions to PyPI
-          uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # release/v1
+          uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # v1.14.1
           env:
             url: https://pypi.org/p/vdoc
 
@@ -92,8 +124,8 @@ jobs:
       - tests-and-coverage
       - lint
       permissions:
-        contents: write # JReleaser creates the GitHub release/tag
-        id-token: write # JFrog CLI OIDC auth (setup-jfrog)
+        contents: read
+        id-token: write # JFrog CLI OIDC auth (setup-jfrog) and GitHub Pages deployment
         pages: write # GitHub Pages docs deployment
       uses: ./.github/workflows/publish.yml
       with:

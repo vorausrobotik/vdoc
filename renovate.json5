@@ -9,5 +9,16 @@
       matchManagers: ['pep621', 'npm'],
       groupName: 'all dependencies',
     },
+    {
+      // Keep the version ranges in `pyproject.toml` untouched and update `uv.lock`
+      // instead. Without this, an in-range release (ruff 0.15 -> 0.16 under
+      // `ruff~=0.0`) produces no PR at all, and the new version only arrives via the
+      // org preset's monthly `lockFileMaintenance` run as one undifferentiated diff.
+      // With it, each release becomes a named, reviewable lockfile bump. Bumps that
+      // fall outside the declared range still fall back to `replace` and edit the
+      // constraint, as before.
+      matchManagers: ['pep621'],
+      rangeStrategy: 'update-lockfile',
+    },
   ],
 }
