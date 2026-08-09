@@ -16,7 +16,7 @@ urls.Repository = "https://github.com/vorausrobotik/vdoc"
 requires-python = ">=3.11"
 # Managed by release-please: the release pull request bumps this line, `uv.lock` and
 # `.release-please-manifest.json` together. Do not edit it by hand.
-version = "0.24.2"
+version = "0.24.3"
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
