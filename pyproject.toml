@@ -135,7 +135,7 @@ test-template = [
     "pytest-cov~=7.0"
 ]
 coverage-template = [
-    "junitparser~=4.0",
+    "junitparser~=5.0",
     "coverage[toml]~=7.0",
 ]
 doc-template = [
@@ -156,7 +156,7 @@ build-template = [
 ]
 ci-template = [
     "voraus-pipeline-utils~=0.0",
-    "twine~=6.0"
+    "twine~=7.0"
 ]
 
 ########################################
