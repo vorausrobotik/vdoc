@@ -7,3 +7,4 @@ reports/**
 .devcontainer/**
 .github/**
 src/ui/routeTree.gen.ts
+CHANGELOG.md
