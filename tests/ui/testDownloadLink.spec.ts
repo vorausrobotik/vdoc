@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { expect } from '@playwright/test'
 import test, { prepareTestSuite } from './base'
-import { openProjectDocumentation } from './helpers'
+import { BASE_URL, openProjectDocumentation } from './helpers'
 
 await prepareTestSuite(test)
 
@@ -30,6 +30,12 @@ test('Test download link triggers download instead of navigation', async ({ page
 
   const downloadLink = documentation.getByRole('link', { name: 'eni.xml' })
   await expect(downloadLink).toBeVisible()
+
+  // A download keeps the address that reaches the file. The readable address vdoc puts on every
+  // other link answers with vdoc's own application, so rewriting this one would download that.
+  expect(await downloadLink.evaluate((link: HTMLAnchorElement) => link.href)).toBe(
+    `${BASE_URL}/static/projects/example-project-01/3.2.0/_downloads/eni.xml`
+  )
 
   // Clicking a link with the `download` attribute should trigger a file download, not an iframe navigation.
   const [download] = await Promise.all([page.waitForEvent('download'), downloadLink.click()])

@@ -17,8 +17,11 @@ export const BASE_URL = 'http://localhost:3000'
 export const assertLinksOnPage = async (locator: Locator, links: string[]): Promise<Locator> => {
   const availableLinks = locator.getByRole('link')
   await expect(availableLinks).toHaveCount(links.length)
-  const actualLinks = await availableLinks.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
-  expect(actualLinks).toStrictEqual(links)
+  // Polled rather than read once: the links are in the document before vdoc has taken charge of
+  // it, so reading their addresses a single time races the load handler that rewrites them.
+  await expect
+    .poll(async () => await availableLinks.evaluateAll((links) => links.map((link) => link.getAttribute('href'))))
+    .toStrictEqual(links)
   return availableLinks
 }
 

@@ -7,7 +7,8 @@ import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
-import { parseIFrameHref, toggleDocumentationColorScheme } from '../helpers/IFrame'
+import { hookFramedDocument } from '../helpers/FramedDocument'
+import { parseIFrameHref, toFrameHref, toggleDocumentationColorScheme, toReadableHref } from '../helpers/IFrame'
 import { sanitizeDocuUri } from '../helpers/RouteHelpers'
 import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 import { testIDs } from '../interfacesAndTypes/testIDs'
@@ -34,7 +35,6 @@ export default function IFrame({
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
   const [contentWindow, setContentWindow] = useState<Window | null>()
-  const stripPrefix = '/static/projects/'
 
   const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
 
@@ -72,7 +72,7 @@ export default function IFrame({
       contentWindow.addEventListener('scroll', handleScroll, { passive: true })
     }
 
-    const iframeLocation = parseIFrameHref(iframeRef, stripPrefix)
+    const iframeLocation = parseIFrameHref(iframeRef)
     if (iframeLocation == null) {
       console.warn('IFrame onload event triggered, but url is null')
       return
@@ -83,58 +83,51 @@ export default function IFrame({
       onNotFound()
     }
 
-    // Make all external links in iframe open in new tab and make internal links replace the iframe url so that change
-    // doesn't show up in the page history (we'd need to click back twice)
-    iframeRef.current.contentDocument?.querySelectorAll('a').forEach((anchor: HTMLAnchorElement) => {
-      let linkProjectName: string | undefined
-      // The href might be external or something else. The function is allowed to fail at this point.
-      /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
-      try {
-        linkProjectName = sanitizeDocuUri(anchor.href).projectName
-      } catch {}
-      // Backup original href for onclick event
-      const originalLink = anchor.href
-      // Strip iframe prefix from the href for display/copy events
-      const sanitizedLink = new URL(anchor.href, iframeRef.current?.contentDocument?.baseURI).href.replace(
-        stripPrefix,
-        '/'
-      )
+    const frameWindow = iframeRef.current.contentWindow
+    if (frameWindow != null) {
+      hookFramedDocument(frameWindow, {
+        displayHref: (href: string): string => toReadableHref(href),
 
-      if (anchor.href.trim() === '') {
-        // Ignore empty links, may be handled with js internally.
-        // Will inevitably cause the user to have to click back multiple times to get back to the previous page.
-        return
-      }
-      anchor.href = sanitizedLink
+        /**
+         * A link leads out of the frame when its origin differs, or when it leads to a different
+         * project's documentation than the one that is currently open.
+         */
+        leadsOutOfTheFrame: (href: string): boolean => {
+          if (!href.startsWith(window.location.origin)) {
+            return true
+          }
+          let linkProjectName: string | undefined
+          // The href might be external or something else. The function is allowed to fail at this point.
+          /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+          try {
+            linkProjectName = sanitizeDocuUri(href).projectName
+          } catch {}
+          return linkProjectName !== currentProjectName
+        },
 
-      /**
-       * Open the link in a new tab when
-       * - The origin differs.
-       * - The link leads to a different project documentation than the one that is currently open.
-       * - The link is already marked with a _blank target.
-       */
-      const isOtherOrigin = !anchor.href.startsWith(window.location.origin)
-      const isOtherProject = linkProjectName !== currentProjectName
-      const hasBlankTarget = anchor.target === '_blank'
-      if (isOtherOrigin || isOtherProject || hasBlankTarget) {
-        anchor.target = '_blank'
-        return
-      }
+        /**
+         * The anchor carries the readable address, so this resolves the one that reaches the file
+         * back out of it. `replace` rather than an assignment, so that the framed navigation adds
+         * no session history entry - vdoc's own router adds one for the same navigation, and two
+         * would make the back button need two clicks per page.
+         * From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
+         */
+        followInTheFrame: (href: string): void => {
+          const frameHref = toFrameHref(href)
+          sourceRef.current = frameHref
+          frameWindow.location.replace(frameHref)
+        },
 
-      // Let browser handle download links natively. Restore href to the original (pre-sanitized) URL
-      // because the sanitized URL strips the /static/projects/ prefix, making the file unreachable.
-      if (anchor.hasAttribute('download')) {
-        anchor.href = originalLink
-        return
-      }
-
-      // From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
-      anchor.onclick = () => {
-        iframeRef.current?.contentWindow?.location.replace(originalLink)
-        sourceRef.current = originalLink
-        return false
-      }
-    })
+        /**
+         * Another project's documentation belongs inside vdoc's own interface rather than bare, so
+         * open the readable address for it. Resolved again rather than taken as it is, because an
+         * anchor rendered after the document loaded never had its address rewritten.
+         */
+        followOutsideTheFrame: (href: string): void => {
+          window.open(toReadableHref(href), '_blank', 'noopener')
+        },
+      })
+    }
 
     onPageChanged(iframeLocation.page)
     onHashChanged(iframeLocation.hash)
