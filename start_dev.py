@@ -4,10 +4,9 @@
 
 import os
 import subprocess
+import sys
 import time
 from multiprocessing import Process
-
-from uvicorn import run as uvicorn_run
 
 
 def run_vite(port: int = 8090) -> None:
@@ -19,8 +18,29 @@ def run_vite(port: int = 8090) -> None:
 
 
 def run_uvicorn(port: int = 8080) -> None:
-    """Starts the uvicorn development server on the given port."""
-    uvicorn_run(app="vdoc.api:create_app", factory=True, host="localhost", port=port, reload=True, env_file=".env")
+    """Starts the uvicorn development server on the given port.
+
+    Started as a subprocess rather than through ``uvicorn.run``: the reloader spawns the actual server as a further
+    subprocess and hands it the stdin file descriptor of its own process. Inside a ``multiprocessing`` child that
+    descriptor is a ``/dev/null`` replacement which the spawned process does not have, so the server died on startup
+    with ``OSError: [Errno 9] Bad file descriptor`` while the reloader kept running without it.
+    """
+    subprocess.check_call(  # noqa: S603
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "vdoc.api:create_app",
+            "--factory",
+            "--reload",
+            "--host",
+            "localhost",
+            "--port",
+            str(port),
+            "--env-file",
+            ".env",
+        ]
+    )
 
 
 def main() -> None:
