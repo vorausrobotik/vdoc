@@ -62,6 +62,27 @@ export function toFrameHref(href: string, origin: string = window.location.origi
   return url.href
 }
 
+/**
+ * The identity of an iframe URL: what makes two addresses the same page for vdoc's purposes.
+ *
+ * This is the single string used to answer "is the frame already showing this?". Both the address
+ * vdoc wants and the one the frame reports after navigating itself are reduced with this function,
+ * so that a client-side navigation cannot be mistaken for a stale source - which would force-load
+ * the frame and undo that very navigation. Composing the two sides differently is the mistake this
+ * function exists to prevent.
+ *
+ * A trailing slash is deliberately not a difference here. A generator that publishes a page as a
+ * directory is reached through a redirect that adds one, while vdoc's router normalizes it away
+ * again; treating the two forms as different pages reloads the frame for as long as it is open.
+ */
+export function normalizeIFrameSrc(src: string, origin: string = window.location.origin): string {
+  const url = new URL(src, origin)
+  if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
+    url.pathname = url.pathname.slice(0, -1)
+  }
+  return url.href
+}
+
 export interface SanitizeDocUriResI {
   projectName: string
   version: string

@@ -11,6 +11,14 @@ export interface IFrameLocation {
   title: string
 }
 
+/**
+ * How vdoc's own router should record a page change reported by the frame.
+ *
+ * `push` for document loads (the frame navigated with `location.replace` and added no session
+ * history entry, so vdoc adds one), `replace` for client-side navigation (the frame already added
+ * the entry itself, so vdoc must only correct the address of that entry).
+ */
+export type IFrameHistoryMode = 'push' | 'replace'
 export function toggleDocumentationColorScheme(
   iframeRef: React.RefObject<HTMLIFrameElement | null>,
   mode: EffectiveColorMode
