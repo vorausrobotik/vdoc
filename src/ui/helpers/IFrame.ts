@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
-import { FRAME_PATH_PREFIX } from './RouteHelpers'
+import { FRAME_PATH_PREFIX, VDOC_THEME_PARAM } from './RouteHelpers'
 
 export interface IFrameLocation {
   name: string
@@ -19,6 +19,15 @@ export interface IFrameLocation {
  * the entry itself, so vdoc must only correct the address of that entry).
  */
 export type IFrameHistoryMode = 'push' | 'replace'
+/**
+ * Attribute a framed document sets on its `<html>` element to declare that it read
+ * {@link VDOC_THEME_PARAM} and applied the requested mode itself. Its value is the mode it applied.
+ *
+ * Frames that do not set it are driven through {@link toggleDocumentationColorScheme} instead.
+ * See `docs/frame_contract.md`.
+ */
+export const VDOC_THEME_ATTRIBUTE = 'data-vdoc-theme'
+
 export function toggleDocumentationColorScheme(
   iframeRef: React.RefObject<HTMLIFrameElement | null>,
   mode: EffectiveColorMode
@@ -69,8 +78,11 @@ export function parseIFrameHref(iframeRef: RefObject<HTMLIFrameElement | null>):
     const [name, version, ...pageParts] = pathParts
     const page = pageParts.join('/')
 
-    // Extract search as URLSearchParams object and hash without the '#' prefix
+    // Extract search as URLSearchParams object and hash without the '#' prefix.
+    // `vdoc-theme` is vdoc's own request to the frame, not part of the page's address: it must not
+    // reach vdoc's address bar, or it would be appended a second time on the next compose.
     const search = new URLSearchParams(url.search)
+    search.delete(VDOC_THEME_PARAM)
     const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
 
     return {

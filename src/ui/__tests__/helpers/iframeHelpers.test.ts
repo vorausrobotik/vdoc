@@ -305,3 +305,40 @@ describe('parseIFrameHref', () => {
     expect(result).toEqual(expected)
   })
 })
+
+describe('parseIFrameHref and the color mode parameter', () => {
+  let iframeRef: React.RefObject<HTMLIFrameElement | null>
+
+  beforeEach(() => {
+    iframeRef = { current: document.createElement('iframe') }
+  })
+
+  test.each([
+    {
+      description: 'strips the vdoc-theme parameter vdoc appends for the frame itself',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?vdoc-theme=dark',
+      expectedSearch: new URLSearchParams(''),
+      expectedHash: '',
+    },
+    {
+      description: 'strips vdoc-theme while preserving the other search parameters and the hash',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search&vdoc-theme=light&filter=all#foo',
+      expectedSearch: new URLSearchParams('q=search&filter=all'),
+      expectedHash: 'foo',
+    },
+  ])('$description', ({ href, expectedSearch, expectedHash }) => {
+    // GIVEN: A frame sitting on an address vdoc composed for it
+    Object.defineProperty(iframeRef.current, 'contentDocument', {
+      value: { location: { href }, title: 'Page' },
+      configurable: true,
+    })
+
+    // WHEN: Reporting where the frame is
+    const result = parseIFrameHref(iframeRef)
+
+    // THEN: vdoc's own request does not reach its address bar, where the next compose would append
+    // it a second time
+    expect(result?.search).toEqual(expectedSearch)
+    expect(result?.hash).toBe(expectedHash)
+  })
+})

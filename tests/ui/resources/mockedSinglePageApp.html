@@ -2,14 +2,29 @@
   <head>
     <!--
       Minimal stand-in for a single-page documentation generator (Docusaurus and friends): pages
-      are swapped in place with history.pushState, no document is discarded, and no `load` fires.
+      are swapped in place with history.pushState, no document is discarded, and no `load` fires,
+      and the color mode comes from the `vdoc-theme` parameter rather than from anything vdoc
+      writes into the document.
     -->
+    <script>
+      // The vdoc theme contract, applied before the first paint: read the requested mode, apply it
+      // the way this generator happens to apply modes, and declare that it was honored.
+      ;(() => {
+        const mode = new URLSearchParams(window.location.search).get('vdoc-theme') === 'dark' ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', mode)
+        document.documentElement.setAttribute('data-vdoc-theme', mode)
+      })()
+    </script>
     <style>
       body {
         background-color: rgb(227, 242, 253);
         color: black;
         margin: 0;
         font-family: sans-serif;
+      }
+      html[data-theme='dark'] body {
+        background-color: rgb(18, 18, 18);
+        color: white;
       }
       .page {
         padding: 16px;
@@ -40,6 +55,11 @@
                   <a href="${basePath}index.html?tab=examples" data-route="index.html?tab=examples">
                     Go to the index with a search parameter
                   </a>
+                </li>
+                <li>
+                  <!-- No data-route: the application leaves this one to the browser, the way a
+                       plain anchor in MDX ends up outside a component based router. -->
+                  <a href="${basePath}guide.html">Open the guide with a plain link</a>
                 </li>
                 <li><a href="/static/projects/example-project-02/1.0.0/index.html">Go to another project</a></li>
                 <li><a href="https://example.com/" target="_blank">Go to an external site</a></li>
