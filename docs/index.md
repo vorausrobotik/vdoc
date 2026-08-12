@@ -14,6 +14,7 @@ vdoc
 getting_started
 configuration
 plugins
+frame_contract
 development
 ```
 
