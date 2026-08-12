@@ -8,8 +8,8 @@ import { useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 import { hookFramedDocument } from '../helpers/FramedDocument'
-import { parseIFrameHref, toggleDocumentationColorScheme } from '../helpers/IFrame'
-import { sanitizeDocuUri, toFrameHref, toReadableHref } from '../helpers/RouteHelpers'
+import { type IFrameHistoryMode, parseIFrameHref, toggleDocumentationColorScheme } from '../helpers/IFrame'
+import { normalizeIFrameSrc, sanitizeDocuUri, toFrameHref, toReadableHref } from '../helpers/RouteHelpers'
 import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 import { testIDs } from '../interfacesAndTypes/testIDs'
 
@@ -20,6 +20,7 @@ interface Props {
   onSearchChanged: (search: URLSearchParams) => void
   onTitleChanged: (title: string) => void
   onNotFound: () => void
+  onHistoryModeChanged: (mode: IFrameHistoryMode) => void
 }
 
 export default function IFrame({
@@ -29,6 +30,7 @@ export default function IFrame({
   onSearchChanged,
   onTitleChanged,
   onNotFound,
+  onHistoryModeChanged,
 }: Props) {
   const { colorScheme } = useColorScheme()
   const { setScrollY } = useIFrameScroll()
@@ -37,6 +39,11 @@ export default function IFrame({
   const [contentWindow, setContentWindow] = useState<Window | null>()
 
   const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
+
+  /** Last page reported, so the scroll position is only reset when the page actually changed. */
+  const reportedPageRef = useRef<string | null>(null)
+  /** Last title reported, so a title arriving late is only forwarded when it is a change. */
+  const reportedTitleRef = useRef<string | null>(null)
 
   const setDarkMode = useCallback((mode: EffectiveColorMode) => {
     toggleDocumentationColorScheme(iframeRef, mode)
@@ -72,6 +79,43 @@ export default function IFrame({
       contentWindow.addEventListener('scroll', handleScroll, { passive: true })
     }
 
+    /**
+     * Tell vdoc's own interface where the frame currently is.
+     *
+     * Called for every document load and, through the hooks installed below, for every navigation
+     * the frame performs on its own.
+     */
+    const report = (historyMode: IFrameHistoryMode): void => {
+      const frameLocation = parseIFrameHref(iframeRef)
+      if (frameLocation == null) {
+        return
+      }
+
+      // Before `onPageChanged`, which is what triggers the navigation that has to read the mode.
+      onHistoryModeChanged(historyMode)
+
+      const frameHref = iframeRef.current?.contentWindow?.location.href
+      if (frameHref != null) {
+        // Keep the source in sync with where the frame actually is. Without this the effect at the
+        // bottom of this component would see a stale source after a client-side navigation and
+        // force-load the frame, throwing away the page the reader just navigated to.
+        sourceRef.current = normalizeIFrameSrc(frameHref)
+      }
+
+      // A new page starts at the top, just like a document load does. A hash change does not:
+      // jumping to the top is precisely the opposite of what the reader asked for.
+      if (frameLocation.page !== reportedPageRef.current) {
+        reportedPageRef.current = frameLocation.page
+        setScrollY(0)
+      }
+
+      onPageChanged(frameLocation.page)
+      onHashChanged(frameLocation.hash)
+      onSearchChanged(frameLocation.search)
+      reportedTitleRef.current = frameLocation.title ?? ''
+      onTitleChanged(reportedTitleRef.current)
+    }
+
     const iframeLocation = parseIFrameHref(iframeRef)
     if (iframeLocation == null) {
       console.warn('IFrame onload event triggered, but url is null')
@@ -86,6 +130,17 @@ export default function IFrame({
     const frameWindow = iframeRef.current.contentWindow
     if (frameWindow != null) {
       hookFramedDocument(frameWindow, {
+        onNavigated: report,
+
+        onTitleChanged: (title: string): void => {
+          if (title !== reportedTitleRef.current) {
+            reportedTitleRef.current = title
+            onTitleChanged(title)
+          }
+        },
+
+        isAlreadyRecorded: (href: string): boolean => normalizeIFrameSrc(href) === sourceRef.current,
+
         displayHref: (href: string): string => toReadableHref(href),
 
         /**
@@ -114,7 +169,7 @@ export default function IFrame({
          */
         followInTheFrame: (href: string): void => {
           const frameHref = toFrameHref(href)
-          sourceRef.current = frameHref
+          sourceRef.current = normalizeIFrameSrc(frameHref)
           frameWindow.location.replace(frameHref)
         },
 
@@ -129,10 +184,9 @@ export default function IFrame({
       })
     }
 
-    onPageChanged(iframeLocation.page)
-    onHashChanged(iframeLocation.hash)
-    onSearchChanged(iframeLocation.search)
-    onTitleChanged(iframeLocation.title ?? '')
+    // A document load means the frame got here through `location.replace`, which adds no session
+    // history entry of its own: this navigation is vdoc's to record.
+    report('push')
   }
 
   const hashChangeEventListener = useCallback((): void => {
@@ -193,11 +247,17 @@ export default function IFrame({
     if (isNavigationPending) {
       return
     }
-    const srcWithOrigin = `${window.location.origin}${src}`
-    if (sourceRef.current !== srcWithOrigin) {
-      iframeRef.current?.contentWindow?.location.replace(srcWithOrigin)
-      sourceRef.current = srcWithOrigin
+    // Compared through `normalizeIFrameSrc`, the same way `report()` records where the frame is:
+    // if the two composed the address differently, every client-side navigation would look like a
+    // stale source here and be force-loaded away.
+    const normalizedSrc = normalizeIFrameSrc(src)
+    if (sourceRef.current === normalizedSrc) {
+      return
     }
+    sourceRef.current = normalizedSrc
+    // Requested with the address exactly as vdoc's router holds it, not with the normalized one:
+    // what may be ignored when comparing two addresses must still be requested faithfully.
+    iframeRef.current?.contentWindow?.location.replace(`${window.location.origin}${src}`)
   }, [src, isNavigationPending])
 
   return (

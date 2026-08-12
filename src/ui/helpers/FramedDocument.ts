@@ -1,18 +1,29 @@
+import type { IFrameHistoryMode } from './IFrame'
+
 /**
  * Marker set on a framed window once it is hooked. `load` can fire more than once for the same
- * document; hooking it twice would install a second set of listeners and handle every click
- * twice, the second time on a frame that is already navigating away.
+ * document; hooking it twice would stack a second `history.pushState` wrapper, report every
+ * navigation N times and handle every click twice.
  */
 type HookedWindow = Window & typeof globalThis & { __vdocFrameHooked?: boolean }
 
 /**
- * What vdoc wants done with the links in a framed document.
+ * What vdoc wants to know about a framed document, and what it wants done with the links in it.
  *
  * Everything here is a decision only vdoc can make: which project a link belongs to, where vdoc's
- * own interface should send the reader, which address it wants a link to show. The mechanics of
- * noticing a click and of reaching the anchors belong to {@link hookFramedDocument}.
+ * own interface should send the reader, what its address bar should say. The mechanics of noticing
+ * any of it belong to {@link hookFramedDocument}.
  */
 export interface FramedDocumentHandlers {
+  /** The frame navigated itself, without discarding the document. */
+  onNavigated: (historyMode: IFrameHistoryMode) => void
+  /** The framed document changed its title, which a client-side router does after navigating. */
+  onTitleChanged: (title: string) => void
+  /**
+   * Whether `href` is where vdoc already believes the frame is. Only vdoc knows when two addresses
+   * are the same page, so it answers rather than being asked for a string.
+   */
+  isAlreadyRecorded: (href: string) => boolean
   /** The address a link should carry for hovering, copying and the browser's new-tab shortcuts. */
   displayHref: (href: string) => string
   /** Whether a link leads somewhere that must not take over the frame. */
@@ -46,8 +57,8 @@ function isDownload(anchor: HTMLAnchorElement): boolean {
 }
 
 /**
- * Subscribe to a framed document, so that vdoc stays in charge of the links that lead out of it
- * and the links show the address vdoc's own interface answers for.
+ * Subscribe to a framed document, so that vdoc learns where it goes, stays in charge of the links
+ * that lead out of it, and the links show the address vdoc's own interface answers for.
  *
  * Called once per framed document; further calls for the same document do nothing.
  *
@@ -60,6 +71,37 @@ export function hookFramedDocument(frameWindow: Window, handlers: FramedDocument
     return
   }
   hookedWindow.__vdocFrameHooked = true
+
+  // Single page documentation swaps pages in place with history.pushState. No document is
+  // discarded, so no `load` fires, and neither method emits an event of its own - wrapping them is
+  // the only way to learn about those navigations.
+  for (const method of ['pushState', 'replaceState'] as const) {
+    const original = frameWindow.history[method].bind(frameWindow.history)
+    frameWindow.history[method] = (...args: Parameters<History['pushState']>) => {
+      original(...args)
+      // The frame has already written its own history entry (or deliberately replaced it), so vdoc
+      // must only correct that entry's address instead of adding a second one.
+      handlers.onNavigated('replace')
+    }
+  }
+
+  frameWindow.addEventListener('popstate', () => {
+    // popstate also fires for the fragment navigations vdoc performs itself, and when a top-level
+    // traversal restores a frame position vdoc already recorded. Only a move the frame made on its
+    // own is news here - reporting the others would overwrite the address vdoc is in the middle of
+    // navigating to.
+    if (handlers.isAlreadyRecorded(frameWindow.location.href)) {
+      return
+    }
+    handlers.onNavigated('replace')
+  })
+
+  // A client-side router sets the title after the navigation, so the title read while handling the
+  // navigation itself is still the previous page's. Watch the head for the one that arrives late.
+  new hookedWindow.MutationObserver(() => handlers.onTitleChanged(frameWindow.document.title)).observe(
+    frameWindow.document.head,
+    { childList: true, subtree: true, characterData: true }
+  )
 
   // Show the readable address rather than the one that reaches the file, so that hovering, the
   // status bar, copying a link and the browser's own new-tab shortcuts all name the page the way

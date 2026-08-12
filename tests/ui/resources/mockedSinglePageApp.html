@@ -1,0 +1,131 @@
+<html lang="en">
+  <head>
+    <!--
+      Minimal stand-in for a single-page documentation generator (Docusaurus and friends): pages
+      are swapped in place with history.pushState, no document is discarded, and no `load` fires.
+    -->
+    <style>
+      body {
+        background-color: rgb(227, 242, 253);
+        color: black;
+        margin: 0;
+        font-family: sans-serif;
+      }
+      .page {
+        padding: 16px;
+      }
+      .filler {
+        height: 1200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      ;(() => {
+        const basePath = window.location.pathname.replace(/^(.*\/static\/projects\/[^/]+\/[^/]+\/).*$/, '$1')
+
+        // Links this application routes itself carry their target in `data-route`, the way a
+        // component based router carries it in a prop. The router never reads the DOM href, which
+        // is what leaves vdoc free to show the readable address there.
+        const pages = {
+          'index.html': {
+            title: 'SPA Index',
+            body: `
+              <h1>Single page application index</h1>
+              <ul>
+                <li><a href="${basePath}guide.html" data-route="guide.html">Go to the guide</a></li>
+                <li><a href="${basePath}api.html" data-route="api.html">Go to the API</a></li>
+                <li>
+                  <a href="${basePath}index.html?tab=examples" data-route="index.html?tab=examples">
+                    Go to the index with a search parameter
+                  </a>
+                </li>
+                <li><a href="/static/projects/example-project-02/1.0.0/index.html">Go to another project</a></li>
+                <li><a href="https://example.com/" target="_blank">Go to an external site</a></li>
+              </ul>
+              <div class="filler"></div>
+              <h2 id="section1">Section 1</h2>
+              <div class="filler"></div>
+            `,
+          },
+          'guide.html': {
+            title: 'SPA Guide',
+            body: `
+              <h1>Guide</h1>
+              <ul>
+                <li><a href="${basePath}index.html" data-route="index.html">Back to the index</a></li>
+                <li><a href="${basePath}api.html" data-route="api.html">Go to the API</a></li>
+                <li><a href="#chapter2">Jump to chapter 2</a></li>
+              </ul>
+              <div class="filler"></div>
+              <h2 id="chapter2">Chapter 2</h2>
+              <div class="filler"></div>
+            `,
+          },
+          'api.html': {
+            title: 'SPA API',
+            body: `
+              <h1>API</h1>
+              <ul>
+                <li><a href="${basePath}index.html" data-route="index.html">Back to the index</a></li>
+                <li><a href="${basePath}guide.html" data-route="guide.html">Go to the guide</a></li>
+              </ul>
+              <div class="filler"></div>
+            `,
+          },
+        }
+
+        /** The page key for a path, tolerating the directory form of an address. */
+        const pageOf = (pathname) => {
+          const requested = pathname.slice(basePath.length).replace(/\/$/, '')
+          if (requested === '') {
+            return 'index.html'
+          }
+          return pages[requested] ? requested : pages[`${requested}.html`] ? `${requested}.html` : 'index.html'
+        }
+
+        // Pages published as directories, the way Docusaurus publishes every page: reaching one
+        // without its trailing slash normalizes the address in place, so the address the frame ends
+        // up on is not the one it was asked to load.
+        const publishedAsDirectory = (path) =>
+          path.startsWith(basePath) &&
+          path.length > basePath.length &&
+          !path.endsWith('/') &&
+          !path.slice(basePath.length).includes('.')
+        if (publishedAsDirectory(window.location.pathname)) {
+          window.history.replaceState(
+            {},
+            '',
+            `${window.location.pathname}/${window.location.search}${window.location.hash}`
+          )
+        }
+
+        const render = () => {
+          const page = pageOf(window.location.pathname)
+          const { title, body } = pages[page]
+          document.title = title
+          document.getElementById('app').innerHTML = `<div class="page" data-page="${page}">${body}</div>`
+          // Client-side routers scroll to the top of the new page themselves.
+          window.scrollTo(0, 0)
+        }
+
+        // Delegated on the app root rather than on the document, which is where a component based
+        // router ends up listening. Only the links this application owns are routed; everything
+        // else is left for the browser, and therefore for vdoc, to handle.
+        document.getElementById('app').addEventListener('click', (event) => {
+          const anchor = event.target.closest('a[data-route]')
+          if (anchor === null) {
+            return
+          }
+          event.preventDefault()
+          window.history.pushState({}, '', `${basePath}${anchor.dataset.route}`)
+          render()
+        })
+
+        window.addEventListener('popstate', render)
+        render()
+      })()
+    </script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 import { getRouteApi, useLocation, useRouter } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { IFrameLocation } from '../helpers/IFrame'
+import type { IFrameHistoryMode, IFrameLocation } from '../helpers/IFrame'
 import testIDs from '../interfacesAndTypes/testIDs'
 import { DeprecatedVersionBanner } from './DeprecatedVersionBanner'
 import IFrame from './IFrame'
@@ -86,6 +86,14 @@ function DocuIFrame(props: DocuIFramePropsI) {
     setError(new Error("Whoops! This page doesn't seem to exist..."))
   }
 
+  // Kept in a ref rather than in state: `report()` in `IFrame` always sets it before the state
+  // updates that trigger the navigation below, and it must not trigger a navigation of its own.
+  const historyModeRef = useRef<IFrameHistoryMode>('push')
+
+  const iFrameHistoryModeChanged = (historyMode: IFrameHistoryMode): void => {
+    historyModeRef.current = historyMode
+  }
+
   useEffect(() => {
     // Throwing the error in a useEffect to ensure it is caught by the error component of tanstack router.
     if (error) {
@@ -115,6 +123,10 @@ function DocuIFrame(props: DocuIFramePropsI) {
         ...searchObject,
       }),
       hash: iframeState.hash.trim() !== '' ? iframeState.hash : '',
+      // A page the frame reached through client-side navigation already has a session history
+      // entry of the frame's own making; adding a second one here would make the back button need
+      // two clicks per page.
+      replace: historyModeRef.current === 'replace',
     })
   }, [error, iframeState.name, props.version, iframeState.page, iframeState.hash, iframeState.search, router])
 
@@ -130,6 +142,7 @@ function DocuIFrame(props: DocuIFramePropsI) {
         onSearchChanged={iFrameSearchChanged}
         onTitleChanged={iframeTitleChanged}
         onNotFound={iFrameNotFound}
+        onHistoryModeChanged={iFrameHistoryModeChanged}
       />
     </div>
   )

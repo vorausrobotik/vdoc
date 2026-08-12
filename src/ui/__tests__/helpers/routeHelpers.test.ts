@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { sanitizeDocuUri, stripFramePrefix, toFrameHref, toReadableHref } from '../../helpers/RouteHelpers'
+import {
+  normalizeIFrameSrc,
+  sanitizeDocuUri,
+  stripFramePrefix,
+  toFrameHref,
+  toReadableHref,
+} from '../../helpers/RouteHelpers'
 
 describe('sanitizeDocuUri', () => {
   test('sanitizes valid uris as expected', () => {
@@ -292,5 +298,62 @@ describe('sanitizeDocuUri and toReadableHref agree where they must', () => {
     // WHEN/THEN: Both keep the page where it is
     expect(sanitizeDocuUri(`${origin}${path}`)._splat).toBe('static/projects/deep.html')
     expect(toReadableHref(path, origin)).toBe(`${origin}/proj/1.0.0/static/projects/deep.html`)
+  })
+})
+
+describe('normalizeIFrameSrc', () => {
+  const origin = 'http://localhost:3000'
+
+  test.each([
+    {
+      description: 'makes a relative source absolute',
+      src: '/static/projects/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html',
+    },
+    {
+      description: 'leaves an absolute source alone',
+      src: 'http://localhost:3000/static/projects/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html',
+    },
+    {
+      description: 'preserves an existing query and hash',
+      src: '/static/projects/proj/1.0.0/page.html?q=search#section',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search#section',
+    },
+    {
+      description: 'removes a trailing slash, so a page published as a directory has one identity',
+      src: '/static/projects/proj/1.0.0/guide/',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/guide',
+    },
+    {
+      description: 'removes a trailing slash while keeping the query and the hash',
+      src: '/static/projects/proj/1.0.0/guide/?q=search#section',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/guide?q=search#section',
+    },
+    {
+      description: 'keeps the root slash, which is the whole path',
+      src: '/',
+      expected: 'http://localhost:3000/',
+    },
+  ])('$description', ({ src, expected }) => {
+    expect(normalizeIFrameSrc(src, origin)).toBe(expected)
+  })
+
+  test('a page reached through a redirect that adds a trailing slash keeps its identity', () => {
+    // GIVEN: The address vdoc asked for, and the one the frame ended up on after the normalization
+    // a generator that publishes pages as directories performs
+    const requested = '/static/projects/proj/1.0.0/guide'
+    const reached = 'http://localhost:3000/static/projects/proj/1.0.0/guide/'
+
+    // WHEN/THEN: They are the same page, so the frame is not force-loaded back and forth forever
+    expect(normalizeIFrameSrc(reached, origin)).toBe(normalizeIFrameSrc(requested, origin))
+  })
+
+  test('two different pages keep two identities', () => {
+    // GIVEN: Two pages that differ in more than a trailing slash
+    // WHEN/THEN: They stay distinguishable, or the frame would never be loaded for the second one
+    expect(normalizeIFrameSrc('/static/projects/proj/1.0.0/guide', origin)).not.toBe(
+      normalizeIFrameSrc('/static/projects/proj/1.0.0/api', origin)
+    )
   })
 })
