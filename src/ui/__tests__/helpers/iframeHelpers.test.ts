@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { parseIFrameHref, toggleDocumentationColorScheme } from '../../helpers/IFrame'
+import { parseIFrameHref, toFrameHref, toggleDocumentationColorScheme, toReadableHref } from '../../helpers/IFrame'
 
 describe('toggleDocumentationColorScheme', () => {
   let mockSetItem: ReturnType<typeof vi.fn>
@@ -95,7 +95,6 @@ describe('toggleDocumentationColorScheme', () => {
 
 describe('parseIFrameHref', () => {
   let iframeRef: React.RefObject<HTMLIFrameElement | null>
-  const stripPrefix = '/static/projects/'
 
   beforeEach(() => {
     const iframe = document.createElement('iframe')
@@ -122,7 +121,7 @@ describe('parseIFrameHref', () => {
       },
     },
     {
-      description: 'returns null when URL does not contain stripPrefix',
+      description: 'returns null when URL does not contain the frame path prefix',
       setup: () => {
         const href = 'http://localhost:3000/other/path/example/1.0.0/page.html'
         Object.defineProperty(iframeRef.current, 'contentDocument', {
@@ -139,7 +138,7 @@ describe('parseIFrameHref', () => {
     setup()
 
     // WHEN: Parsing the URL
-    const result = parseIFrameHref(iframeRef, stripPrefix)
+    const result = parseIFrameHref(iframeRef)
 
     // THEN: Returns null
     expect(result).toBeNull()
@@ -300,9 +299,142 @@ describe('parseIFrameHref', () => {
     })
 
     // WHEN: Parsing the URL
-    const result = parseIFrameHref(iframeRef, stripPrefix)
+    const result = parseIFrameHref(iframeRef)
 
     // THEN: Returns expected result
     expect(result).toEqual(expected)
+  })
+})
+
+describe('toReadableHref', () => {
+  const origin = 'http://localhost:3000'
+
+  test.each([
+    {
+      description: 'strips the frame prefix, so the address names the page rather than the file',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/proj/1.0.0/page.html',
+    },
+    {
+      description: 'keeps the query and the hash',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search#section',
+      expected: 'http://localhost:3000/proj/1.0.0/page.html?q=search#section',
+    },
+    {
+      description: 'keeps a fragment-only address on its page',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html#',
+      expected: 'http://localhost:3000/proj/1.0.0/page.html#',
+    },
+    {
+      description: 'keeps a nested path',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/api/classes/MyClass.html',
+      expected: 'http://localhost:3000/proj/1.0.0/api/classes/MyClass.html',
+    },
+    {
+      description: 'keeps a trailing slash, which is the address a directory page is served at',
+      href: 'http://localhost:3000/static/projects/proj/1.0.0/guide/',
+      expected: 'http://localhost:3000/proj/1.0.0/guide/',
+    },
+    {
+      description: 'resolves a relative address against the origin',
+      href: '/static/projects/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/proj/1.0.0/page.html',
+    },
+    {
+      description: 'leaves an external address verbatim',
+      href: 'https://www.sphinx-doc.org/',
+      expected: 'https://www.sphinx-doc.org/',
+    },
+    {
+      description: 'leaves an external address without a trailing slash verbatim',
+      href: 'https://example.com',
+      expected: 'https://example.com',
+    },
+    {
+      description: 'leaves a mail address verbatim',
+      href: 'mailto:someone@example.com',
+      expected: 'mailto:someone@example.com',
+    },
+    {
+      description: 'leaves an address of vdocs own origin that is not a framed file alone',
+      href: 'http://localhost:3000/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/proj/1.0.0/page.html',
+    },
+  ])('$description', ({ href, expected }) => {
+    expect(toReadableHref(href, origin)).toBe(expected)
+  })
+
+  test('is idempotent', () => {
+    // GIVEN: An address that has already been converted once
+    const readable = toReadableHref('http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search', origin)
+
+    // WHEN/THEN: Converting again changes nothing, so a second pass over the same anchors is safe
+    expect(toReadableHref(readable, origin)).toBe(readable)
+  })
+})
+
+describe('toFrameHref', () => {
+  const origin = 'http://localhost:3000'
+
+  test.each([
+    {
+      description: 'restores the frame prefix, so the address reaches the documentation file',
+      href: 'http://localhost:3000/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html',
+    },
+    {
+      description: 'keeps the query and the hash',
+      href: 'http://localhost:3000/proj/1.0.0/page.html?q=search#section',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search#section',
+    },
+    {
+      description: 'keeps a fragment-only address on its page',
+      href: 'http://localhost:3000/proj/1.0.0/page.html#',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html#',
+    },
+    {
+      description: 'keeps a nested path',
+      href: 'http://localhost:3000/proj/1.0.0/api/classes/MyClass.html',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/api/classes/MyClass.html',
+    },
+    {
+      description: 'keeps a trailing slash, which is the address a directory page is served at',
+      href: 'http://localhost:3000/proj/1.0.0/guide/',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/guide/',
+    },
+    {
+      description: 'resolves a relative address against the origin',
+      href: '/proj/1.0.0/page.html',
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/page.html',
+    },
+    {
+      description: 'leaves an external address verbatim',
+      href: 'https://www.sphinx-doc.org/',
+      expected: 'https://www.sphinx-doc.org/',
+    },
+    {
+      description: 'leaves a mail address verbatim',
+      href: 'mailto:someone@example.com',
+      expected: 'mailto:someone@example.com',
+    },
+  ])('$description', ({ href, expected }) => {
+    expect(toFrameHref(href, origin)).toBe(expected)
+  })
+
+  test('is idempotent, so an address a framework restored is not prefixed twice', () => {
+    // GIVEN: The address the documentation authored, which a re-render puts back on the anchor
+    const authored = 'http://localhost:3000/static/projects/proj/1.0.0/page.html'
+
+    // WHEN/THEN: Resolving it is a no-op rather than a second prefix
+    expect(toFrameHref(authored, origin)).toBe(authored)
+  })
+
+  test('inverts toReadableHref', () => {
+    // GIVEN: The address of a documentation file, with a query and a hash
+    const frameHref = 'http://localhost:3000/static/projects/proj/1.0.0/api/docs.html?tab=examples#code'
+
+    // WHEN/THEN: Going to the readable form and back arrives at exactly the same address, which is
+    // what lets a rewritten anchor be navigated without remembering anything about it
+    expect(toFrameHref(toReadableHref(frameHref, origin), origin)).toBe(frameHref)
   })
 })
