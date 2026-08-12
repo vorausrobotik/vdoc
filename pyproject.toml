@@ -97,6 +97,7 @@ test = [
 doc = [
     {include-group = "doc-template"},
     # Add additional documentation dependencies below this line
+    "sphinxcontrib-mermaid~=2.1",
 ]
 build = [
     {include-group = "build-template"},
