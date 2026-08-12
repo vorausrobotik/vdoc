@@ -37,7 +37,7 @@ sys.path.insert(0, parent)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named "sphinx.ext.*") or your custom ones.
-custom_extensions: list[str] = []
+custom_extensions: list[str] = ["sphinxcontrib.mermaid"]
 
 # DO NOT ADD ANY EXTENSIONS TO THIS LIST, USE THE `custom_extensions` list for your extensions
 template_extensions: list[str] = [
