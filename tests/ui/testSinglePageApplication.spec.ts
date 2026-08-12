@@ -1,8 +1,17 @@
 import fs from 'node:fs'
 import { expect, type Locator, type Page } from '@playwright/test'
+import type { EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
-import test, { prepareTestSuite } from './base'
-import { assertLinkOpensInNewTab, BASE_URL, openProjectDocumentation } from './helpers'
+import test, { prepareTestSuite, themes } from './base'
+import {
+  assertLinkOpensInNewTab,
+  assertTheme,
+  BASE_URL,
+  openProjectDocumentation,
+  openSettingsSidebar,
+  scrollIframe,
+  switchColorMode,
+} from './helpers'
 
 await prepareTestSuite(test)
 
@@ -48,6 +57,94 @@ const framedDocumentMarker = async (documentation: Locator): Promise<unknown> =>
   await documentation.evaluate(
     (html: HTMLElement) => (html.ownerDocument.defaultView as unknown as Record<string, unknown>).__vdocTestMarker
   )
+
+const iframeScrollY = async (page: Page): Promise<number> =>
+  await page
+    .getByTestId(testIDs.project.documentation.documentationIframe)
+    .evaluate((iframe: HTMLIFrameElement) => iframe.contentWindow?.scrollY ?? 0)
+
+const colorModes: EffectiveColorMode[] = ['light', 'dark']
+
+colorModes.forEach((colorMode: EffectiveColorMode) => {
+  test(`Single page app opens in the ${colorMode} mode on the very first visit`, async ({ page }) => {
+    // GIVEN: A reader whose preferred color scheme is ``colorMode`` and who has never been here
+    await page.emulateMedia({ colorScheme: colorMode })
+
+    // WHEN: They open a single page documentation
+    const documentation = await openSinglePageApp(page)
+
+    // THEN: It is displayed in that mode, without any stored preference being needed
+    await assertTheme(page, colorMode)
+
+    // AND: It declares that it applied the mode itself
+    await expect(documentation).toHaveAttribute('data-vdoc-theme', colorMode)
+
+    // AND: The parameter vdoc used to request it stays out of vdoc's own address bar
+    await expect(page).toHaveURL(BASE_PATH)
+  })
+})
+
+test('Toggling the color mode changes the single page app', async ({ page }) => {
+  // GIVEN: A single page documentation in light mode
+  await page.emulateMedia({ colorScheme: 'light' })
+  const documentation = await openSinglePageApp(page)
+  await assertTheme(page, 'light')
+
+  // WHEN: The reader switches to dark mode
+  await switchColorMode(page, 'dark')
+
+  // THEN: The documentation follows, and says so
+  await assertTheme(page, 'dark')
+  await expect(documentation).toHaveAttribute('data-vdoc-theme', 'dark')
+
+  // AND: Back again
+  await switchColorMode(page, 'light')
+  await assertTheme(page, 'light')
+  await expect(documentation).toHaveAttribute('data-vdoc-theme', 'light')
+
+  // AND: The address bar never picked up the parameter vdoc uses to request the mode
+  await expect(page).toHaveURL(BASE_PATH)
+})
+
+test('Toggling the color mode keeps the reader where they were', async ({ page }) => {
+  // GIVEN: A reader part way down a single page documentation in light mode
+  await page.emulateMedia({ colorScheme: 'light' })
+  const documentation = await openSinglePageApp(page)
+
+  // AND: The settings sidebar already open, because scrolling down hides the header
+  await openSettingsSidebar(page)
+
+  const iframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
+  await scrollIframe(iframe, 700)
+  await expect.poll(async () => await iframeScrollY(page)).toBe(700)
+
+  // WHEN: They switch to dark mode, which the frame can only apply by reloading
+  await page.getByTestId(testIDs.sidebar.settings.toggleColorModes.buttons.dark).click()
+
+  // THEN: The documentation is reloaded in dark mode
+  await expect(documentation).toHaveAttribute('data-vdoc-theme', 'dark')
+  await expect(documentation.locator('body')).toHaveCSS('background-color', themes.dark.backgroundColor)
+
+  // AND: The reader is still where they were, rather than back at the top
+  await expect.poll(async () => await iframeScrollY(page)).toBe(700)
+})
+
+test('A raw link keeps the frame inside the contract', async ({ page }) => {
+  // GIVEN: A single page documentation in dark mode, and a link the application does not route
+  // itself - a plain anchor in the markup, which the browser follows natively
+  await page.emulateMedia({ colorScheme: 'dark' })
+  const documentation = await openSinglePageApp(page)
+  await expect(documentation).toHaveAttribute('data-vdoc-theme', 'dark')
+
+  // WHEN: The reader follows it, so vdoc navigates the frame rather than the router
+  await documentation.getByRole('link', { name: 'Open the guide with a plain link' }).click()
+  await expect(page).toHaveURL(`${BASE_PATH}/guide.html`)
+
+  // THEN: The new document was asked for the mode too, so it still declares the attribute and the
+  // reader does not land on a light page with vdoc's own header still dark
+  await expect(documentation).toHaveAttribute('data-vdoc-theme', 'dark')
+  await assertTheme(page, 'dark')
+})
 
 test('Client-side navigation updates the address bar and the title without reloading', async ({ page }) => {
   // GIVEN: A single page documentation whose window is marked

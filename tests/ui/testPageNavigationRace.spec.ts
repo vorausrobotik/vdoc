@@ -43,8 +43,11 @@ test('Navigating from a hashed URL to another page must not bounce back (BUGS-76
   // Track every page that gets (re-)loaded into the iframe from now on
   const iframeLoads: string[] = []
   page.on('request', (request) => {
-    if (request.url().includes('/static/projects/') && request.url().endsWith('.html')) {
-      iframeLoads.push(new URL(request.url()).pathname)
+    // Matched on the path alone: the frame is loaded with vdoc's `vdoc-theme` parameter appended,
+    // so the request URL does not end in `.html`.
+    const { pathname } = new URL(request.url())
+    if (pathname.includes('/static/projects/') && pathname.endsWith('.html')) {
+      iframeLoads.push(pathname)
     }
   })
 

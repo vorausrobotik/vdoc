@@ -1,3 +1,5 @@
+import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+
 /**
  * Path prefix under which vdoc serves the published documentation files themselves.
  *
@@ -6,6 +8,14 @@
  * application into the frame instead of the next documentation page.
  */
 export const FRAME_PATH_PREFIX = '/static/projects/'
+
+/**
+ * Query parameter vdoc appends to the frame URL to request a color mode.
+ *
+ * See `docs/frame_contract.md`. It is vdoc's request to the frame, never part of a page's address,
+ * which is why {@link normalizeIFrameSrc} and `parseIFrameHref` both drop it again.
+ */
+export const VDOC_THEME_PARAM = 'vdoc-theme'
 
 /**
  * `pathname` with the frame path prefix removed, if it carries one.
@@ -28,6 +38,11 @@ export function stripFramePrefix(pathname: string): string {
  * Foreign addresses are returned verbatim, addresses of vdoc's own origin absolute, and applying
  * this to an address that is already readable changes nothing.
  *
+ * {@link VDOC_THEME_PARAM} is dropped, because the readable form is an address in vdoc's own
+ * namespace and vdoc's request to the frame has no meaning there. It has to be dropped explicitly:
+ * a fragment-only link resolves against the whole address of the document it sits in, so every
+ * `<a href="#section">` in a framed page would otherwise display and copy vdoc's parameter.
+ *
  * @param href The address to convert, absolute or relative to `origin`.
  * @param origin The origin vdoc is served from.
  */
@@ -36,6 +51,7 @@ export function toReadableHref(href: string, origin: string = window.location.or
   if (url.origin !== origin) {
     return href
   }
+  url.searchParams.delete(VDOC_THEME_PARAM)
   url.pathname = stripFramePrefix(url.pathname)
   return url.href
 }
@@ -71,15 +87,36 @@ export function toFrameHref(href: string, origin: string = window.location.origi
  * the frame and undo that very navigation. Composing the two sides differently is the mistake this
  * function exists to prevent.
  *
- * A trailing slash is deliberately not a difference here. A generator that publishes a page as a
- * directory is reached through a redirect that adds one, while vdoc's router normalizes it away
- * again; treating the two forms as different pages reloads the frame for as long as it is open.
+ * Two differences are deliberately not differences here:
+ *
+ * - {@link VDOC_THEME_PARAM}, which belongs to the URL that gets loaded but never to the
+ *   comparison, or changing the color mode would reload every frame - including the ones that
+ *   apply it in place, instantly and without a reload.
+ * - A trailing slash. A generator that publishes a page as a directory is reached through a
+ *   redirect that adds one, while vdoc's router normalizes it away again; treating the two forms
+ *   as different pages reloads the frame for as long as it is open.
  */
 export function normalizeIFrameSrc(src: string, origin: string = window.location.origin): string {
   const url = new URL(src, origin)
+  url.searchParams.delete(VDOC_THEME_PARAM)
   if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
     url.pathname = url.pathname.slice(0, -1)
   }
+  return url.href
+}
+
+/**
+ * The URL to load the frame with: `src` carrying the requested color mode as
+ * {@link VDOC_THEME_PARAM}.
+ *
+ * Composed through `URLSearchParams` rather than by string concatenation, because `src` may
+ * already carry a query string or a hash. The path is left exactly as given, unlike in
+ * {@link normalizeIFrameSrc} - what may be ignored when comparing two addresses must still be
+ * requested faithfully.
+ */
+export function composeIFrameSrc(src: string, mode: EffectiveColorMode, origin?: string): string {
+  const url = new URL(src, origin ?? window.location.origin)
+  url.searchParams.set(VDOC_THEME_PARAM, mode)
   return url.href
 }
 

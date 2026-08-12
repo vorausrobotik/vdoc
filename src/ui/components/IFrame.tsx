@@ -8,8 +8,19 @@ import { useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 import { hookFramedDocument } from '../helpers/FramedDocument'
-import { type IFrameHistoryMode, parseIFrameHref, toggleDocumentationColorScheme } from '../helpers/IFrame'
-import { normalizeIFrameSrc, sanitizeDocuUri, toFrameHref, toReadableHref } from '../helpers/RouteHelpers'
+import {
+  type IFrameHistoryMode,
+  parseIFrameHref,
+  toggleDocumentationColorScheme,
+  VDOC_THEME_ATTRIBUTE,
+} from '../helpers/IFrame'
+import {
+  composeIFrameSrc,
+  normalizeIFrameSrc,
+  sanitizeDocuUri,
+  toFrameHref,
+  toReadableHref,
+} from '../helpers/RouteHelpers'
 import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
 import { testIDs } from '../interfacesAndTypes/testIDs'
 
@@ -32,27 +43,81 @@ export default function IFrame({
   onNotFound,
   onHistoryModeChanged,
 }: Props) {
-  const { colorScheme } = useColorScheme()
-  const { setScrollY } = useIFrameScroll()
+  const { colorScheme, mode, systemMode } = useColorScheme()
+  const { scrollY, setScrollY } = useIFrameScroll()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
   const [contentWindow, setContentWindow] = useState<Window | null>()
 
   const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
 
+  // MUI resolves `colorScheme` for us, but it is undefined until the color scheme has been
+  // initialized, so fall back to the raw setting and resolve `system` here.
+  const resolvedColorScheme = colorScheme ?? (mode === 'system' ? systemMode : mode)
+  const effectiveColorMode: EffectiveColorMode = resolvedColorScheme === 'dark' ? 'dark' : 'light'
+
+  // The handlers installed on the framed window outlive the render that installed them - they stay
+  // attached for the lifetime of the framed document - so they read these through refs rather than
+  // closing over a value that goes stale on the next render.
+  const colorModeRef = useRef(effectiveColorMode)
+  colorModeRef.current = effectiveColorMode
+  const scrollYRef = useRef(scrollY)
+  scrollYRef.current = scrollY
+
   /** Last page reported, so the scroll position is only reset when the page actually changed. */
   const reportedPageRef = useRef<string | null>(null)
   /** Last title reported, so a title arriving late is only forwarded when it is a change. */
   const reportedTitleRef = useRef<string | null>(null)
+  /** Mode the frame was last reloaded for, so a frame that ignores the parameter cannot loop. */
+  const reloadedForModeRef = useRef<EffectiveColorMode | null>(null)
+  /** Scroll position to restore after a reload a color mode change triggered. */
+  const restoreScrollYRef = useRef<number | null>(null)
 
-  const setDarkMode = useCallback((mode: EffectiveColorMode) => {
-    toggleDocumentationColorScheme(iframeRef, mode)
+  /**
+   * Bring the framed documentation to `requestedMode`.
+   *
+   * A frame that declares {@link VDOC_THEME_ATTRIBUTE} applies the mode itself, from the URL, so it
+   * is asked by reloading with the parameter. A frame that does not (sphinx-awesome, doxygen) keeps
+   * the legacy in-place class toggle, which is instant and must never turn into a reload.
+   *
+   * @returns whether a reload was started.
+   */
+  const applyColorMode = useCallback((requestedMode: EffectiveColorMode): boolean => {
+    const frameWindow = iframeRef.current?.contentWindow
+    const documentElement = iframeRef.current?.contentDocument?.documentElement
+    if (!frameWindow || !documentElement) {
+      return false
+    }
+
+    const declaredMode = documentElement.getAttribute(VDOC_THEME_ATTRIBUTE)
+    if (declaredMode === null) {
+      toggleDocumentationColorScheme(iframeRef, requestedMode)
+      return false
+    }
+
+    if (declaredMode === requestedMode) {
+      // The frame already applied what is being asked for, so there is nothing to reload for.
+      reloadedForModeRef.current = requestedMode
+      return false
+    }
+    if (reloadedForModeRef.current === requestedMode) {
+      // Already reloaded for this mode and the frame still declares another one. It sets the
+      // attribute but does not honor the parameter; reloading again would only loop.
+      return false
+    }
+
+    reloadedForModeRef.current = requestedMode
+    restoreScrollYRef.current = scrollYRef.current
+    const target = composeIFrameSrc(frameWindow.location.href, requestedMode)
+    sourceRef.current = normalizeIFrameSrc(target)
+    frameWindow.location.replace(target)
+    return true
   }, [])
 
   // Update documentation's theme
   useEffect(() => {
-    setDarkMode(colorScheme as 'light' | 'dark')
-  }, [colorScheme, setDarkMode])
+    applyColorMode(effectiveColorMode)
+  }, [effectiveColorMode, applyColorMode])
 
   const onIframeLoad = (): void => {
     if (iframeRef.current === null) {
@@ -63,14 +128,28 @@ export default function IFrame({
     // Cache current active content windows for other processes
     setContentWindow(iframeRef.current?.contentWindow)
 
-    // Apply dark mode
-    setDarkMode(colorScheme as 'light' | 'dark')
+    // Apply dark mode. A participating frame may need a reload to do so, in which case the document
+    // below is already on its way out and there is nothing worth reporting about it.
+    if (applyColorMode(colorModeRef.current)) {
+      return
+    }
 
     // Set up scroll listener
     const contentWindow = iframeRef.current.contentWindow
     if (contentWindow) {
-      // Reset scroll position when iframe loads
-      setScrollY(0)
+      // Reset scroll position when iframe loads, unless this load is the reload of the very same
+      // page that a color mode change triggered - then the reader must stay where they were.
+      const restoreScrollY = restoreScrollYRef.current
+      restoreScrollYRef.current = null
+      if (restoreScrollY !== null && restoreScrollY > 0) {
+        contentWindow.scrollTo(0, restoreScrollY)
+        // The framed document may still be laying out, in which case the scroll above is clamped to
+        // a page that has not reached its full height yet. Re-apply once it has settled.
+        contentWindow.requestAnimationFrame(() => contentWindow.scrollTo(0, restoreScrollY))
+        setScrollY(restoreScrollY)
+      } else {
+        setScrollY(0)
+      }
 
       const handleScroll = () => {
         const scrollY = contentWindow.document.documentElement.scrollTop || contentWindow.document.body.scrollTop
@@ -162,15 +241,17 @@ export default function IFrame({
 
         /**
          * The anchor carries the readable address, so this resolves the one that reaches the file
-         * back out of it. `replace` rather than an assignment, so that the framed navigation adds
-         * no session history entry - vdoc's own router adds one for the same navigation, and two
-         * would make the back button need two clicks per page.
+         * back out of it, and requests the color mode along with it - without the parameter the new
+         * document would not declare the attribute, and the frame would drop out of the contract
+         * mid-navigation. `replace` rather than an assignment, so that the framed navigation adds no
+         * session history entry - vdoc's own router adds one for the same navigation, and two would
+         * make the back button need two clicks per page.
          * From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
          */
         followInTheFrame: (href: string): void => {
           const frameHref = toFrameHref(href)
           sourceRef.current = normalizeIFrameSrc(frameHref)
-          frameWindow.location.replace(frameHref)
+          frameWindow.location.replace(composeIFrameSrc(frameHref, colorModeRef.current))
         },
 
         /**
@@ -256,8 +337,12 @@ export default function IFrame({
     }
     sourceRef.current = normalizedSrc
     // Requested with the address exactly as vdoc's router holds it, not with the normalized one:
-    // what may be ignored when comparing two addresses must still be requested faithfully.
-    iframeRef.current?.contentWindow?.location.replace(`${window.location.origin}${src}`)
+    // what may be ignored when comparing two addresses must still be requested faithfully. The
+    // color mode is deliberately not a dependency of this effect - switching it must not reload
+    // frames that apply it in place. `applyColorMode` reloads the ones that need it.
+    iframeRef.current?.contentWindow?.location.replace(
+      composeIFrameSrc(`${window.location.origin}${src}`, colorModeRef.current)
+    )
   }, [src, isNavigationPending])
 
   return (
