@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
-from vdoc.models.plugins import FooterPlugin, OramaPlugin, ThemePlugin
+from vdoc.models.plugins import FooterPlugin, OramaPlugin, SitePlugin, ThemePlugin
 from vdoc.models.plugins.base import Plugin
 
 
@@ -15,18 +15,21 @@ def test_load_plugins_defaults(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"):
         plugins = list(Plugin.load_plugins())
 
-    assert len(plugins) == 3
+    assert len(plugins) == 4
 
     assert isinstance(plugins[0], FooterPlugin)
     assert plugins[0].active is False
     assert isinstance(plugins[1], OramaPlugin)
     assert plugins[1].active is False
-    assert isinstance(plugins[2], ThemePlugin)
-    assert plugins[2].active is True
+    assert isinstance(plugins[2], SitePlugin)
+    assert plugins[2].active is False
+    assert isinstance(plugins[3], ThemePlugin)
+    assert plugins[3].active is True
 
     assert caplog.messages == [
         "Loaded plugin: 'FooterPlugin'",
         "Loaded plugin: 'OramaPlugin'",
+        "Loaded plugin: 'SitePlugin'",
         "Loaded plugin: 'ThemePlugin'",
     ]
 
@@ -52,18 +55,21 @@ def test_load_plugins_orama_active(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"):
         plugins = list(Plugin.load_plugins())
 
-    assert len(plugins) == 3
+    assert len(plugins) == 4
 
     assert isinstance(plugins[0], FooterPlugin)
     assert plugins[0].active is True
     assert isinstance(plugins[1], OramaPlugin)
     assert plugins[1].active is True
-    assert isinstance(plugins[2], ThemePlugin)
-    assert plugins[2].active is True
+    assert isinstance(plugins[2], SitePlugin)
+    assert plugins[2].active is False
+    assert isinstance(plugins[3], ThemePlugin)
+    assert plugins[3].active is True
 
     assert caplog.messages == [
         "Loaded plugin: 'FooterPlugin'",
         "Loaded plugin: 'OramaPlugin'",
+        "Loaded plugin: 'SitePlugin'",
         "Loaded plugin: 'ThemePlugin'",
     ]
 
@@ -79,7 +85,8 @@ def test_load_plugins_error(caplog: pytest.LogCaptureFixture) -> None:
         list(Plugin.load_plugins())
     assert caplog.messages[0] == "Loaded plugin: 'FooterPlugin'"
     assert caplog.messages[1] == "Loaded plugin: 'OramaPlugin'"
-    assert caplog.messages[2].startswith(
+    assert caplog.messages[2] == "Loaded plugin: 'SitePlugin'"
+    assert caplog.messages[3].startswith(
         "Failed to load plugin 'ThemePlugin': "
         "1 validation error for ThemePlugin\nlight.logo_url\n  Input should be a valid URL"
     )

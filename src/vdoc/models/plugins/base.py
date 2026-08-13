@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 _logger = logging.getLogger(__name__)
 
 
-ValidPluginsT = Literal["theme", "orama", "footer"]
+ValidPluginsT = Literal["theme", "orama", "footer", "site"]
 
 
 class Plugin(BaseSettings, ABC):

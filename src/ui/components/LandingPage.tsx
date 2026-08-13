@@ -5,6 +5,7 @@ import { groupProjectsByCategories } from '../helpers/Projects'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
 import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 import testIDs from '../interfacesAndTypes/testIDs'
+import { SitePlugin } from './plugins/SitePlugin'
 
 const route = getRouteApi('/')
 
@@ -16,6 +17,7 @@ export function LandingPage() {
   }, [projects, projectCategories])
   return (
     <Container sx={{ mt: 2 }}>
+      <SitePlugin />
       {Object.entries(getGroupedProjects).map(([category, projects]) => (
         <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
           <Typography
