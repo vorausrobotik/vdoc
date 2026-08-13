@@ -1,10 +1,7 @@
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import {
   AppBar,
   Box,
-  type BoxProps,
   Grid,
-  IconButton,
   type SelectChangeEvent,
   Slide,
   Toolbar,
@@ -19,8 +16,8 @@ import { fetchAppVersion, fetchPluginConfig, fetchProjectVersion, fetchProjectVe
 import type OramaPluginT from '../interfacesAndTypes/plugins/OramaPluginT'
 import type ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
 import testIDs from '../interfacesAndTypes/testIDs'
+import ColorModeToggle from './ColorModeToggle'
 import { OramaSearchPlugin } from './plugins/OramaSearchPlugin'
-import SettingsSidebar from './SettingsSidebar'
 import VersionDropdown from './VersionDropdown'
 
 function LeftGroup() {
@@ -73,16 +70,17 @@ function MiddleGroup() {
   return <OramaSearchPlugin {...oramaPluginConfig} />
 }
 
-interface RightGroupPros extends BoxProps {
-  setSidebarOpen: (open: boolean) => void
-}
-
-function RightGroup({ setSidebarOpen }: RightGroupPros) {
+function RightGroup() {
   const params = useParams({ strict: false })
   const navigate = useNavigate({ from: '/$projectName/$version/$' })
 
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
+  const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
+  }, [])
 
   useEffect(() => {
     const fetchData = async (name: string): Promise<[string[], string]> => {
@@ -136,14 +134,29 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
           />
         )}
       </Box>
-      <Box>
-        <IconButton
-          data-testid={testIDs.header.settingsButton}
-          aria-label="Open App Settings"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <SettingsOutlinedIcon />
-        </IconButton>
+      {/* Right of the version dropdown rather than left of it, because the dropdown is only there
+          for a documentation: anything placed before it moves as soon as one is opened. */}
+      <ColorModeToggle />
+      {/* Stacked rather than written out on one line, so that naming the app costs no width next to
+          the project version. The color goes through ``sx``, because the app bar hands its children
+          the contrast text color and ``Typography``'s own ``color`` prop takes a palette name
+          (``textSecondary``) rather than a path. */}
+      <Box
+        data-testid={testIDs.header.appVersion}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          color: 'text.secondary',
+          lineHeight: 1.2,
+        }}
+      >
+        <Typography variant="caption" sx={{ fontSize: '0.65rem', lineHeight: 1.2 }} noWrap>
+          vdoc
+        </Typography>
+        <Typography variant="caption" sx={{ fontSize: '0.65rem', lineHeight: 1.2 }} noWrap>
+          {appVersion ?? 'N/A'}
+        </Typography>
       </Box>
     </>
   )
@@ -151,13 +164,6 @@ function RightGroup({ setSidebarOpen }: RightGroupPros) {
 
 export default function MenuBar({ hide = false }: { hide?: boolean }) {
   const theme = useTheme()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
-  }, [])
 
   const { setContentInset } = useContentInset()
   const toolbarRef = useRef<HTMLDivElement>(null)
@@ -212,15 +218,14 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
                 <MiddleGroup />
               </Box>
             </Grid>
-            {/* Optional version dropdown and settings button */}
+            {/* vdoc version, color mode toggle and the optional version dropdown */}
             <Grid id="appBarRightGroup" size={{ xs: 5, sm: 4, md: 3, lg: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <RightGroup setSidebarOpen={setSidebarOpen} />
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+                <RightGroup />
               </Box>
             </Grid>
           </Grid>
         </Toolbar>
-        <SettingsSidebar open={sidebarOpen} setOpen={setSidebarOpen} appVersion={appVersion} />
       </AppBar>
     </Slide>
   )

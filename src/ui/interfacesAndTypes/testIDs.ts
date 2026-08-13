@@ -12,22 +12,8 @@ export const testIDs = {
       emptyItem: 'header.versionDropdown.emptyItem',
       showAllItem: 'header.versionDropdown.moreItem',
     },
-    settingsButton: 'header.settingsButton',
-  },
-  sidebar: {
-    main: 'sidebar',
-    close: 'sidebar.close',
-    settings: {
-      toggleColorModes: {
-        main: 'sidebar.settings.toggleColorModes',
-        buttons: {
-          light: 'sidebar.settings.toggleColorModes.buttons.light',
-          system: 'sidebar.settings.toggleColorModes.buttons.system',
-          dark: 'sidebar.settings.toggleColorModes.buttons.dark',
-        },
-      },
-    },
-    appVersion: 'sidebar.settings.appVersion',
+    colorModeToggle: 'header.colorModeToggle',
+    appVersion: 'header.appVersion',
   },
   loadingIndicator: {
     main: 'loadingIndicator',
