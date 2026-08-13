@@ -2,6 +2,7 @@ import { Box, CssBaseline, createTheme, Slide, ThemeProvider, useColorScheme } f
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import { Outlet } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ContentInsetProvider } from '../contexts/ContentInsetProvider'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 import { IFrameScrollProvider } from '../contexts/IFrameScrollProvider'
 import MenuBar from './MenuBar'
@@ -131,7 +132,9 @@ export function RootComponent() {
       <CssBaseline />
       <InitColorSchemeScript />
       <IFrameScrollProvider>
-        <ThemedComponent />
+        <ContentInsetProvider>
+          <ThemedComponent />
+        </ContentInsetProvider>
       </IFrameScrollProvider>
     </ThemeProvider>
   )

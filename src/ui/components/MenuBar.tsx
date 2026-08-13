@@ -13,7 +13,8 @@ import {
   useTheme,
 } from '@mui/material'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useContentInset } from '../contexts/ContentInsetContext'
 import { fetchAppVersion, fetchPluginConfig, fetchProjectVersion, fetchProjectVersions } from '../helpers/APIFunctions'
 import type OramaPluginT from '../interfacesAndTypes/plugins/OramaPluginT'
 import type ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
@@ -158,6 +159,25 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
     fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
   }, [])
 
+  const { setContentInset } = useContentInset()
+  const toolbarRef = useRef<HTMLDivElement>(null)
+
+  // Report where vdoc's own header content starts, so the framed documentation can line its header
+  // up with it. Measured rather than derived from the theme: the gutter is MUI's responsive
+  // `Toolbar` default today, and a second copy of that rule would be a second thing to keep in step.
+  // Observed rather than read once, because the gutter changes with the breakpoint.
+  useEffect(() => {
+    const toolbar = toolbarRef.current
+    if (toolbar === null) {
+      return
+    }
+    const report = () => setContentInset(Number.parseFloat(window.getComputedStyle(toolbar).paddingLeft) || 0)
+    report()
+    const observer = new ResizeObserver(report)
+    observer.observe(toolbar)
+    return () => observer.disconnect()
+  }, [setContentInset])
+
   return (
     <Slide appear={false} direction="down" in={!hide}>
       <AppBar
@@ -168,7 +188,7 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
         }}
         elevation={0}
       >
-        <Toolbar>
+        <Toolbar ref={toolbarRef}>
           <Grid
             container
             spacing={1}

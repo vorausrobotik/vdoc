@@ -7,12 +7,20 @@
       writes into the document.
     -->
     <script>
-      // The vdoc theme contract, applied before the first paint: read the requested mode, apply it
-      // the way this generator happens to apply modes, and declare that it was honored.
+      // The vdoc frame contract, applied before the first paint: read the requested mode, apply it
+      // the way this generator happens to apply modes, and declare that it was honored. Then take
+      // the host's content inset, if it sent one, and line this page's header up with it.
       ;(() => {
-        const mode = new URLSearchParams(window.location.search).get('vdoc-theme') === 'dark' ? 'dark' : 'light'
+        const params = new URLSearchParams(window.location.search)
+        const mode = params.get('vdoc-theme') === 'dark' ? 'dark' : 'light'
         document.documentElement.setAttribute('data-theme', mode)
         document.documentElement.setAttribute('data-vdoc-theme', mode)
+
+        const inset = Number.parseInt(params.get('vdoc-inset') ?? '', 10)
+        if (Number.isFinite(inset)) {
+          document.documentElement.style.setProperty('--vdoc-inset', `${inset}px`)
+          document.documentElement.setAttribute('data-vdoc-inset-applied', String(inset))
+        }
       })()
     </script>
     <style>
@@ -28,6 +36,10 @@
       }
       .page {
         padding: 16px;
+      }
+      /* Falls back to the generator's own gutter when the host sends no inset. */
+      .page > h1 {
+        margin-left: var(--vdoc-inset, 0px);
       }
       .filler {
         height: 1200px;

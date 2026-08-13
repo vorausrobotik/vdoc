@@ -6,6 +6,7 @@
 import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useContentInset } from '../contexts/ContentInsetContext'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 import { hookFramedDocument } from '../helpers/FramedDocument'
 import {
@@ -16,6 +17,7 @@ import {
 } from '../helpers/IFrame'
 import {
   composeIFrameSrc,
+  type FrameParams,
   normalizeIFrameSrc,
   sanitizeDocuUri,
   toFrameHref,
@@ -45,6 +47,7 @@ export default function IFrame({
 }: Props) {
   const { colorScheme, mode, systemMode } = useColorScheme()
   const { scrollY, setScrollY } = useIFrameScroll()
+  const { contentInset } = useContentInset()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
   const [contentWindow, setContentWindow] = useState<Window | null>()
@@ -59,8 +62,9 @@ export default function IFrame({
   // The handlers installed on the framed window outlive the render that installed them - they stay
   // attached for the lifetime of the framed document - so they read these through refs rather than
   // closing over a value that goes stale on the next render.
-  const colorModeRef = useRef(effectiveColorMode)
-  colorModeRef.current = effectiveColorMode
+  const frameParams: FrameParams = { mode: effectiveColorMode, inset: contentInset }
+  const frameParamsRef = useRef(frameParams)
+  frameParamsRef.current = frameParams
   const scrollYRef = useRef(scrollY)
   scrollYRef.current = scrollY
 
@@ -108,7 +112,7 @@ export default function IFrame({
 
     reloadedForModeRef.current = requestedMode
     restoreScrollYRef.current = scrollYRef.current
-    const target = composeIFrameSrc(frameWindow.location.href, requestedMode)
+    const target = composeIFrameSrc(frameWindow.location.href, { ...frameParamsRef.current, mode: requestedMode })
     sourceRef.current = normalizeIFrameSrc(target)
     frameWindow.location.replace(target)
     return true
@@ -130,7 +134,7 @@ export default function IFrame({
 
     // Apply dark mode. A participating frame may need a reload to do so, in which case the document
     // below is already on its way out and there is nothing worth reporting about it.
-    if (applyColorMode(colorModeRef.current)) {
+    if (applyColorMode(frameParamsRef.current.mode)) {
       return
     }
 
@@ -251,7 +255,7 @@ export default function IFrame({
         followInTheFrame: (href: string): void => {
           const frameHref = toFrameHref(href)
           sourceRef.current = normalizeIFrameSrc(frameHref)
-          frameWindow.location.replace(composeIFrameSrc(frameHref, colorModeRef.current))
+          frameWindow.location.replace(composeIFrameSrc(frameHref, frameParamsRef.current))
         },
 
         /**
@@ -341,7 +345,7 @@ export default function IFrame({
     // color mode is deliberately not a dependency of this effect - switching it must not reload
     // frames that apply it in place. `applyColorMode` reloads the ones that need it.
     iframeRef.current?.contentWindow?.location.replace(
-      composeIFrameSrc(`${window.location.origin}${src}`, colorModeRef.current)
+      composeIFrameSrc(`${window.location.origin}${src}`, frameParamsRef.current)
     )
   }, [src, isNavigationPending])
 
