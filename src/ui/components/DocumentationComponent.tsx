@@ -7,11 +7,14 @@ import { DeprecatedVersionBanner } from './DeprecatedVersionBanner'
 import IFrame from './IFrame'
 
 const route = getRouteApi('/$projectName/$version/$')
+// The resolved version belongs to the project version, not to the page, so it is loaded one route
+// up - which is what keeps a page change from re-running that lookup.
+const versionRoute = getRouteApi('/$projectName/$version')
 
 export function DocumentationComponent() {
   const location = useLocation()
   const { projectName, _splat } = route.useParams()
-  const [resolvedVersion, latestVersion] = route.useLoaderData()
+  const [resolvedVersion, latestVersion] = versionRoute.useLoaderData()
 
   const iframeProps = useMemo(
     () => ({
