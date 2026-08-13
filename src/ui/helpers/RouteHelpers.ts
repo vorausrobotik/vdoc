@@ -9,13 +9,43 @@ import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
  */
 export const FRAME_PATH_PREFIX = '/static/projects/'
 
-/**
- * Query parameter vdoc appends to the frame URL to request a color mode.
- *
- * See `docs/frame_contract.md`. It is vdoc's request to the frame, never part of a page's address,
- * which is why {@link normalizeIFrameSrc} and `parseIFrameHref` both drop it again.
- */
+/** Query parameter vdoc appends to the frame URL to request a color mode. */
 export const VDOC_THEME_PARAM = 'vdoc-theme'
+
+/**
+ * Query parameter vdoc appends to tell the frame where its own content starts horizontally.
+ *
+ * Sent as a parameter rather than written down as a constant because vdoc keeps every published
+ * version forever: a number baked into a site's stylesheet at build time would strand every site
+ * published before vdoc next changed its own gutter.
+ */
+export const VDOC_INSET_PARAM = 'vdoc-inset'
+
+/**
+ * Every parameter vdoc adds to the frame URL for the frame's own benefit.
+ *
+ * These are vdoc's requests to the frame, never part of a page's address, so all three places that
+ * turn a frame URL back into an address vdoc can show or compare drop the whole set:
+ * {@link toReadableHref}, {@link normalizeIFrameSrc} and `parseIFrameHref`. Adding a parameter here
+ * is what keeps that from having to be remembered three times - forgetting one of them once already
+ * put `?vdoc-theme=…` into the href of every fragment link in a framed page.
+ */
+export const VDOC_FRAME_PARAMS: readonly string[] = [VDOC_THEME_PARAM, VDOC_INSET_PARAM]
+
+/** Removes every parameter of vdoc's own from `url`, in place. */
+function deleteFrameParams(url: URL): void {
+  for (const param of VDOC_FRAME_PARAMS) {
+    url.searchParams.delete(param)
+  }
+}
+
+/** What vdoc tells the frame about itself, on the URL it loads it with. */
+export interface FrameParams {
+  /** The color mode the frame should apply, always resolved - never `system`. */
+  mode: EffectiveColorMode
+  /** Horizontal offset vdoc insets its own content by, in CSS pixels. Omitted if not measured. */
+  inset?: number
+}
 
 /**
  * `pathname` with the frame path prefix removed, if it carries one.
@@ -38,10 +68,10 @@ export function stripFramePrefix(pathname: string): string {
  * Foreign addresses are returned verbatim, addresses of vdoc's own origin absolute, and applying
  * this to an address that is already readable changes nothing.
  *
- * {@link VDOC_THEME_PARAM} is dropped, because the readable form is an address in vdoc's own
- * namespace and vdoc's request to the frame has no meaning there. It has to be dropped explicitly:
- * a fragment-only link resolves against the whole address of the document it sits in, so every
- * `<a href="#section">` in a framed page would otherwise display and copy vdoc's parameter.
+ * {@link VDOC_FRAME_PARAMS} are dropped, because the readable form is an address in vdoc's own
+ * namespace and vdoc's requests to the frame have no meaning there. They have to be dropped
+ * explicitly: a fragment-only link resolves against the whole address of the document it sits in, so
+ * every `<a href="#section">` in a framed page would otherwise display and copy them.
  *
  * @param href The address to convert, absolute or relative to `origin`.
  * @param origin The origin vdoc is served from.
@@ -51,7 +81,7 @@ export function toReadableHref(href: string, origin: string = window.location.or
   if (url.origin !== origin) {
     return href
   }
-  url.searchParams.delete(VDOC_THEME_PARAM)
+  deleteFrameParams(url)
   url.pathname = stripFramePrefix(url.pathname)
   return url.href
 }
@@ -89,16 +119,17 @@ export function toFrameHref(href: string, origin: string = window.location.origi
  *
  * Two differences are deliberately not differences here:
  *
- * - {@link VDOC_THEME_PARAM}, which belongs to the URL that gets loaded but never to the
- *   comparison, or changing the color mode would reload every frame - including the ones that
- *   apply it in place, instantly and without a reload.
+ * - {@link VDOC_FRAME_PARAMS}, which belong to the URL that gets loaded but never to the comparison.
+ *   Otherwise changing the color mode would reload every frame - including the ones that apply it in
+ *   place, instantly and without a reload - and every window resize that moves vdoc's own gutter
+ *   would reload the frame as well.
  * - A trailing slash. A generator that publishes a page as a directory is reached through a
  *   redirect that adds one, while vdoc's router normalizes it away again; treating the two forms
  *   as different pages reloads the frame for as long as it is open.
  */
 export function normalizeIFrameSrc(src: string, origin: string = window.location.origin): string {
   const url = new URL(src, origin)
-  url.searchParams.delete(VDOC_THEME_PARAM)
+  deleteFrameParams(url)
   if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
     url.pathname = url.pathname.slice(0, -1)
   }
@@ -106,17 +137,24 @@ export function normalizeIFrameSrc(src: string, origin: string = window.location
 }
 
 /**
- * The URL to load the frame with: `src` carrying the requested color mode as
- * {@link VDOC_THEME_PARAM}.
+ * The URL to load the frame with: `src` carrying what vdoc tells the frame about itself.
  *
- * Composed through `URLSearchParams` rather than by string concatenation, because `src` may
- * already carry a query string or a hash. The path is left exactly as given, unlike in
+ * Composed through `URLSearchParams` rather than by string concatenation, because `src` may already
+ * carry a query string or a hash. The path is left exactly as given, unlike in
  * {@link normalizeIFrameSrc} - what may be ignored when comparing two addresses must still be
  * requested faithfully.
+ *
+ * The inset is omitted while it is unknown, which the contract allows: a frame without it is
+ * misaligned by vdoc's gutter, not broken.
  */
-export function composeIFrameSrc(src: string, mode: EffectiveColorMode, origin?: string): string {
+export function composeIFrameSrc(src: string, params: FrameParams, origin?: string): string {
   const url = new URL(src, origin ?? window.location.origin)
-  url.searchParams.set(VDOC_THEME_PARAM, mode)
+  url.searchParams.set(VDOC_THEME_PARAM, params.mode)
+  if (params.inset != null && params.inset > 0) {
+    url.searchParams.set(VDOC_INSET_PARAM, String(Math.round(params.inset)))
+  } else {
+    url.searchParams.delete(VDOC_INSET_PARAM)
+  }
   return url.href
 }
 

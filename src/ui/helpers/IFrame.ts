@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
-import { FRAME_PATH_PREFIX, VDOC_THEME_PARAM } from './RouteHelpers'
+import { FRAME_PATH_PREFIX, VDOC_FRAME_PARAMS, VDOC_THEME_PARAM } from './RouteHelpers'
 
 export interface IFrameLocation {
   name: string
@@ -79,10 +79,12 @@ export function parseIFrameHref(iframeRef: RefObject<HTMLIFrameElement | null>):
     const page = pageParts.join('/')
 
     // Extract search as URLSearchParams object and hash without the '#' prefix.
-    // `vdoc-theme` is vdoc's own request to the frame, not part of the page's address: it must not
-    // reach vdoc's address bar, or it would be appended a second time on the next compose.
+    // vdoc's own parameters are requests to the frame, not part of the page's address: they must not
+    // reach vdoc's address bar, or they would be appended a second time on the next compose.
     const search = new URLSearchParams(url.search)
-    search.delete(VDOC_THEME_PARAM)
+    for (const param of VDOC_FRAME_PARAMS) {
+      search.delete(param)
+    }
     const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
 
     return {

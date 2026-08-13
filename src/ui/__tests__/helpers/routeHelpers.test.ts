@@ -410,22 +410,22 @@ describe('composeIFrameSrc', () => {
       expected: 'http://localhost:3000/static/projects/proj/1.0.0/guide/?vdoc-theme=dark',
     },
   ])('$description', ({ src, mode, expected }) => {
-    expect(composeIFrameSrc(src, mode, origin)).toBe(expected)
+    expect(composeIFrameSrc(src, { mode }, origin)).toBe(expected)
   })
 
   test('is stable when applied repeatedly', () => {
     // GIVEN: A source that has already been composed once
-    const composed = composeIFrameSrc('/static/projects/proj/1.0.0/page.html?q=search', 'dark', origin)
+    const composed = composeIFrameSrc('/static/projects/proj/1.0.0/page.html?q=search', { mode: 'dark' }, origin)
 
     // WHEN/THEN: Composing again for the same mode changes nothing, so a navigation that passes
     // through it twice cannot accumulate parameters
-    expect(composeIFrameSrc(composed, 'dark', origin)).toBe(composed)
+    expect(composeIFrameSrc(composed, { mode: 'dark' }, origin)).toBe(composed)
   })
 
   test('the composed source has the same identity as the one it was composed from', () => {
     // GIVEN: A source vdoc composed for the frame
     const src = '/static/projects/proj/1.0.0/page.html?q=search#section'
-    const loaded = composeIFrameSrc(src, 'dark', origin)
+    const loaded = composeIFrameSrc(src, { mode: 'dark' }, origin)
 
     // WHEN/THEN: Both sides of the comparison the sync effect makes agree, so a frame sitting on
     // exactly the address it was given never looks stale and is never force-loaded
@@ -461,5 +461,61 @@ describe('toReadableHref and the color mode parameter', () => {
     // GIVEN/WHEN/THEN: What the reader hovers, copies and opens in a new tab is the address vdoc's
     // own router answers - never the request vdoc made to the frame
     expect(toReadableHref(href, origin)).toBe(expected)
+  })
+})
+
+describe('composeIFrameSrc and the content inset', () => {
+  const origin = 'http://localhost:3000'
+
+  test.each([
+    {
+      description: 'sends the inset next to the mode',
+      params: { mode: 'dark' as const, inset: 24 },
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/p.html?vdoc-theme=dark&vdoc-inset=24',
+    },
+    {
+      description: 'rounds a fractional measurement, since the parameter is whole pixels',
+      params: { mode: 'light' as const, inset: 23.6 },
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/p.html?vdoc-theme=light&vdoc-inset=24',
+    },
+    {
+      description: 'omits the inset while it has not been measured',
+      params: { mode: 'dark' as const, inset: 0 },
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/p.html?vdoc-theme=dark',
+    },
+    {
+      description: 'omits the inset when none is given at all',
+      params: { mode: 'dark' as const },
+      expected: 'http://localhost:3000/static/projects/proj/1.0.0/p.html?vdoc-theme=dark',
+    },
+  ])('$description', ({ params, expected }) => {
+    expect(composeIFrameSrc('/static/projects/proj/1.0.0/p.html', params, origin)).toBe(expected)
+  })
+
+  test('a stale inset is replaced rather than added a second time', () => {
+    // GIVEN: An address the frame is already on, which carries the inset vdoc sent last time
+    const current = 'http://localhost:3000/static/projects/proj/1.0.0/p.html?vdoc-theme=dark&vdoc-inset=16'
+
+    // WHEN/THEN: Composing again for a wider viewport carries exactly one inset
+    expect(composeIFrameSrc(current, { mode: 'dark', inset: 24 }, origin)).toBe(
+      'http://localhost:3000/static/projects/proj/1.0.0/p.html?vdoc-theme=dark&vdoc-inset=24'
+    )
+  })
+
+  test('the inset is not part of a page identity', () => {
+    // GIVEN: The same page, framed at two different viewport widths
+    const narrow = composeIFrameSrc('/static/projects/proj/1.0.0/p.html', { mode: 'dark', inset: 16 }, origin)
+    const wide = composeIFrameSrc('/static/projects/proj/1.0.0/p.html', { mode: 'dark', inset: 24 }, origin)
+
+    // WHEN/THEN: Resizing the window does not make the frame look stale, which would reload it
+    expect(normalizeIFrameSrc(wide, origin)).toBe(normalizeIFrameSrc(narrow, origin))
+  })
+
+  test('the inset never reaches a readable address', () => {
+    // GIVEN: A fragment link inside a framed page, which resolves against the whole document address
+    const inFrame = 'http://localhost:3000/static/projects/proj/1.0.0/?vdoc-theme=dark&vdoc-inset=24#section1'
+
+    // WHEN/THEN: What the reader hovers and copies is free of both of vdoc's parameters
+    expect(toReadableHref(inFrame, origin)).toBe('http://localhost:3000/proj/1.0.0/#section1')
   })
 })

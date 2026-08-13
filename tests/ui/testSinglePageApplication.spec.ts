@@ -129,6 +129,24 @@ test('Toggling the color mode keeps the reader where they were', async ({ page }
   await expect.poll(async () => await iframeScrollY(page)).toBe(700)
 })
 
+test('The frame is told where vdocs own content starts', async ({ page }) => {
+  // GIVEN: A single page documentation that implements the content inset half of the contract
+  const documentation = await openSinglePageApp(page)
+
+  // THEN: It was told an inset, and it is the one vdoc's own header actually uses - measured here
+  // rather than asserted as a constant, because a hardcoded number on either side is the thing the
+  // parameter exists to remove
+  const headerInset = await page.getByTestId(testIDs.header.main).evaluate((header: HTMLElement) => {
+    const toolbar = header.firstElementChild as HTMLElement
+    return Math.round(Number.parseFloat(window.getComputedStyle(toolbar).paddingLeft))
+  })
+  expect(headerInset).toBeGreaterThan(0)
+  await expect(documentation).toHaveAttribute('data-vdoc-inset-applied', String(headerInset))
+
+  // AND: The parameter stays out of vdoc's own address bar, like the mode
+  await expect(page).toHaveURL(BASE_PATH)
+})
+
 test('A raw link keeps the frame inside the contract', async ({ page }) => {
   // GIVEN: A single page documentation in dark mode, and a link the application does not route
   // itself - a plain anchor in the markup, which the browser follows natively
@@ -179,6 +197,17 @@ test('Client-side navigation does not look the version up again', async ({ page 
   // GIVEN: An open single page documentation
   const documentation = await openSinglePageApp(page)
   const versionLookups = recordVersionLookups(page)
+
+  // AND: The header's own version fetches settled. They are not the route loader's, but they hit the
+  // same endpoints, so counting them would make this test about page load timing instead.
+  await expect
+    .poll(async () => {
+      const before = versionLookups.length
+      await page.waitForTimeout(300)
+      return versionLookups.length === before
+    })
+    .toBe(true)
+  versionLookups.length = 0
 
   // WHEN: The application turns the page, which changes the splat and nothing else
   await documentation.getByRole('link', { name: 'Go to the guide' }).click()
