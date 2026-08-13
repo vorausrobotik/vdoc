@@ -122,6 +122,7 @@ export const mockAPIRequests = async (page: Page) => {
           active: false,
           title: null,
           description: null,
+          long_description: null,
           show_on_landing_page: true,
         },
       },

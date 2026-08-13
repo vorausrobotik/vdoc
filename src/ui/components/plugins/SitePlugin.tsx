@@ -1,8 +1,31 @@
-import { alpha, Paper, Typography } from '@mui/material'
+import { alpha, Box, Link, Paper, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
+import Markdown, { type Components } from 'react-markdown'
 import { fetchPluginConfig } from '../../helpers/APIFunctions'
 import type SitePluginT from '../../interfacesAndTypes/plugins/SitePlugin'
 import testIDs from '../../interfacesAndTypes/testIDs'
+
+/**
+ * What the long description may render.
+ *
+ * Restricted rather than open: the banner owns its own type hierarchy, and a heading or an image
+ * dropped into the configuration would fight it. Anything else is unwrapped rather than removed, so
+ * unsupported markup degrades to its text instead of vanishing.
+ */
+const ALLOWED_ELEMENTS = ['p', 'a', 'strong', 'em', 'code', 'ul', 'ol', 'li', 'br']
+
+const MARKDOWN_COMPONENTS: Components = {
+  a: ({ href, children }) => (
+    <Link
+      href={href}
+      // Only an absolute URL leaves the site, and only that should take over a new tab
+      target={href?.startsWith('http') ? '_blank' : undefined}
+      rel="noopener noreferrer"
+    >
+      {children}
+    </Link>
+  ),
+}
 
 /**
  * What this instance of vdoc is, as a banner above the projects it serves.
@@ -30,7 +53,6 @@ export const SitePlugin = () => {
         px: { xs: 3, md: 5 },
         py: { xs: 3.5, md: 5 },
         borderRadius: 2,
-        textAlign: 'center',
         // A tint of the primary color rather than a surface color: the default dark palette gives
         // `background.paper` and `background.default` the same value, so a plain surface would be
         // invisible against the page in dark mode.
@@ -55,10 +77,9 @@ export const SitePlugin = () => {
           variant="body1"
           color="text.secondary"
           sx={{
-            mt: 1.5,
-            // Centered, but still held to a readable measure rather than the full container width
-            maxWidth: '68ch',
-            mx: 'auto',
+            mt: 1,
+            // Held to a readable measure rather than to the full container width
+            maxWidth: '90ch',
             lineHeight: 1.7,
             fontSize: { xs: '1rem', md: '1.125rem' },
           }}
@@ -66,6 +87,33 @@ export const SitePlugin = () => {
         >
           {sitePluginConfig.description}
         </Typography>
+      )}
+      {sitePluginConfig.long_description && sitePluginConfig.long_description.length > 0 && (
+        <Box
+          data-testid={testIDs.plugins.site.longDescription}
+          sx={{
+            mt: 2,
+            maxWidth: '90ch',
+            color: 'text.secondary',
+            lineHeight: 1.7,
+            fontSize: { xs: '0.95rem', md: '1.0625rem' },
+            '& p': { m: 0 },
+            '& p + p, & p + ul, & p + ol, & ul + p, & ol + p': { mt: 1.5 },
+            '& ul, & ol': { my: 0, pl: 3 },
+            '& li + li': { mt: 0.25 },
+            '& code': {
+              px: 0.5,
+              borderRadius: 0.5,
+              bgcolor: 'action.hover',
+              fontFamily: 'monospace',
+              fontSize: '0.9em',
+            },
+          }}
+        >
+          <Markdown allowedElements={ALLOWED_ELEMENTS} unwrapDisallowed components={MARKDOWN_COMPONENTS}>
+            {sitePluginConfig.long_description.join('\n')}
+          </Markdown>
+        </Box>
       )}
     </Paper>
   )

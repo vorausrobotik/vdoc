@@ -75,6 +75,7 @@ export const testIDs = {
       main: 'plugins.site',
       title: 'plugins.site.title',
       description: 'plugins.site.description',
+      longDescription: 'plugins.site.longDescription',
     },
     footer: {
       main: 'footer',
