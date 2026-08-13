@@ -163,6 +163,39 @@ test('Client-side navigation updates the address bar and the title without reloa
   expect(await framedDocumentMarker(documentation)).toBe('kept')
 })
 
+/** Every request the route loader's version lookup makes, in order. */
+const recordVersionLookups = (page: Page): string[] => {
+  const lookups: string[] = []
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url())
+    if (pathname.includes('/api/projects/') && pathname.includes('/versions/')) {
+      lookups.push(pathname)
+    }
+  })
+  return lookups
+}
+
+test('Client-side navigation does not look the version up again', async ({ page }) => {
+  // GIVEN: An open single page documentation
+  const documentation = await openSinglePageApp(page)
+  const versionLookups = recordVersionLookups(page)
+
+  // WHEN: The application turns the page, which changes the splat and nothing else
+  await documentation.getByRole('link', { name: 'Go to the guide' }).click()
+  await expect(page).toHaveURL(`${BASE_PATH}/guide.html`)
+  await expect(renderedPage(documentation)).toHaveAttribute('data-page', 'guide.html')
+
+  // AND: A second time, to catch a lookup that only happens from the second page on
+  await documentation.getByRole('link', { name: 'Go to the API' }).click()
+  await expect(page).toHaveURL(`${BASE_PATH}/api.html`)
+  await page.waitForTimeout(500)
+
+  // THEN: Nothing was looked up. Which version is being read depends on the project and the
+  // version, never on the page, and a loader that re-runs per page turn puts two sequential HTTP
+  // round trips in front of every click a reader makes inside the frame.
+  expect(versionLookups).toStrictEqual([])
+})
+
 test('Reloading vdoc at a client-side navigated address returns the same page', async ({ page }) => {
   // GIVEN: A reader who navigated to the API page client-side
   const documentation = await openSinglePageApp(page)
