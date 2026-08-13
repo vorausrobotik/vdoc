@@ -109,12 +109,14 @@ class Plugin(BaseSettings, ABC):
             True if the plugin is active, False otherwise.
         """
 
-    @property
-    def router(self) -> APIRouter:
-        """Get the router for the plugin.
+    def model_post_init(self, _context: Any) -> None:  # noqa: ANN401
+        """Registers the plugin's routes on its own router.
 
-        Returns:
-            APIRouter: The FastAPI router for the plugin.
+        Done once per instance, at construction. While this lived in the ``router`` property it ran on
+        every read of it, so each read appended another copy of the same route.
+
+        Args:
+            _context: The pydantic validation context. Unread.
         """
 
         @self._router.get("/", response_model=type(self))
@@ -126,4 +128,11 @@ class Plugin(BaseSettings, ABC):
             """
             return self
 
+    @property
+    def router(self) -> APIRouter:
+        """Get the router for the plugin.
+
+        Returns:
+            APIRouter: The FastAPI router for the plugin.
+        """
         return self._router
