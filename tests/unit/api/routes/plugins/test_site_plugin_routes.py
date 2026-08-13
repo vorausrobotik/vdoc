@@ -18,6 +18,7 @@ def test_site_plugin_route_inactive(api: TestClient) -> None:
         "active": False,
         "title": None,
         "description": None,
+        "long_description": None,
         "show_on_landing_page": True,
     }
 
@@ -27,6 +28,9 @@ def test_site_plugin_route_inactive(api: TestClient) -> None:
     {
         f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_TITLE": "voraus robotik Software Documentation",
         f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_DESCRIPTION": "Everything about the platform.",
+        f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_LONG_DESCRIPTION": (
+            '["- **voraus.core** \u2014 the runtime", "- **voraus.pioneer** \u2014 the environment"]'
+        ),
     },
 )
 def test_site_plugin_route(request: pytest.FixtureRequest) -> None:
@@ -42,5 +46,9 @@ def test_site_plugin_route(request: pytest.FixtureRequest) -> None:
         "active": True,
         "title": "voraus robotik Software Documentation",
         "description": "Everything about the platform.",
+        "long_description": [
+            "- **voraus.core** \u2014 the runtime",
+            "- **voraus.pioneer** \u2014 the environment",
+        ],
         "show_on_landing_page": True,
     }
