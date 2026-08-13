@@ -8,8 +8,7 @@ import {
   assertTheme,
   BASE_URL,
   openProjectDocumentation,
-  openSettingsSidebar,
-  scrollIframe,
+  scrollIframeBelowHideThreshold,
   switchColorMode,
 } from './helpers'
 
@@ -111,22 +110,21 @@ test('Toggling the color mode keeps the reader where they were', async ({ page }
   await page.emulateMedia({ colorScheme: 'light' })
   const documentation = await openSinglePageApp(page)
 
-  // AND: The settings sidebar already open, because scrolling down hides the header
-  await openSettingsSidebar(page)
-
+  // AND: Scrolled only as far as the app bar survives - the color mode toggle rides along with it,
+  // so scrolling further would put the very control this test needs out of reach
   const iframe = page.getByTestId(testIDs.project.documentation.documentationIframe)
-  await scrollIframe(iframe, 700)
-  await expect.poll(async () => await iframeScrollY(page)).toBe(700)
+  const scrollY = await scrollIframeBelowHideThreshold(iframe)
+  await expect.poll(async () => await iframeScrollY(page)).toBe(scrollY)
 
   // WHEN: They switch to dark mode, which the frame can only apply by reloading
-  await page.getByTestId(testIDs.sidebar.settings.toggleColorModes.buttons.dark).click()
+  await switchColorMode(page, 'dark')
 
   // THEN: The documentation is reloaded in dark mode
   await expect(documentation).toHaveAttribute('data-vdoc-theme', 'dark')
   await expect(documentation.locator('body')).toHaveCSS('background-color', themes.dark.backgroundColor)
 
   // AND: The reader is still where they were, rather than back at the top
-  await expect.poll(async () => await iframeScrollY(page)).toBe(700)
+  await expect.poll(async () => await iframeScrollY(page)).toBe(scrollY)
 })
 
 test('The frame is told where vdocs own content starts', async ({ page }) => {

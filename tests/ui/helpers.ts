@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
-import type { ColorMode, EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
 import type { Project } from '../../src/ui/interfacesAndTypes/Project'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
@@ -208,13 +208,12 @@ export const assertErrorComponent = async (
 }
 
 /**
- * Closes the settings sidebar if it is open and compare the color schemes of the main app and the embedded iframe.
+ * Compares the color schemes of the main app and the embedded iframe.
  *
  * @param page The playwright page object.
  * @param mode The color/palette mode that should be applied.
  */
 export const assertTheme = async (page: Page, mode: EffectiveColorMode) => {
-  await closeSettingsSidebar(page)
   await expect(page.getByTestId(testIDs.header.main)).toHaveCSS('background-color', themes[mode].appBarColor)
   await expect(
     page.getByTestId(testIDs.project.documentation.documentationIframe).contentFrame().locator('body')
@@ -222,68 +221,35 @@ export const assertTheme = async (page: Page, mode: EffectiveColorMode) => {
 }
 
 /**
- * Opens the settings sidebar if it is not open, yet.
+ * Ensures that the color mode the app bar toggle reports is ``mode``.
  *
  * @param page The playwright page object.
- *
- * @returns The sidebar locator.
+ * @param mode The color mode that should be active.
  */
-export const openSettingsSidebar = async (page: Page): Promise<Locator> => {
-  const sideBarElement = page.getByTestId(testIDs.sidebar.main)
-  if (!(await sideBarElement.isVisible())) {
-    await page.getByTestId(testIDs.header.settingsButton).click()
-  }
-
-  await expect(sideBarElement).toBeVisible()
-
-  return sideBarElement
-}
-
-/**
- * Closes the settings sidebar if it is open.
- *
- * @param page The playwright page object.
- */
-export const closeSettingsSidebar = async (page: Page) => {
-  const sideBarElement = page.getByTestId(testIDs.sidebar.main)
-  if (await sideBarElement.isVisible()) {
-    await page.getByTestId(testIDs.sidebar.close).click()
-  }
-  await expect(sideBarElement).not.toBeVisible()
-}
-
-/**
- * Ensures that the currently selected color mode in the settings sidebar is ``mode``.
- *
- * @param page The playwright page object.
- * @param mode The color mode button that should be selected.
- */
-export const assertCurrentColorModeButton = async (page: Page, mode: ColorMode) => {
-  await openSettingsSidebar(page)
-
-  const toggleButtonGroup = page.getByTestId(testIDs.sidebar.settings.toggleColorModes.main)
-  const toggleButtons = toggleButtonGroup.getByRole('button')
-  await expect(toggleButtons).toHaveCount(3)
-  expect(await toggleButtons.allTextContents()).toStrictEqual(['Light', 'System', 'Dark'])
-
-  // Make sure that there is only one option selected
-  const currentModeButton = toggleButtonGroup.locator('[aria-pressed="true"]')
-  await expect(currentModeButton).toHaveCount(1)
-
-  // Expect that the selected button is ``mode``
-  expect((await currentModeButton.innerText()).toLowerCase()).toBe(mode.toString())
+export const assertCurrentColorMode = async (page: Page, mode: ColorMode) => {
+  await expect(page.getByTestId(testIDs.header.colorModeToggle)).toHaveAttribute('data-color-mode', mode)
 }
 
 /**
  * Switches the color mode to ``mode``.
  *
  * @param page The playwright page object.
- * @param mode he color mode that should be applied.
+ * @param mode The color mode that should be applied.
  */
 export const switchColorMode = async (page: Page, mode: ColorMode) => {
-  await openSettingsSidebar(page)
-  await page.getByTestId(testIDs.sidebar.settings.toggleColorModes.buttons[mode]).click()
-  await assertCurrentColorModeButton(page, mode)
+  const toggle = page.getByTestId(testIDs.header.colorModeToggle)
+  await expect(toggle).toBeVisible()
+
+  // The button steps through the modes rather than selecting one, so reaching ``mode`` takes up to
+  // one full cycle. Bounded, so that a toggle that stopped cycling fails here instead of hanging.
+  for (let press = 0; press < colorModeCycle.length; press++) {
+    if ((await toggle.getAttribute('data-color-mode')) === mode) {
+      break
+    }
+    await toggle.click()
+  }
+
+  await assertCurrentColorMode(page, mode)
 }
 
 /**
@@ -422,6 +388,21 @@ export async function scrollIframeBelowShowThreshold(iframe: Locator) {
   await iframe.evaluate((el: HTMLIFrameElement) => {
     const showThreshold = el.contentWindow!.innerHeight * 0.025
     el.contentWindow!.scrollTo(0, showThreshold - 5)
+  })
+}
+
+/**
+ * Scrolls the iframe content to just below the hide-threshold (10% of viewport height), which is as
+ * far as a reader can go while the app bar - and with it the color mode toggle - stays in reach.
+ *
+ * @param iframe The iframe locator.
+ * @returns The scroll position that was applied.
+ */
+export async function scrollIframeBelowHideThreshold(iframe: Locator): Promise<number> {
+  return await iframe.evaluate((el: HTMLIFrameElement) => {
+    const hideThreshold = Math.floor(el.contentWindow!.innerHeight * 0.1)
+    el.contentWindow!.scrollTo(0, hideThreshold - 5)
+    return hideThreshold - 5
   })
 }
 
