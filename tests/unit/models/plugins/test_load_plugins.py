@@ -31,6 +31,15 @@ def test_load_plugins_defaults(caplog: pytest.LogCaptureFixture) -> None:
     ]
 
 
+def test_plugin_router_is_registered_once() -> None:
+    """Reading the router must not register the plugin's routes again."""
+    plugin = ThemePlugin()
+
+    assert len(plugin.router.routes) == 1
+    assert len(plugin.router.routes) == 1
+    assert len(plugin.router.routes) == 1
+
+
 @patch.dict(
     os.environ,
     {
