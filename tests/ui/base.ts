@@ -115,6 +115,18 @@ export const mockAPIRequests = async (page: Page) => {
       },
     },
     {
+      pattern: '*/**/api/plugins/site/',
+      response: {
+        json: {
+          name: 'site',
+          active: false,
+          title: null,
+          description: null,
+          show_on_landing_page: true,
+        },
+      },
+    },
+    {
       pattern: '*/**/api/version/',
       response: { json: '42.0.42' },
     },
