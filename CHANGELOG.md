@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.26.1](https://github.com/vorausrobotik/vdoc/compare/0.26.0...0.26.1) (2026-08-14)
+
+
+### Code Refactoring
+
+* **api:** Drop the mount for vdoc's own documentation ([98c6572](https://github.com/vorausrobotik/vdoc/commit/98c6572c32c9745730c82c76b36e3f37b67e0ce2))
+
+
+### Documentation
+
+* Rebuild the documentation as a Docusaurus site ([e110376](https://github.com/vorausrobotik/vdoc/commit/e110376ae982d65ebe2e8b8ba838ca54e87eb732))
+
+
+### Continuous Integration
+
+* Build the docs site for the URL GitHub Pages serves it from ([e81e7d2](https://github.com/vorausrobotik/vdoc/commit/e81e7d24e9ce29562f3244d26ca33f2d83ce8c9a))
+
 ## [0.26.0](https://github.com/vorausrobotik/vdoc/compare/0.25.0...0.26.0) (2026-08-14)
 
 
