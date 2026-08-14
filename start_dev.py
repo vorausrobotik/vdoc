@@ -33,6 +33,10 @@ def run_uvicorn(port: int = 8080) -> None:
             "vdoc.api:create_app",
             "--factory",
             "--reload",
+            # Without this the reloader watches the whole repository, `.venv` and both `node_modules`
+            # trees included, which is tens of thousands of files it has no reason to look at.
+            "--reload-dir",
+            "src/vdoc",
             "--host",
             "localhost",
             "--port",
