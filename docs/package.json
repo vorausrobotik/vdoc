@@ -1,6 +1,6 @@
 {
   "name": "vdoc-docs",
-  "version": "0.26.0",
+  "version": "0.26.1",
   "private": true,
   "description": "Documentation site for vdoc, built with Docusaurus and the shared voraus theme.",
   "scripts": {
