@@ -1,0 +1,55 @@
+{#-
+  The index an automated reader is pointed at, following https://llmstxt.org.
+
+  This repeats what the documentation says about the two addresses, on purpose: a client fetching this
+  file has only this file. It will not go and read the documentation, so the explanation has to travel
+  with the answer.
+
+  Rendered as plain text, so whitespace here is the whitespace in the answer. The environment trims
+  block tags, which is why the blank lines that matter are written out literally.
+-#}
+{%- macro static(project, file_name) -%}
+{{ base_url }}{{ static_prefix }}/{{ project.name }}/{{ project.latest }}/{{ file_name }}
+{%- endmacro -%}
+# {{ title }}
+
+{% if description %}
+> {{ description }}
+
+{% endif %}
+{% if long_description %}
+{% for line in long_description %}
+{{ line }}
+{% endfor %}
+
+{% endif %}
+Every page has two addresses. The readable one, `/<project>/<version>/<page>`, is a JavaScript
+application that renders the page inside a frame, so a plain HTTP fetch of it returns an empty shell.
+The static one, `{{ static_prefix }}/<project>/<version>/<page>`, is the page itself as server-rendered
+HTML. Fetch the static address.
+
+`{{ latest_alias }}` stands in for a version and resolves to the newest published one, so
+`{{ static_prefix }}/<project>/{{ latest_alias }}/index.html` stays correct as versions are added. The
+links below name a resolved version instead, because that is what is newest right now.
+
+The REST API described by `{{ base_url }}/openapi.json` lists projects, versions and categories as JSON.
+
+{% for title, projects in sections %}
+## {{ title }}
+
+{% for project in projects %}
+{% set count = project.versions | length %}
+- [{{ project.display_name }} {{ project.latest }}]({{ static(project, "index.html") }}): {% if count == 1 %}the only published version{% else %}the newest of {{ count }} published versions{% endif %}
+
+{% endfor %}
+
+{% endfor %}
+{% if inventories %}
+## Optional
+
+Machine-readable page indexes, for enumerating the pages of a version without crawling it:
+
+{% for project, file_name, description in inventories %}
+- [{{ project.display_name }} {{ project.latest }} {{ file_name }}]({{ static(project, file_name) }}): {{ description }}
+{% endfor %}
+{% endif %}

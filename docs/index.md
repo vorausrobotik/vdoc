@@ -14,6 +14,7 @@ vdoc
 getting_started
 configuration
 plugins
+agent_discovery
 frame_contract
 development
 ```

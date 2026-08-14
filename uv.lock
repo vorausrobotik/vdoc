@@ -2226,6 +2226,7 @@ source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "importlib-metadata" },
+    { name = "jinja2" },
     { name = "packaging" },
     { name = "pydantic" },
     { name = "pydantic-settings", extra = ["yaml"] },
@@ -2370,6 +2371,7 @@ tox = [
 requires-dist = [
     { name = "fastapi" },
     { name = "importlib-metadata" },
+    { name = "jinja2", specifier = "~=3.0" },
     { name = "packaging" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "pydantic-settings", extras = ["yaml"], specifier = "~=2.0" },
