@@ -1,11 +1,17 @@
 Plugins
 #######
 
-**vdoc** can be extended with plugins. All plugins are inactive by default and need to be enabled with
-environment variables.
+**vdoc** can be extended with plugins. All plugins are inactive by default and need to be configured
+before they do anything.
+
+Each plugin reads its own section of the :ref:`configuration file <configuration-file>`, under
+``plugins.<name>``. Every setting can equally be given as an environment variable, named
+``VDOC_PLUGINS_<NAME>_<SETTING>``, which then takes precedence over the file.
 
 .. note::
-   All environment variables for the plugins are prefixed with ``VDOC_PLUGINS_``.
+   A setting that holds a structure of its own is addressed with ``__`` between the levels, for
+   example ``VDOC_PLUGINS_THEME_LIGHT__LOGO_URL`` for what the file writes as
+   ``plugins.theme.light.logo_url``.
 
 
 .. toctree::
