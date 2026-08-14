@@ -62,9 +62,8 @@ Thumbs.db
 *.mov
 *.wmv
 
-# UI and docs
+# UI
 src/vdoc/webapp/
-src/vdoc/docs/
 
 # UI route tree
 src/ui/routeTree.gen.ts
