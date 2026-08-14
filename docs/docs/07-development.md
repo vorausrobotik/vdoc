@@ -39,10 +39,13 @@ VDOC_DOCS_DIR=/path/to/some/documentation
 ./start_dev.py
 ```
 
-That starts uvicorn on `8080` with reload and Vite on `8090`, with `/api` and `/static` proxied
-from Vite to uvicorn — so the frontend on
+That starts uvicorn on `8080`, reloading on changes under `src/vdoc`, and Vite on `8090`, with `/api`
+and `/static` proxied from Vite to uvicorn — so the frontend on
 [localhost:8090](http://localhost:8090) talks to the backend you are editing, and both reload on
 save.
+
+Work against `8090`. Port `8080` serves the web UI as it was last built by `npm run build`, which is
+what a deployed **vdoc** answers with, but it knows nothing of the file you just saved.
 
 ## Tasks
 

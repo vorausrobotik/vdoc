@@ -77,6 +77,9 @@ dev = [
     {include-group = "doc"},
     {include-group = "build"},
     {include-group = "ci"},
+    # Lets `start_dev.py` reload on inotify events. Without it uvicorn polls, walking every watched
+    # file on an interval.
+    "watchfiles~=1.0",
 ]
 lint = [
     {include-group = "lint-template"},
