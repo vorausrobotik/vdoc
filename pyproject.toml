@@ -64,7 +64,6 @@ vdoc = "vdoc.cli.main:app"
 # ]
 
 "vdoc" = [
-    "docs/**",
     "webapp/**",
     "templates/*.j2",
 ]
@@ -254,7 +253,7 @@ directory = "reports/coverage_html"
 output = "reports/coverage-python.xml"
 
 [tool.codespell]
-skip = './reports, ./build, ./dist, ./venv*, ./docs/build, ./docs/node_modules, ./docs/package-lock.json, ./docs/docs/99-license-compliance.md, ./.*, ./src/vdoc/webapp, ./src/vdoc/docs, ./package-lock.json, ./node_modules'
+skip = './reports, ./build, ./dist, ./venv*, ./docs/build, ./docs/node_modules, ./docs/package-lock.json, ./docs/docs/99-license-compliance.md, ./.*, ./src/vdoc/webapp, ./package-lock.json, ./node_modules'
 count = true
 quiet-level = 2
 

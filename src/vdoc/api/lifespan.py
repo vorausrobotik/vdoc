@@ -24,7 +24,6 @@ from vdoc.settings import get_settings
 _PACKAGE_PATH = Path(__file__).parent.parent
 
 webapp_path = _PACKAGE_PATH / "webapp"
-docs_path = _PACKAGE_PATH / "docs"
 
 _SPHINX_INVENTORY_FILE_NAME = "objects.inv"
 
@@ -70,19 +69,13 @@ def _include_agent_discovery_router(fastapi: FastAPI) -> FastAPI:
 
 
 def _include_static_documentation_routers(fastapi: FastAPI) -> FastAPI:
-    for route in [
-        Mount(
-            "/static/docs",
-            app=StaticFiles(directory=str(docs_path), html=True, check_dir=False),
-            name="vdoc-docs",
-        ),
+    fastapi.routes.append(
         Mount(
             STATIC_PROJECTS_PREFIX,
             app=StaticFiles(directory=get_settings().docs_dir.as_posix(), html=True, check_dir=False),
             name="projects",
-        ),
-    ]:
-        fastapi.routes.append(route)
+        )
+    )
     return fastapi
 
 
