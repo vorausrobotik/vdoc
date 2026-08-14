@@ -31,13 +31,27 @@ def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: pytest.
     assert api.get("/api/plugins/theme/").json() == {
         "name": "theme",
         "active": True,
+        "border_radius": None,
+        "flat_cards": False,
         "dark": {
             "logo_url": str(PLUGIN_THEME_DEFAULT_LOGO_URL),
             "logo_url_small": str(PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL),
+            "palette": {
+                "primary": None,
+                "divider": None,
+                "background_default": None,
+                "background_paper": None,
+            },
         },
         "light": {
             "logo_url": str(PLUGIN_THEME_DEFAULT_LOGO_URL),
             "logo_url_small": str(PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL),
+            "palette": {
+                "primary": None,
+                "divider": None,
+                "background_default": None,
+                "background_paper": None,
+            },
         },
     }
 

@@ -1,20 +1,16 @@
-import { Box, CssBaseline, createTheme, Slide, ThemeProvider, useColorScheme } from '@mui/material'
+import { Box, CssBaseline, Slide, ThemeProvider, useColorScheme } from '@mui/material'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
-import { Outlet } from '@tanstack/react-router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { getRouteApi, Outlet } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ContentInsetProvider } from '../contexts/ContentInsetProvider'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 import { IFrameScrollProvider } from '../contexts/IFrameScrollProvider'
+import { buildTheme } from '../helpers/Theme'
 import MenuBar from './MenuBar'
 import { FooterPlugin } from './plugins/FooterPlugin'
 import ScrollToTop from './ScrollToTop'
 
-const theme = createTheme({
-  colorSchemes: {
-    light: true,
-    dark: true,
-  },
-})
+const route = getRouteApi('__root__')
 
 /**
  * Determines whether navigation elements should be hidden based on scroll behavior.
@@ -127,6 +123,9 @@ function ThemedComponent() {
 }
 
 export function RootComponent() {
+  const { themePluginConfig } = route.useLoaderData()
+  const theme = useMemo(() => buildTheme(themePluginConfig), [themePluginConfig])
+
   return (
     <ThemeProvider theme={theme} defaultMode="system">
       <CssBaseline />
