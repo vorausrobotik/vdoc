@@ -95,8 +95,8 @@ def _include_intersphinx_router(fastapi: FastAPI) -> FastAPI:
         Returns:
             FileResponse: The objects.inv file.
         """
-        served_version = get_project_version_impl(name=project_name, version=version)
-        inventory_path = get_settings().docs_dir / project_name / served_version / _SPHINX_INVENTORY_FILE_NAME
+        served_version, version_path = Project.get_version_and_docs_path(name=project_name, version=version)
+        inventory_path = version_path / _SPHINX_INVENTORY_FILE_NAME
 
         # Only a generator that builds on Sphinx writes one. Without this check, asking a version built by
         # any other generator for its inventory raises out of FileResponse as a 500.

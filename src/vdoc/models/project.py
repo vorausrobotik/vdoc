@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, date, datetime
 from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,7 @@ from vdoc.exceptions import InvalidVersion, ProjectNotFound, ProjectVersionNotFo
 from vdoc.settings import get_settings
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
 
 
@@ -140,6 +142,18 @@ class Project(BaseModel):
         return sorted(projects, key=lambda project: project.name)
 
     @classmethod
+    def list_published(cls) -> Sequence[Project]:
+        """Returns every project that has a version to serve.
+
+        A project directory holding nothing that parses as a version has none, and asking it for its
+        latest version raises.
+
+        Returns:
+            The projects with at least one published version.
+        """
+        return [project for project in cls.list() if project.versions]
+
+    @classmethod
     def is_published(cls, name: str, version: str | None = None) -> bool:
         """Reports whether a project, and if given a version of it, is published.
 
@@ -203,7 +217,7 @@ class Project(BaseModel):
             if parsed_version.public not in _published(project_path=project._base_path).public_forms:
                 raise ProjectVersionNotFound(name=name, version=parsed_version)
 
-        return return_version, project._base_path / return_version  # Path existence is validated at object construction
+        return return_version, project.version_path(version=return_version)
 
     @computed_field  # type: ignore[prop-decorator]  # https://docs.pydantic.dev/2.0/usage/computed_fields/
     @cached_property
@@ -246,6 +260,52 @@ class Project(BaseModel):
         """Returns the latest version available of the project.
 
         Returns:
-            _description_
+            The newest published version of the project.
         """
         return _published(project_path=self._base_path).ordered[-1][1]
+
+    def version_path(self, version: str) -> Path:
+        """Returns the directory a published version of this project is served from.
+
+        The one place that knows how a version maps onto a location, so that whoever needs a file of a
+        version asks for it here instead of composing the layout again.
+
+        Args:
+            version: The version, spelled as it is published.
+
+        Returns:
+            The directory holding that version.
+        """
+        return self._base_path / version
+
+    @property
+    def latest_path(self) -> Path:
+        """Returns the directory the newest published version is served from.
+
+        Returns:
+            The directory holding the newest published version.
+        """
+        return self.version_path(version=self.latest)
+
+    @property
+    def latest_published_on(self) -> date:
+        """Returns the day the newest published version appeared.
+
+        A version directory is written once, when it is published, so its modification time is when
+        that version arrived.
+
+        Returns:
+            The publication date of the newest published version.
+        """
+        return datetime.fromtimestamp(self.latest_path.stat().st_mtime, tz=UTC).date()
+
+    def latest_contains(self, file_name: str) -> bool:
+        """Reports whether the newest published version ships a file.
+
+        Args:
+            file_name: The name of the file, relative to the version's root.
+
+        Returns:
+            True if the newest published version contains it, False otherwise.
+        """
+        return (self.latest_path / file_name).is_file()

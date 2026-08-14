@@ -8,9 +8,6 @@
   Rendered as plain text, so whitespace here is the whitespace in the answer. The environment trims
   block tags, which is why the blank lines that matter are written out literally.
 -#}
-{%- macro static(project, file_name) -%}
-{{ base_url }}{{ static_prefix }}/{{ project.name }}/{{ project.latest }}/{{ file_name }}
-{%- endmacro -%}
 # {{ title }}
 
 {% if description %}
