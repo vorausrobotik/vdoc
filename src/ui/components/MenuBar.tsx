@@ -9,25 +9,23 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material'
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { getRouteApi, useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useContentInset } from '../contexts/ContentInsetContext'
 import { fetchAppVersion, fetchPluginConfig, fetchProjectVersion, fetchProjectVersions } from '../helpers/APIFunctions'
 import type OramaPluginT from '../interfacesAndTypes/plugins/OramaPluginT'
-import type ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
 import testIDs from '../interfacesAndTypes/testIDs'
 import ColorModeToggle from './ColorModeToggle'
 import { OramaSearchPlugin } from './plugins/OramaSearchPlugin'
 import VersionDropdown from './VersionDropdown'
 
+const route = getRouteApi('__root__')
+
 function LeftGroup() {
   const theme = useTheme()
   const useSmallLogo = useMediaQuery(theme.breakpoints.down('lg'))
-  const [themePluginConfig, setThemePluginConfig] = useState<ThemePluginT | null>(null)
-
-  useEffect(() => {
-    fetchPluginConfig<ThemePluginT>('theme').then((config) => setThemePluginConfig(config))
-  }, [])
+  // Taken from the root loader, which resolves it before the first paint, rather than fetched here
+  const { themePluginConfig } = route.useLoaderData()
 
   const logoUrl = useMemo(() => {
     const smallLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url_small

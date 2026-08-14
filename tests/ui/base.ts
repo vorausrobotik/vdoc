@@ -103,13 +103,17 @@ export const mockAPIRequests = async (page: Page) => {
         json: {
           name: 'theme',
           active: true,
+          border_radius: null,
+          flat_cards: false,
           light: {
             logo_url: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_rgb.png',
             logo_url_small: 'https://logos.vorausrobotik.com/v_rgb.png',
+            palette: {},
           },
           dark: {
             logo_url: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png',
             logo_url_small: 'https://logos.vorausrobotik.com/v_rgb.png',
+            palette: {},
           },
         },
       },
