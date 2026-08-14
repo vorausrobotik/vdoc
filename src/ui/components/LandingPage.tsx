@@ -4,20 +4,22 @@ import { useMemo } from 'react'
 import { groupProjectsByCategories } from '../helpers/Projects'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
 import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
+import type SitePluginT from '../interfacesAndTypes/plugins/SitePlugin'
 import testIDs from '../interfacesAndTypes/testIDs'
 import { SitePlugin } from './plugins/SitePlugin'
 
 const route = getRouteApi('/')
 
 export function LandingPage() {
-  const [projects, projectCategories]: [Project[], ProjectCategory[]] = route.useLoaderData()
+  const [projects, projectCategories, sitePluginConfig]: readonly [Project[], ProjectCategory[], SitePluginT | null] =
+    route.useLoaderData()
 
   const getGroupedProjects = useMemo(() => {
     return groupProjectsByCategories(projects, projectCategories)
   }, [projects, projectCategories])
   return (
     <Container sx={{ mt: 2 }}>
-      <SitePlugin />
+      <SitePlugin config={sitePluginConfig} />
       {Object.entries(getGroupedProjects).map(([category, projects]) => (
         <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
           <Typography
