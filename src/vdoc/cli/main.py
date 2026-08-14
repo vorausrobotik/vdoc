@@ -69,7 +69,10 @@ def _common(
     ),
     log_level: LogLevel = typer.Option(LogLevel.INFO, help="The log level"),  # noqa: B008
 ) -> None:
-    rich_handler = RichHandler()
+    # Without `show_path` the module and line number are dropped from every record. They name the
+    # call site rather than what happened, and they cost a column of width that the message needs
+    # more -- in a container the console has no terminal to measure, so it falls back to 80.
+    rich_handler = RichHandler(show_path=False)
     rich_handler.setFormatter(logging.Formatter("%(message)s"))
     logger = logging.getLogger()
     logger.handlers = [rich_handler]
