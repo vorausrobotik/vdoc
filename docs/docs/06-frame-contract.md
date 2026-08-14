@@ -173,6 +173,10 @@ So every page has two addresses, and mapping between them is a pure function in 
 vdoc's own parameters never appear in the readable form. They are requests to the frame, not part of
 a page's address.
 
+A client that fetches the readable address without running scripts gets a `Link` header naming the
+static one, so the mapping does not have to be known in advance.
+[Agent and crawler discovery](05-agent-discovery.md) covers that, and the files a crawler looks for.
+
 `latest` stands in for a version in the static form as well, so `/static/projects/proj/latest/page.html`
 redirects to whichever version is newest. A redirect rather than the file itself, because a relative
 link inside the page resolves against the address the browser ended up on, and that has to be the
@@ -180,9 +184,7 @@ resolved version for the link to stay inside it.
 
 **A request for something unpublished is answered honestly.** vdoc serves its own application under a
 **404** when the path names no project it has, or no version it published. A reader still gets vdoc's
-not-found page; a crawler, a link checker or an agent is told the truth. Answering 200 for every path
-made the fallback route the one that never fails, which left `/robots.txt` and every typo looking like
-a published document.
+not-found page; a crawler, a link checker or an agent is told the truth.
 
 ## What vdoc does around the frame
 

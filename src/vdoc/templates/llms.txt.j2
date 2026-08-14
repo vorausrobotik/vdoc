@@ -28,6 +28,10 @@ application that renders the page inside a frame, so a plain HTTP fetch of it re
 The static one, `{{ static_prefix }}/<project>/<version>/<page>`, is the page itself as server-rendered
 HTML. Fetch the static address.
 
+Quote the readable one. The two differ by nothing but the `{{ static_prefix }}` prefix, and a person
+handed a link wants the page inside the interface, with its navigation, version picker and search,
+rather than the bare file. Read from the static address, pass on the readable one.
+
 `{{ latest_alias }}` stands in for a version and resolves to the newest published one, so
 `{{ static_prefix }}/<project>/{{ latest_alias }}/index.html` stays correct as versions are added. The
 links below name a resolved version instead, because that is what is newest right now.
@@ -45,9 +49,9 @@ The REST API described by `{{ base_url }}/openapi.json` lists projects, versions
 
 {% endfor %}
 {% if inventories %}
-## Optional
+## Page indexes
 
-Machine-readable page indexes, for enumerating the pages of a version without crawling it:
+One request that enumerates every page of a version, instead of crawling it:
 
 {% for project, file_name, description in inventories %}
 - [{{ project.display_name }} {{ project.latest }} {{ file_name }}]({{ static(project, file_name) }}): {{ description }}

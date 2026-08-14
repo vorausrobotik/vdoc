@@ -9,6 +9,20 @@
 
   <body>
     <div id="root"></div>
+    <!--
+      What a client that does not run scripts is told, since what it received is otherwise an empty
+      document with nothing in it pointing anywhere. Deliberately free of any address of this page: it
+      is served verbatim for every route, and the rule it states holds for all of them.
+    -->
+    <noscript>
+      <p>
+        This page is rendered by a JavaScript application. Every documentation page is also served as plain HTML,
+        without one: prefix the path of this page with <code>/static/projects</code>.
+      </p>
+      <p>
+        An index of everything published here, written for automated readers, is at <a href="/llms.txt">/llms.txt</a>.
+      </p>
+    </noscript>
     <script type="module" src="main.tsx"></script>
   </body>
 </html>

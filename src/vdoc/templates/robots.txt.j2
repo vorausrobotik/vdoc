@@ -1,6 +1,9 @@
 {#-
   Nothing is disallowed: every published page is meant to be read. What this file is really for here is
   the pointer to llms.txt, which no crawler would otherwise know to look for. Format per RFC 9309.
+
+  `Sitemap` is a non-group field, so it applies to every user agent no matter where it stands. It goes
+  after the group because that is where a reader looks for it.
 -#}
 # Documentation served by vdoc: https://github.com/vorausrobotik/vdoc
 #
@@ -12,3 +15,5 @@
 
 User-agent: *
 Allow: /
+
+Sitemap: {{ base_url }}/sitemap.xml

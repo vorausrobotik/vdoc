@@ -3,6 +3,7 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import FastAPI, status
 from fastapi.routing import Mount
@@ -156,6 +157,28 @@ def _resolve_webapp_asset(file_path: str) -> Path | None:
     return asset_path if asset_path.is_file() else None
 
 
+def _static_alternate(file_path: str) -> str | None:
+    """Returns the static address of the page a readable request path names.
+
+    The two namespaces map onto each other by nothing but the prefix, so this is the whole conversion.
+    A path naming no version has no page behind it -- the project landing page is vdoc's own, not a
+    published file -- and gets none.
+
+    Args:
+        file_path: The requested file path.
+
+    Returns:
+        The static address, or None if the path does not name a page within a version.
+    """
+    if len([segment for segment in file_path.split("/") if segment]) < 2:  # noqa: PLR2004
+        return None
+
+    # Percent-encoded, because this is composed into a response header out of a request path, and a
+    # request path is untrusted. Encoding it is what keeps a crafted one from ending the header field
+    # and writing another.
+    return f"{STATIC_PROJECTS_PREFIX}/{quote(file_path.lstrip('/'), safe='/')}"
+
+
 def _is_frontend_route(file_path: str) -> bool:
     """Reports whether the web UI has a route for a request path.
 
@@ -190,6 +213,11 @@ def _include_frontend_router(fastapi: FastAPI) -> FastAPI:
         checker is told the truth. Answering 200 for every path made this the last route that never
         fails, which left `/robots.txt` and every typo looking like a published document.
 
+        What it answers a documentation page with is an empty shell until scripts run, so the response
+        carries a `Link` header naming the static address of that same page. That is the one pointer an
+        automated client gets without having been told to look in `/robots.txt` or `/llms.txt` first --
+        it arrives in the answer to the address a person would have pasted.
+
         Args:
             file_path (str): The requested file path.
 
@@ -199,9 +227,13 @@ def _include_frontend_router(fastapi: FastAPI) -> FastAPI:
         if (asset_path := _resolve_webapp_asset(file_path=file_path)) is not None:
             return FileResponse(path=asset_path)
 
+        is_route = _is_frontend_route(file_path=file_path)
+        alternate = _static_alternate(file_path=file_path) if is_route else None
+
         return FileResponse(
             path=webapp_path / "index.html",
-            status_code=status.HTTP_200_OK if _is_frontend_route(file_path=file_path) else status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_200_OK if is_route else status.HTTP_404_NOT_FOUND,
+            headers={"Link": f'<{alternate}>; rel="alternate"; type="text/html"'} if alternate else None,
         )
 
     return fastapi

@@ -74,8 +74,9 @@ def test_serve_frontend_assets_rejects_path_traversal(
         ("/not-a-project/1.0.0", 404),
         ("/dummy-project-01/9.9.9", 404),
         ("/dummy-project-01/not-a-version", 404),
-        # `/robots.txt` and `/llms.txt` are served for real, see test_agent_discovery.py
-        ("/sitemap.xml", 404),
+        # A conventional root file vdoc does not serve. The ones it does -- `/robots.txt`, `/llms.txt`
+        # and `/sitemap.xml` -- never reach this route, see test_agent_discovery.py
+        ("/humans.txt", 404),
     ],
 )
 def test_serve_frontend_index_status_codes(
@@ -94,6 +95,61 @@ def test_serve_frontend_index_status_codes(
 
     assert response.status_code == expected_status_code
     assert response.text == "dummy index.html content"
+
+
+@pytest.mark.parametrize(
+    ("path", "expected_link"),
+    [
+        (
+            "/dummy-project-01/1.0.0/api.html",
+            '</static/projects/dummy-project-01/1.0.0/api.html>; rel="alternate"; type="text/html"',
+        ),
+        (
+            "/dummy-project-01/latest/guide/page.html",
+            '</static/projects/dummy-project-01/latest/guide/page.html>; rel="alternate"; type="text/html"',
+        ),
+        # The version alone is a page too: it is the version's index
+        (
+            "/dummy-project-01/1.0.0",
+            '</static/projects/dummy-project-01/1.0.0>; rel="alternate"; type="text/html"',
+        ),
+        # vdoc's own pages, which no published file stands behind
+        ("/", None),
+        ("/dummy-project-01", None),
+        # Nothing published answers this, so there is nothing to point at
+        ("/not-a-project/1.0.0/index.html", None),
+    ],
+)
+def test_serve_frontend_index_points_at_the_static_address(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    dummy_projects_dir: Path,  # noqa: ARG001
+    api: TestClient,
+    path: str,
+    expected_link: str | None,
+) -> None:
+    """The shell says where the page itself is, for a client that reached the readable address first."""
+    (tmp_path / "index.html").write_text("dummy index.html content")
+    monkeypatch.setattr("vdoc.api.lifespan.webapp_path", tmp_path)
+
+    response = api.get(path)
+
+    assert response.headers.get("link") == expected_link
+
+
+def test_serve_frontend_index_encodes_the_static_address(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    dummy_projects_dir: Path,  # noqa: ARG001
+    api: TestClient,
+) -> None:
+    """The path is composed into a header, so what a header may not contain must not survive into one."""
+    (tmp_path / "index.html").write_text("dummy index.html content")
+    monkeypatch.setattr("vdoc.api.lifespan.webapp_path", tmp_path)
+
+    response = api.get("/dummy-project-01/1.0.0/a%20page%3E.html")
+
+    assert response.headers["link"].startswith("</static/projects/dummy-project-01/1.0.0/a%20page%3E.html>")
 
 
 def test_static_latest_redirects_to_the_published_version(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001

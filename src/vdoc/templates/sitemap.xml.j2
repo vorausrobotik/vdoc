@@ -1,0 +1,20 @@
+{#-
+  The sitemap a crawler looks for, per https://www.sitemaps.org/protocol.html, pointed at from robots.txt.
+
+  It lists static addresses, because those are the ones that carry the page. The readable address of the
+  same page renders it in a JavaScript application, which a crawler that does not run scripts reads as an
+  empty document -- listing those would offer a crawler nothing to index.
+
+  One entry point per project rather than every page: from a version's index the crawler follows the
+  documentation's own links, which are relative and stay inside that version. Rendered as XML, so the
+  environment escapes what is interpolated.
+-#}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{% for location, last_modified in urls %}
+  <url>
+    <loc>{{ location }}</loc>
+    <lastmod>{{ last_modified }}</lastmod>
+  </url>
+{% endfor %}
+</urlset>
