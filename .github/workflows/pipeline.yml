@@ -64,6 +64,7 @@ jobs:
       permissions:
         contents: read
         id-token: write # JFrog CLI OIDC auth (setup-jfrog)
+        pages: read # Reading the Pages URL the docs site is built for (configure-pages)
       uses: ./.github/workflows/build.yml
       secrets:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
