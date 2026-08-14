@@ -76,7 +76,7 @@ function IndexProjectCard({ project }: { project: Project }) {
             params={{ projectName: project.name, version: 'latest', _splat: '' }}
             size="small"
           >
-            Documentation
+            Open
           </LinkButton>
         </CardActions>
       </Card>

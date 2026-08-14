@@ -181,7 +181,7 @@ export const assertIndexPage = async (
             testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
           )
         await expect(documentationButton).toBeVisible()
-        await expect(documentationButton).toHaveText('Documentation')
+        await expect(documentationButton).toHaveText('Open')
         await expect(documentationButton).toHaveAttribute('href', `/${project.name}/latest`)
       }
     }
