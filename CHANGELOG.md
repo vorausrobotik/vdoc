@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.27.0](https://github.com/vorausrobotik/vdoc/compare/0.26.1...0.27.0) (2026-08-14)
+
+
+### Features
+
+* **api:** Serve a sitemap and advertise every page's static address ([3e7c4d4](https://github.com/vorausrobotik/vdoc/commit/3e7c4d4be4b1ede061f467c30ef93789213f00f0))
+
+
+### Bug Fixes
+
+* **ui:** Lay out every page for the width it is shown at ([7706ad0](https://github.com/vorausrobotik/vdoc/commit/7706ad04ca3600b8df8a185399e731c6745b9ce6))
+
+
+### Performance Improvements
+
+* **api:** Serve the web UI through a static file server ([79d64e4](https://github.com/vorausrobotik/vdoc/commit/79d64e4ad1f2364c3635de24385a1a78aaf0a8fd))
+* **models:** Read a project's versions once per request ([f6ce756](https://github.com/vorausrobotik/vdoc/commit/f6ce756fe9d7d9eab10eccaea2938086724754f5))
+
+
+### Code Refactoring
+
+* **models:** Ask Project where a version lives ([94e28ff](https://github.com/vorausrobotik/vdoc/commit/94e28ff6ba1febb88dbbde72a5e8dfb0e0ff17d5))
+
+
+### Miscellaneous Chores
+
+* **dev:** Watch the package with inotify, and only the package ([307a0d9](https://github.com/vorausrobotik/vdoc/commit/307a0d9b434ddfedb852f16ea913b30c263554ff))
+
 ## [0.26.1](https://github.com/vorausrobotik/vdoc/compare/0.26.0...0.26.1) (2026-08-14)
 
 
