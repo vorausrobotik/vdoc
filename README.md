@@ -19,6 +19,23 @@ Multi version documentation hosting.
 The vdoc instance serving the [voraus robotik GmbH](https://www.vorausrobotik.com/) software documentation is available
 at [docs.vorausrobotik.com](https://docs.vorausrobotik.com/).
 
+## AI and agent ready
+
+Documentation is read by crawlers, link checkers and coding agents as much as by people, and a
+JavaScript application tells them nothing. vdoc therefore publishes what it holds in two files such a
+client already looks for, both generated from what is actually published:
+
+|                                                            |                                                                                                                                           |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`/llms.txt`](https://docs.vorausrobotik.com/llms.txt)     | Every project at its newest version, linked at the address that serves real HTML, plus the machine-readable page index each version ships |
+| [`/robots.txt`](https://docs.vorausrobotik.com/robots.txt) | Allows everything, and points at the above                                                                                                |
+
+`llms.txt` follows the [llms.txt convention](https://llmstxt.org/); `robots.txt` follows the
+[Robots Exclusion Protocol (RFC 9309)](https://www.rfc-editor.org/rfc/rfc9309.html).
+
+See [Agent and crawler discovery](https://vorausrobotik.github.io/vdoc/agent_discovery.html) for how it
+works and what it contains.
+
 ## Documentation
 
 Please read the [documentation](https://vorausrobotik.github.io/vdoc/) for more a more detailed introduction.

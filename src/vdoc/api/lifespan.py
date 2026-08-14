@@ -9,6 +9,7 @@ from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, RedirectResponse
 
+from vdoc.api.routes import agent_discovery as agent_discovery_module
 from vdoc.api.routes import plugins as plugins_module
 from vdoc.api.routes import project_categories as project_categories_module
 from vdoc.api.routes import projects as projects_module
@@ -47,6 +48,7 @@ async def routes_loader_lifespan(fastapi: FastAPI) -> AsyncGenerator[None, None]
     log_configuration_source()
 
     fastapi = _include_static_api_routers(fastapi=fastapi)
+    fastapi = _include_agent_discovery_router(fastapi=fastapi)
     fastapi = _include_intersphinx_router(fastapi=fastapi)
     fastapi = _include_static_latest_router(fastapi=fastapi)
     fastapi = _include_static_documentation_routers(fastapi=fastapi)
@@ -59,6 +61,11 @@ def _include_static_api_routers(fastapi: FastAPI) -> FastAPI:
     fastapi.include_router(project_categories_module.router, prefix="/api")
     fastapi.include_router(version_module.router, prefix="/api")
     fastapi.include_router(plugins_module.get_router(), prefix="/api")
+    return fastapi
+
+
+def _include_agent_discovery_router(fastapi: FastAPI) -> FastAPI:
+    fastapi.include_router(agent_discovery_module.router)
     return fastapi
 
 

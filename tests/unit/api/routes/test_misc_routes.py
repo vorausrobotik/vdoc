@@ -74,7 +74,7 @@ def test_serve_frontend_assets_rejects_path_traversal(
         ("/not-a-project/1.0.0", 404),
         ("/dummy-project-01/9.9.9", 404),
         ("/dummy-project-01/not-a-version", 404),
-        ("/robots.txt", 404),
+        # `/robots.txt` and `/llms.txt` are served for real, see test_agent_discovery.py
         ("/sitemap.xml", 404),
     ],
 )

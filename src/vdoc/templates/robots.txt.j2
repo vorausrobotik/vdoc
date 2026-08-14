@@ -1,0 +1,14 @@
+{#-
+  Nothing is disallowed: every published page is meant to be read. What this file is really for here is
+  the pointer to llms.txt, which no crawler would otherwise know to look for. Format per RFC 9309.
+-#}
+# Documentation served by vdoc: https://github.com/vorausrobotik/vdoc
+#
+# An index written for automated readers, following https://llmstxt.org, is at:
+#   {{ base_url }}/llms.txt
+#
+# It explains that every page has two addresses, and that the one to fetch is
+#   {{ base_url }}{{ static_prefix }}/<project>/<version>/<page>
+
+User-agent: *
+Allow: /
