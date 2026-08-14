@@ -43,6 +43,7 @@ dependencies = [
     "pydantic~=2.0",
     "pydantic-settings[yaml]~=2.0",
     "jinja2~=3.0",
+    "servestatic~=4.0",
 ]
 
 # Add CLI entry points here
@@ -265,6 +266,8 @@ module = [
     # Ignore packages that do not provide type hints here
     # For example, add "dash.*" to ignore all imports from Dash
     "sphinxawesome_theme.postprocess",
+    # Annotated throughout, but ships no `py.typed` marker for mypy to trust them
+    "servestatic.*",
 ]
 ignore_missing_imports = true
 
