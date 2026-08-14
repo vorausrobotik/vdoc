@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc -b",
-    "lint": "biome check . && prettier --check \"**/*.{md,yml,yaml}\"",
-    "format": "biome check --write . && prettier --write \"**/*.{md,yml,yaml}\"",
+    "lint": "biome check . && prettier --check \"**/*.{md,mdx,yml,yaml}\"",
+    "format": "biome check --write . && prettier --write \"**/*.{md,mdx,yml,yaml}\"",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "preview": "vite preview"

@@ -100,7 +100,8 @@ test = [
 doc = [
     {include-group = "doc-template"},
     # Add additional documentation dependencies below this line
-    "sphinxcontrib-mermaid~=2.1",
+    # The documentation site itself is a Docusaurus project under `docs/` and brings its own
+    # dependencies; what is left for Python here is generating the license compliance page.
 ]
 build = [
     {include-group = "build-template"},
@@ -142,17 +143,12 @@ coverage-template = [
     "junitparser~=5.0",
     "coverage[toml]~=7.0",
 ]
+# Deliberately diverges from the template: the documentation is a Docusaurus site under
+# `docs/` and no longer built with Sphinx, so only what generates the license compliance
+# page is left. A template update will try to restore the Sphinx toolchain here.
 doc-template = [
-    "sphinx~=9.0",
-    "sphinxawesome-theme~=6.0",
-    "sphinx-selective-exclude~=1.0",
-    "sphinx-autodoc-typehints~=3.0",
-    "pymarkdownlnt~=0.0",
-    "doc8~=2.0",
     "pip-licenses-cli~=4.1",
     "jinja2~=3.0",
-    "snowballstemmer~=3.0",
-    "myst-parser~=5.0",
 ]
 
 build-template = [
@@ -171,7 +167,9 @@ ci-template = [
 default-groups = ["tox"]
 
 [tool.pyright]
-include = ["src/**", "tests/**", "docs/**"]
+# `docs/` is a Docusaurus site now, so only its Python helper is worth scanning - pointing
+# this at the whole directory would drag `docs/node_modules` in.
+include = ["src/**", "tests/**", "docs/_scripts/**"]
 
 [tool.ruff]
 line-length = 120
@@ -256,7 +254,7 @@ directory = "reports/coverage_html"
 output = "reports/coverage-python.xml"
 
 [tool.codespell]
-skip = './reports, ./build, ./dist, ./venv*, ./docs/build, ./docs/license_compliance.rst, ./.*, ./src/vdoc/webapp, ./src/vdoc/docs, ./package-lock.json, ./node_modules'
+skip = './reports, ./build, ./dist, ./venv*, ./docs/build, ./docs/node_modules, ./docs/package-lock.json, ./docs/docs/99-license-compliance.md, ./.*, ./src/vdoc/webapp, ./src/vdoc/docs, ./package-lock.json, ./node_modules'
 count = true
 quiet-level = 2
 
@@ -268,12 +266,8 @@ module = [
 ]
 ignore_missing_imports = true
 
-[tool.doc8]
-max-line-length = 120
-ignore-path = ["docs/license_compliance.rst", "docs/build/**"]
-
-[tool.pymarkdown]
-plugins.md013.code_block_line_length = 120
-plugins.md013.heading_line_length = 120
-plugins.md013.line_length = 120
-plugins.md007.indent = 4
+# `doc8` and `pymarkdown` configured the reStructuredText and markdown linters the Sphinx
+# build ran. The Docusaurus build checks the sources itself - it fails on a broken internal
+# link, a broken image and invalid MDX - and prettier formats the markdown, so neither tool
+# is invoked any more. They stay in the `doc-template` dependency group, which the project
+# template owns.

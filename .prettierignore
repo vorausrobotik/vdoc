@@ -1,7 +1,10 @@
 # Ignore folders:
 venv/**
 .tox/**
-docs/**
+docs/build/**
+docs/.docusaurus/**
+# Generated from the installed packages by `tox run -e docs`
+docs/docs/99-license-compliance.md
 reports/**
 .cruft.json
 .devcontainer/**

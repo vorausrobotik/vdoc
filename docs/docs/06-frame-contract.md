@@ -22,9 +22,9 @@ format.
    by. Optional in both directions: vdoc may omit it, and a frame may ignore it. See R9.
 
 There is no message channel and no handshake, and deliberately no way for the frame to answer beyond
-that one attribute. Everything below specifies what these names *oblige*, not what else is sent.
+that one attribute. Everything below specifies what these names _oblige_, not what else is sent.
 
-```{mermaid}
+```mermaid
 sequenceDiagram
     participant R as Reader
     participant V as vdoc
@@ -47,14 +47,14 @@ sequenceDiagram
 While `data-vdoc-theme` is set, the frame must not render its own version of anything vdoc supplies
 around it. As of today that is:
 
-| The frame must hide | Because vdoc |
-| --- | --- |
-| Its brand mark or logo | carries the voraus wordmark in its header, directly above the frame |
-| Its color-mode control | owns that switch, and it themes vdoc's own header too, which the frame cannot reach |
-| Its footer with legal links and copyright | renders the imprint, the privacy policy and the copyright below the frame |
-| Its scroll-to-top control | renders one for the scroll position it owns |
-| Its version selector | renders the version picker |
-| Any portal-wide search | provides search across all documentation |
+| The frame must hide                       | Because vdoc                                                                        |
+| ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| Its brand mark or logo                    | carries the voraus wordmark in its header, directly above the frame                 |
+| Its color-mode control                    | owns that switch, and it themes vdoc's own header too, which the frame cannot reach |
+| Its footer with legal links and copyright | renders the imprint, the privacy policy and the copyright below the frame           |
+| Its scroll-to-top control                 | renders one for the scroll position it owns                                         |
+| Its version selector                      | renders the version picker                                                          |
+| Any portal-wide search                    | provides search across all documentation                                            |
 
 **The rule matters more than the list:** if vdoc shows it, the frame must not show a second one. New
 elements on vdoc's side extend this list without changing the contract.
@@ -63,7 +63,7 @@ elements on vdoc's side extend this list without changing the contract.
 
 The hiding must be CSS keyed on the attribute, not a condition evaluated at runtime.
 
-A framework that decides this while rendering decides it *after* the page has been painted, so every
+A framework that decides this while rendering decides it _after_ the page has been painted, so every
 element appears and then vanishes -- on every single page load. An attribute set ahead of the first
 paint has nothing to flash.
 
@@ -80,7 +80,7 @@ This follows from R2 anyway, and it is the reason R1 is a list of CSS rules rath
 The frame must not derive "am I framed" from `window.self !== window.top` or any other inspection of
 its surroundings.
 
-Because vdoc appends the parameter unconditionally, its presence *is* the statement that a contract
+Because vdoc appends the parameter unconditionally, its presence _is_ the statement that a contract
 host is rendering its own interface around the page. An iframe check is a guess, and a wrong one for
 every other embedding: documentation dropped into a wiki page or a product help panel would lose its
 branding and its only way to change mode, with nothing rendering a replacement.
@@ -137,7 +137,7 @@ arrives on every load, so a snapshot built years ago follows vdoc's current layo
 value from its own header rather than hardcoding it, for the same reason.
 
 **What does not work, so nobody tries it again.** Aligning the frame's header content to the frame's
-*own* page content: generators center their content column once the viewport is wider than it, so the
+_own_ page content: generators center their content column once the viewport is wider than it, so the
 content drifts away from the fixed sidebar edge a header rule can track. Measured in Docusaurus, the
 content sits at 316px in a 1400px viewport and at 706px in a 2400px one, while the header rule stays
 at 316px either way -- leaving the header content stranded in the gap.
@@ -160,15 +160,15 @@ vdoc's backend serves the published files under `/static/projects/<project>/<ver
 the bare `/<project>/<version>/…` with its own application, which frames those files. The prefix is
 not decoration: a relative link inside `/static/projects/proj/1.0/page.html` resolves to
 `/static/projects/proj/1.0/other.html` and stays inside the file namespace. Without a namespace of its
-own, a click inside the frame would load vdoc's application *into* the frame, recursively.
+own, a click inside the frame would load vdoc's application _into_ the frame, recursively.
 
 So every page has two addresses, and mapping between them is a pure function in both directions
 (`toReadableHref` and `toFrameHref` in `src/ui/helpers/RouteHelpers.ts`):
 
-| | Address |
-| --- | --- |
-| The file, loaded into the frame | `/static/projects/proj/1.0/page.html` |
-| The readable one, in vdoc's address bar and on every link | `/proj/1.0/page.html` |
+|                                                           | Address                               |
+| --------------------------------------------------------- | ------------------------------------- |
+| The file, loaded into the frame                           | `/static/projects/proj/1.0/page.html` |
+| The readable one, in vdoc's address bar and on every link | `/proj/1.0/page.html`                 |
 
 vdoc's own parameters never appear in the readable form. They are requests to the frame, not part of
 a page's address.
@@ -197,7 +197,7 @@ watches the framed `<head>`, since a client-side router sets the title after nav
 **Links.** Clicks are handled by two delegated listeners on the framed document, never per anchor, so
 that links rendered after the document loaded are covered too:
 
-```{mermaid}
+```mermaid
 flowchart TD
     C[Click on a link in the frame] --> M{"Modified click<br/>or download?"}
     M -->|yes| B[Left to the browser]

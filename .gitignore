@@ -10,10 +10,10 @@ reports/
 .coverage
 .coverage.*
 MANIFEST
-docs/vdoc*
-docs/modules.rst
-docs/ossLicenses.json
-docs/license_compliance.rst
+# Generated from the installed packages by `tox run -e docs`
+docs/docs/99-license-compliance.md
+# Docusaurus build cache
+docs/.docusaurus/
 .env
 # Local vdoc configuration file, same reason as .env
 vdoc.yaml

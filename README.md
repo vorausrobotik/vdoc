@@ -33,7 +33,7 @@ client already looks for, both generated from what is actually published:
 `llms.txt` follows the [llms.txt convention](https://llmstxt.org/); `robots.txt` follows the
 [Robots Exclusion Protocol (RFC 9309)](https://www.rfc-editor.org/rfc/rfc9309.html).
 
-See [Agent and crawler discovery](https://vorausrobotik.github.io/vdoc/agent_discovery.html) for how it
+See [Agent and crawler discovery](https://vorausrobotik.github.io/vdoc/agent-discovery) for how it
 works and what it contains.
 
 ## Documentation

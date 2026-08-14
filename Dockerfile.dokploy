@@ -2,8 +2,8 @@
 #
 # Unlike Dockerfile.prod, which installs a pre-built wheel from CI, this builds
 # everything needed directly from a git checkout. Kept to the bare minimum:
-# - The vdoc self-documentation (/static/docs) is not built (requires the full
-#   Sphinx toolchain and isn't needed to preview the app).
+# - The vdoc self-documentation (/static/docs) is not built (it is a Docusaurus
+#   site with its own npm install and isn't needed to preview the app).
 # - The tsc type-check from `npm run build` is skipped; CI gates types.
 # - The version is derived by setuptools_scm from the git metadata in the
 #   build context (Dokploy builds from a full git clone).
