@@ -10,6 +10,7 @@ from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
 from pydantic import BaseModel, computed_field, field_validator
 
+from vdoc.constants import LATEST_VERSION_ALIAS
 from vdoc.exceptions import InvalidVersion, ProjectNotFound, ProjectVersionNotFound
 from vdoc.settings import get_settings
 
@@ -139,6 +140,39 @@ class Project(BaseModel):
         return sorted(projects, key=lambda project: project.name)
 
     @classmethod
+    def is_published(cls, name: str, version: str | None = None) -> bool:
+        """Reports whether a project, and if given a version of it, is published.
+
+        Answers what ``get_version_and_docs_path`` answers, as a bool rather than as an exception, and
+        without building a ``Project`` for it. This is asked on every request the web UI serves, where
+        validating a model per request buys nothing.
+
+        Args:
+            name: The project name.
+            version: The project version, ``latest``, or None to ask only about the project.
+
+        Returns:
+            True if it is published, False otherwise.
+        """
+        project_path = get_settings().docs_dir / name
+        if not project_path.is_dir():
+            return False
+        if version is None:
+            return True
+
+        published = _published(project_path=project_path)
+        if version == LATEST_VERSION_ALIAS:
+            return bool(published.ordered)
+
+        try:
+            parsed_version = Version(version)
+        except PackagingInvalidVersion:
+            return False
+
+        # Compared as normalized strings for the same reason as in get_version_and_docs_path
+        return parsed_version.public in published.public_forms
+
+    @classmethod
     def get_version_and_docs_path(cls, name: str, version: str) -> tuple[str, Path]:
         """Returns the validated version and the path containing the documentation.
 
@@ -157,7 +191,7 @@ class Project(BaseModel):
         project = Project(name=name)
         return_version: str
 
-        if version == "latest":
+        if version == LATEST_VERSION_ALIAS:
             return_version = project.latest
         else:
             try:

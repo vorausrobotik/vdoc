@@ -53,6 +53,16 @@ class ProjectVersionNotFound(VDocException):
         )
 
 
+class ProjectInventoryNotFound(VDocException):
+    """Exception when a project version doesn't ship the requested page inventory."""
+
+    def __init__(self, name: str, version: Version | str, inventory: str) -> None:  # noqa: D107
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Version '{version}' of project '{name}' doesn't contain a '{inventory}' file.",
+        )
+
+
 class ProjectVersionAlreadyExists(VDocException):
     """Exception when a project version already exist."""
 
