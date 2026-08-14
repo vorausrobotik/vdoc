@@ -1,9 +1,12 @@
 """Contains the documents that tell an automated reader what this instance holds.
 
-``/llms.txt`` follows https://llmstxt.org and ``/robots.txt`` follows RFC 9309. Both are rendered from
-templates in ``vdoc/templates`` and derived from what is actually published, so an upload is enough to
-appear in them. The "Agent and crawler discovery" page of the documentation says what they contain.
+``/llms.txt`` follows https://llmstxt.org, ``/robots.txt`` follows RFC 9309 and ``/sitemap.xml`` follows
+the sitemaps protocol. All three are rendered from templates in ``vdoc/templates`` and derived from what
+is actually published, so an upload is enough to appear in them. The "Agent and crawler discovery" page
+of the documentation says what they contain.
 """
+
+from datetime import UTC, datetime
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 from starlette.requests import Request
@@ -103,6 +106,51 @@ def _inventories(projects: list[Project]) -> list[tuple[Project, str, str]]:
     ]
 
 
+def _listable_projects() -> list[Project]:
+    """Returns the projects these documents can name.
+
+    Returns:
+        Every project that has a version to link to. A project directory without a parsable version in it
+        has none, and asking it for its latest version would raise -- leaving it out keeps one broken
+        upload from taking the whole document down.
+    """
+    return [project for project in Project.list() if project.versions]
+
+
+def _entry_points(projects: list[Project], base_url: str) -> list[tuple[str, str]]:
+    """Collects the static address a crawler should enter each project at, and when it last changed.
+
+    The newest version only. Every superseded version says nearly the same thing at a different address,
+    which is what a search engine counts as duplicated content, and the versions API enumerates them for
+    a client that wants them all.
+
+    Args:
+        projects: The projects to enter.
+        base_url: The absolute base URL of this vdoc instance, without a trailing slash.
+
+    Returns:
+        The absolute URL and the last modification date of every project's entry point, skipping the
+        projects whose newest version has no page to enter at.
+    """
+    docs_dir = get_settings().docs_dir
+    entry_points = []
+
+    for project in projects:
+        version_dir = docs_dir / project.name / project.latest
+        if not (version_dir / "index.html").is_file():
+            continue
+
+        # A version directory is written once, when it is published, so its modification time is the date
+        # that version appeared. To the day: the hour a ZIP happened to be uploaded at means nothing to a
+        # crawler deciding whether to come back.
+        published_on = datetime.fromtimestamp(version_dir.stat().st_mtime, tz=UTC).date()
+        location = f"{base_url}{STATIC_PROJECTS_PREFIX}/{project.name}/{project.latest}/index.html"
+
+        entry_points.append((location, published_on.isoformat()))
+
+    return entry_points
+
+
 def render_llms_txt_impl(base_url: str) -> str:
     """Renders the ``llms.txt`` index of everything currently published.
 
@@ -113,10 +161,7 @@ def render_llms_txt_impl(base_url: str) -> str:
         The rendered ``llms.txt`` as markdown.
     """
     site = SitePlugin()
-
-    # A project directory without a parsable version in it has nothing to link to, and asking it for its
-    # latest version would raise. Leaving it out keeps one broken upload from taking the index down.
-    projects = [project for project in Project.list() if project.versions]
+    projects = _listable_projects()
 
     return _templates.get_template("llms.txt.j2").render(
         title=site.title or DEFAULT_SITE_TITLE,
@@ -127,6 +172,20 @@ def render_llms_txt_impl(base_url: str) -> str:
         base_url=base_url,
         static_prefix=STATIC_PROJECTS_PREFIX,
         latest_alias=LATEST_VERSION_ALIAS,
+    )
+
+
+def render_sitemap_xml_impl(base_url: str) -> str:
+    """Renders the ``sitemap.xml`` a crawler is pointed at from ``robots.txt``.
+
+    Args:
+        base_url: The absolute base URL of this vdoc instance, without a trailing slash.
+
+    Returns:
+        The rendered ``sitemap.xml``.
+    """
+    return _templates.get_template("sitemap.xml.j2").render(
+        urls=_entry_points(projects=_listable_projects(), base_url=base_url),
     )
 
 

@@ -29,8 +29,8 @@ The [voraus robotik GmbH](https://www.vorausrobotik.com/) software documentation
   newest. → [Publishing documentation](02-publishing.md)
 - **Looks like your organization.** Title, logo, colors, footer links and search are configuration,
   not a fork. → [Plugins](04-plugins/index.mdx)
-- **Answers machines as well as people.** `/llms.txt` and `/robots.txt` are generated from what is
-  actually published. → [Agent and crawler discovery](05-agent-discovery.md)
+- **Answers machines as well as people.** `/llms.txt`, `/sitemap.xml` and `/robots.txt` are generated
+  from what is actually published. → [Agent and crawler discovery](05-agent-discovery.md)
 - **Stays consistent across generators.** vdoc renders the chrome, the framed site hides its own.
   → [The frame contract](06-frame-contract.md)
 
