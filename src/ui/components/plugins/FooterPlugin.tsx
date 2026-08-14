@@ -19,12 +19,12 @@ export const FooterPlugin = () => {
   }
 
   return (
-    // For the elevation effect
+    // Opaque, because the content area scrolls underneath it
     <Paper
       data-testid={testIDs.plugins.footer.main}
       component="footer"
       elevation={4}
-      sx={{ background: theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.default }}
+      sx={{ background: theme.palette.background.default }}
     >
       {/* Centers content horizontally and restricts the width */}
       <Container maxWidth="xl" sx={{ py: 1 }}>
