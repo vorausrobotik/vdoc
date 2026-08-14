@@ -1,5 +1,50 @@
 # Changelog
 
+## [0.26.0](https://github.com/vorausrobotik/vdoc/compare/0.25.0...0.26.0) (2026-08-14)
+
+
+### Features
+
+* **api:** Serve llms.txt and robots.txt ([8c9c0be](https://github.com/vorausrobotik/vdoc/commit/8c9c0be5300476418f67b02b1fa79ce084bb1bcf))
+* **plugins:** Add a site plugin for the title and the description ([a00604a](https://github.com/vorausrobotik/vdoc/commit/a00604a1fb73a3cd4859bfa3a4938545d41c18af))
+* **plugins:** Let the site plugin carry a markdown long description ([bf759a7](https://github.com/vorausrobotik/vdoc/commit/bf759a7ea728a673510fb87600f717b6e2635b0f))
+* **plugins:** Let the theme plugin carry the palette and the shape ([e72f97c](https://github.com/vorausrobotik/vdoc/commit/e72f97ce133ad8823bb9ac31e5a5acda55f3117b))
+* **settings:** Read the configuration from a YAML file as well ([41e3aa5](https://github.com/vorausrobotik/vdoc/commit/41e3aa5238d02cf0f51a9a41f38f7f0a146cc180))
+
+
+### Bug Fixes
+
+* **api:** Answer a request for something unpublished with 404 ([7bc7d0c](https://github.com/vorausrobotik/vdoc/commit/7bc7d0ce29cec0110db2de00cdf5da415f7434a0))
+* **plugins:** Register a plugin's routes once rather than per read ([232498f](https://github.com/vorausrobotik/vdoc/commit/232498f71be00c191291d881d80bc8eeae70b17f))
+* **ui:** Make the app bar and the footer opaque in dark mode ([d43e2b1](https://github.com/vorausrobotik/vdoc/commit/d43e2b1c4679049eab46aad1e4bd0e76b06361cc))
+* **ui:** Settle the site banner before the landing page paints ([28e10eb](https://github.com/vorausrobotik/vdoc/commit/28e10eb67d1797fc49530d09373ebbbc02e59aa5))
+
+
+### Performance Improvements
+
+* **settings:** Build the settings and scan a project's versions once ([28f322a](https://github.com/vorausrobotik/vdoc/commit/28f322ace1331fad790acb84914032fdb0f4ff2d))
+
+
+### Code Refactoring
+
+* **cli:** Drop the call site from the log output ([8913e5e](https://github.com/vorausrobotik/vdoc/commit/8913e5e86b99527f9c9fc02cf3d9c5c34a4fdc1b))
+* **ui:** Rename the project card action from "Documentation" to "Open" ([60d937f](https://github.com/vorausrobotik/vdoc/commit/60d937f9194209cb715dab83a0cc0d2b0cf1395c))
+
+
+### Documentation
+
+* Document the configuration file as the way to configure vdoc ([d2d7336](https://github.com/vorausrobotik/vdoc/commit/d2d7336eb41f87baef3e8da90762c2575687491b))
+
+
+### Tests
+
+* **ui:** Return projects, not project names, from the mocked projects API ([10a4434](https://github.com/vorausrobotik/vdoc/commit/10a44346b01e9926dbfe87bddbe8e328a4b33b80))
+
+
+### Miscellaneous Chores
+
+* Ignore the local vdoc configuration file ([4af45ef](https://github.com/vorausrobotik/vdoc/commit/4af45efa0dc1336ce99f1a23e0242dd365cd2e05))
+
 ## [0.25.0](https://github.com/vorausrobotik/vdoc/compare/0.24.3...0.25.0) (2026-08-13)
 
 
