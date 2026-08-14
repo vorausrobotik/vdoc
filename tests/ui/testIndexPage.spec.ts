@@ -83,7 +83,10 @@ test('Test project overview on no projects', async ({ page }) => {
   // Mock the API request to return a list of projects and reload the page
   await page.route('*/**/api/projects/', (route) =>
     route.fulfill({
-      json: ['test-01', 'test-02'],
+      json: [
+        { name: 'test-01', display_name: 'Test 01', category_id: null },
+        { name: 'test-02', display_name: 'Test 02', category_id: null },
+      ],
     })
   )
   await page.getByTestId(testIDs.errorComponent.actionButton).click()
