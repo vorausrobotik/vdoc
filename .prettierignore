@@ -8,3 +8,6 @@ reports/**
 .github/**
 src/ui/routeTree.gen.ts
 CHANGELOG.md
+
+# Deliberately invalid, as the fixture for "a broken configuration file must stop the application"
+tests/resources/config-files/malformed.yaml

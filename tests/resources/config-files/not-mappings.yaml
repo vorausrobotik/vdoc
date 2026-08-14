@@ -1,0 +1,3 @@
+# Both section names are present but neither is a mapping, which has to be ignored rather than fatal.
+vdoc: not a mapping
+plugins: 42

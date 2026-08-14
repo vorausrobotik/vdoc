@@ -1,0 +1,26 @@
+# A complete configuration file, covering both sections and the nesting each of them allows.
+
+vdoc:
+  docs_dir: /from/the/file
+  project_categories:
+    - { id: 0, name: General }
+    - { id: 1, name: Components }
+  project_category_mapping:
+    voraus-software-manual: General
+  project_display_name_mapping:
+    voraus-software-manual: Software Manual
+
+plugins:
+  footer:
+    copyright: voraus robotik GmbH
+    links:
+      - title: Links
+        links:
+          - title: Homepage
+            icon: home
+            href: https://vorausrobotik.com
+
+  # A plugin whose settings are themselves nested, to prove mappings below the plugin's own work
+  theme:
+    light:
+      logo_url: https://example.com/light.png

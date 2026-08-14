@@ -13,6 +13,7 @@ from vdoc.api.routes import plugins as plugins_module
 from vdoc.api.routes import project_categories as project_categories_module
 from vdoc.api.routes import projects as projects_module
 from vdoc.api.routes import version as version_module
+from vdoc.config_file import log_configuration_source
 from vdoc.methods.api.projects import get_project_version_impl
 from vdoc.settings import VDocSettings
 
@@ -35,6 +36,10 @@ async def routes_loader_lifespan(fastapi: FastAPI) -> AsyncGenerator[None, None]
     Yields:
         None: No value is yielded.
     """
+    # Reported here rather than from the CLI, because `start_dev.py` runs uvicorn directly and never
+    # goes through it, while every way of starting the app goes through the lifespan.
+    log_configuration_source()
+
     fastapi = _include_static_api_routers(fastapi=fastapi)
     fastapi = _include_intersphinx_router(fastapi=fastapi)
     fastapi = _include_static_documentation_routers(fastapi=fastapi)

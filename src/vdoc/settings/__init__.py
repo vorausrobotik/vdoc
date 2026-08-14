@@ -4,10 +4,12 @@ from pathlib import Path
 from typing import Self
 
 from pydantic import model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
+from vdoc.config_file import ConfigFileSettingsSource
 from vdoc.constants import (
     CONFIG_ENV_PREFIX,
+    CONFIG_FILE_SECTION_VDOC,
     DEFAULT_API_PASSWORD,
     DEFAULT_API_USERNAME,
     DEFAULT_BIND_ADDRESS,
@@ -32,6 +34,38 @@ class VDocSettings(BaseSettings):
 
     project_categories: list[ProjectCategory] = []
     project_category_mapping: dict[str, str] = {}
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Adds the configuration file as the lowest priority source.
+
+        Last in the tuple, so an environment variable still wins over the file. Adding a way to
+        configure vdoc must not change what an existing deployment resolves to.
+
+        Args:
+            settings_cls: The settings class being built.
+            init_settings: Values passed to the constructor.
+            env_settings: Values from the environment.
+            dotenv_settings: Values from a dotenv file.
+            file_secret_settings: Values from a secrets directory.
+
+        Returns:
+            The sources to read, highest priority first.
+        """
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+            ConfigFileSettingsSource(settings_cls, section=CONFIG_FILE_SECTION_VDOC),
+        )
 
     @model_validator(mode="after")
     def validate_model(self) -> Self:

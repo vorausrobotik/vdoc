@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from fastapi import APIRouter
 from pydantic import PrivateAttr, computed_field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
-from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
+from vdoc.config_file import ConfigFileSettingsSource
+from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS, CONFIG_FILE_SECTION_PLUGINS
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -40,6 +41,42 @@ class Plugin(BaseSettings, ABC):
             env_prefix=f"{CONFIG_ENV_PREFIX_PLUGINS}{cls.name}_",
             env_parse_none_str="None",
             env_nested_delimiter="__",
+        )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Adds the plugin's own table of the configuration file as the lowest priority source.
+
+        Defined here rather than per plugin, so that every plugin -- and every plugin added later --
+        reads ``[plugins.<name>]`` without any code of its own, the same way it already gets its
+        environment prefix from ``__init_subclass__``.
+
+        Args:
+            settings_cls: The plugin class being built.
+            init_settings: Values passed to the constructor.
+            env_settings: Values from the environment.
+            dotenv_settings: Values from a dotenv file.
+            file_secret_settings: Values from a secrets directory.
+
+        Returns:
+            The sources to read, highest priority first.
+        """
+        name = settings_cls.model_fields["name"].default
+        section = (CONFIG_FILE_SECTION_PLUGINS, name) if isinstance(name, str) else ()
+
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+            ConfigFileSettingsSource(settings_cls, section=section),
         )
 
     @classmethod
