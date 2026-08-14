@@ -1,0 +1,35 @@
+---
+title: Open source software license compliance information
+sidebar_label: License compliance
+---
+
+# Open Source Software License Compliance Information
+
+The following software may be included in this product.
+{% for license in licenses %}
+
+## {{ license.Name }}
+
+**Version:** {{ license.Version }}
+
+**Author:** {{ license.Author }}
+
+**License:** {{ license.License }}
+{% if license.URL != 'UNKNOWN' %}
+**URL:** {{ license.URL }}
+{% endif %}
+{% if license.LicenseText is not none %}
+This software contains the following license:
+
+````text
+{{ license.LicenseText }}
+````
+{% endif %}
+{% if license.NoticeText is not none %}
+This software contains the following notice:
+
+````text
+{{ license.NoticeText }}
+````
+{% endif %}
+{% endfor %}

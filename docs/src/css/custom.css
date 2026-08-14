@@ -1,0 +1,55 @@
+/*
+ * Site-specific styles, loaded after the theme's own so they win without `!important`.
+ */
+
+/*
+ * The repository link in the navbar, as the GitHub mark rather than the word "GitHub".
+ *
+ * Docusaurus has no icon navbar item, so this is the shape its own website uses: a link
+ * with no label, and CSS that draws the mark. Here the mark is a mask filled with the
+ * navbar's link color, so it follows the color mode and the hover state rather than needing
+ * a second asset for dark mode.
+ *
+ * The mark is inlined as a data URI rather than checked in as an asset, so the repository
+ * carries no copy of somebody else's logo and the stylesheet needs no companion file.
+ *
+ * The item carries no label, which is also what keeps Docusaurus from appending its
+ * external-link arrow next to an icon. `aria-label` in `docusaurus.config.ts` is what a
+ * screen reader reads instead.
+ */
+.navbar__item.header-github-link {
+  display: flex;
+  align-items: center;
+  padding: var(--ifm-navbar-item-padding-vertical) var(--ifm-navbar-item-padding-horizontal);
+}
+
+.navbar__item.header-github-link::before {
+  content: '';
+  /* An inline box would ignore the dimensions below, leaving nothing to paint the mask on. */
+  display: flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--ifm-navbar-link-color);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  transition: background-color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
+}
+
+.navbar__item.header-github-link:hover::before {
+  background-color: var(--ifm-navbar-link-hover-color);
+}
+
+/*
+ * `info` and `tip` are used as banners here, and their titles lead with an emoji. The theme's
+ * own glyph next to it makes two icons for one message, so it goes - for these two types only,
+ * leaving `note`, `warning` and `danger` with the icon a reader expects on them.
+ *
+ * Selected by position rather than by class: the icon carries a CSS-module class, which is
+ * hashed at build time and so cannot be named from here.
+ */
+.theme-admonition-info > div:first-child > span:first-child,
+.theme-admonition-tip > div:first-child > span:first-child {
+  display: none;
+}

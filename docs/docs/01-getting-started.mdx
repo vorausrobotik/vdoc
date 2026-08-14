@@ -1,0 +1,90 @@
+# Getting started
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import CodeBlock from '@theme/CodeBlock'
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
+
+export const RunOptions = () => {
+  // One sentence and one command per option, so switching tabs does not move the page.
+  //
+  // The Docker tag is the release this page was built from: docusaurus.config.ts passes the
+  // version out of package.json, which release-please bumps together with the Python package,
+  // and the theme puts it on siteConfig. So it cannot drift, and no version is written down
+  // anywhere in this file.
+  const { version } = useDocusaurusContext().siteConfig.customFields.voraus
+  const options = [
+    {
+      value: 'uv',
+      label: 'uv',
+      description: 'Runs vdoc straight from PyPI, installing nothing permanently.',
+      command: 'uvx vdoc run',
+    },
+    {
+      value: 'pip',
+      label: 'pip',
+      description: 'Installs vdoc into the active environment, then starts it.',
+      command: 'pip install vdoc && vdoc run',
+    },
+    {
+      value: 'docker',
+      label: 'Docker',
+      description: 'Mounts a directory for the uploads, so they outlive the container.',
+      command: `docker run -p 8080:8080 -v ./vdoc-docs:/srv/vdoc/docs/ voraus.jfrog.io/docker/vdoc:${version}`,
+    },
+  ]
+  return (
+    <Tabs groupId="install">
+      {options.map(({ value, label, description, command }) => (
+        <TabItem key={value} value={value} label={label}>
+          <p>{description}</p>
+          <CodeBlock language="shell">{command}</CodeBlock>
+        </TabItem>
+      ))}
+    </Tabs>
+  )
+}
+
+Three steps: run vdoc, publish a version, open it.
+
+## Run it
+
+<RunOptions />
+
+:::tip[🚀 vdoc is now available]
+
+It answers on [localhost:8080](http://localhost:8080) — an empty landing page, and the API
+credentials still on their defaults, which it says in the log. Changing them is the first thing
+[Configuration](03-configuration.md) covers.
+
+:::
+
+## Publish a version
+
+Take any directory with an `index.html` in it, zip it up and post it:
+
+```shell
+cd path/to/built/docs
+zip -r ../docs.zip .
+curl --user admin:admin \
+  --form "file=@../docs.zip;type=application/zip" \
+  http://localhost:8080/api/projects/example/versions/1.0.0
+```
+
+The archive is unpacked as version `1.0.0` of a project called `example`.
+[Publishing documentation](02-publishing.md) has the rules an upload has to satisfy and how to wire
+this into a pipeline.
+
+## Open it
+
+- `http://localhost:8080/example/1.0.0/` — the version you just published
+- `http://localhost:8080/example/latest/` — whichever version is newest
+
+Upload a `1.1.0` next and the version picker in the header has two entries, with `latest` following
+the newer one.
+
+## Then what
+
+An instance that serves more than one project usually wants a name, a logo and some grouping. That
+is all configuration: [Configuration](03-configuration.md) for vdoc's own settings,
+[Plugins](04-plugins/index.mdx) for how it presents itself.
