@@ -6,7 +6,8 @@ is actually published, so an upload is enough to appear in them. The "Agent and 
 of the documentation says what they contain.
 """
 
-from datetime import UTC, datetime
+from collections.abc import Sequence
+from functools import partial
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 from starlette.requests import Request
@@ -60,7 +61,7 @@ def get_public_base_url(request: Request) -> str:
     return f"{scheme}://{host}"
 
 
-def _sections(projects: list[Project]) -> list[tuple[str, list[Project]]]:
+def _sections(projects: Sequence[Project]) -> list[tuple[str, list[Project]]]:
     """Groups projects into their configured categories, in the order the categories are configured.
 
     Projects without a category are collected into a trailing section, so that a partially categorized
@@ -87,7 +88,23 @@ def _sections(projects: list[Project]) -> list[tuple[str, list[Project]]]:
     return [(title, section_projects) for title, section_projects in sections if section_projects]
 
 
-def _inventories(projects: list[Project]) -> list[tuple[Project, str, str]]:
+def _static_url(base_url: str, project: Project, file_name: str) -> str:
+    """Returns the address a file of a project's newest version is served at.
+
+    Both documents link the same addresses, so both compose them here.
+
+    Args:
+        base_url: The absolute base URL of this vdoc instance, without a trailing slash.
+        project: The project the file belongs to.
+        file_name: The name of the file, relative to the version's root.
+
+    Returns:
+        The absolute static address of that file.
+    """
+    return f"{base_url}{STATIC_PROJECTS_PREFIX}/{project.name}/{project.latest}/{file_name}"
+
+
+def _inventories(projects: Sequence[Project]) -> list[tuple[Project, str, str]]:
     """Collects the page inventories the newest version of each project actually ships.
 
     Args:
@@ -96,28 +113,15 @@ def _inventories(projects: list[Project]) -> list[tuple[Project, str, str]]:
     Returns:
         The project, file name and description of every inventory file present.
     """
-    docs_dir = get_settings().docs_dir
-
     return [
         (project, file_name, description)
         for project in projects
         for file_name, description in PAGE_INVENTORY_FILES.items()
-        if (docs_dir / project.name / project.latest / file_name).is_file()
+        if project.latest_contains(file_name)
     ]
 
 
-def _listable_projects() -> list[Project]:
-    """Returns the projects these documents can name.
-
-    Returns:
-        Every project that has a version to link to. A project directory without a parsable version in it
-        has none, and asking it for its latest version would raise -- leaving it out keeps one broken
-        upload from taking the whole document down.
-    """
-    return [project for project in Project.list() if project.versions]
-
-
-def _entry_points(projects: list[Project], base_url: str) -> list[tuple[str, str]]:
+def _entry_points(projects: Sequence[Project], base_url: str) -> list[tuple[str, str]]:
     """Collects the static address a crawler should enter each project at, and when it last changed.
 
     The newest version only. Every superseded version says nearly the same thing at a different address,
@@ -129,26 +133,17 @@ def _entry_points(projects: list[Project], base_url: str) -> list[tuple[str, str
         base_url: The absolute base URL of this vdoc instance, without a trailing slash.
 
     Returns:
-        The absolute URL and the last modification date of every project's entry point, skipping the
-        projects whose newest version has no page to enter at.
+        The absolute URL and the publication date of every project's entry point, skipping the projects
+        whose newest version has no page to enter at.
     """
-    docs_dir = get_settings().docs_dir
-    entry_points = []
-
-    for project in projects:
-        version_dir = docs_dir / project.name / project.latest
-        if not (version_dir / "index.html").is_file():
-            continue
-
-        # A version directory is written once, when it is published, so its modification time is the date
-        # that version appeared. To the day: the hour a ZIP happened to be uploaded at means nothing to a
-        # crawler deciding whether to come back.
-        published_on = datetime.fromtimestamp(version_dir.stat().st_mtime, tz=UTC).date()
-        location = f"{base_url}{STATIC_PROJECTS_PREFIX}/{project.name}/{project.latest}/index.html"
-
-        entry_points.append((location, published_on.isoformat()))
-
-    return entry_points
+    return [
+        (
+            _static_url(base_url=base_url, project=project, file_name="index.html"),
+            project.latest_published_on.isoformat(),
+        )
+        for project in projects
+        if project.latest_contains("index.html")
+    ]
 
 
 def render_llms_txt_impl(base_url: str) -> str:
@@ -161,7 +156,7 @@ def render_llms_txt_impl(base_url: str) -> str:
         The rendered ``llms.txt`` as markdown.
     """
     site = SitePlugin()
-    projects = _listable_projects()
+    projects = Project.list_published()
 
     return _templates.get_template("llms.txt.j2").render(
         title=site.title or DEFAULT_SITE_TITLE,
@@ -169,6 +164,7 @@ def render_llms_txt_impl(base_url: str) -> str:
         long_description=site.long_description or (),
         sections=_sections(projects=projects),
         inventories=_inventories(projects=projects),
+        static=partial(_static_url, base_url),
         base_url=base_url,
         static_prefix=STATIC_PROJECTS_PREFIX,
         latest_alias=LATEST_VERSION_ALIAS,
@@ -185,7 +181,7 @@ def render_sitemap_xml_impl(base_url: str) -> str:
         The rendered ``sitemap.xml``.
     """
     return _templates.get_template("sitemap.xml.j2").render(
-        urls=_entry_points(projects=_listable_projects(), base_url=base_url),
+        urls=_entry_points(projects=Project.list_published(), base_url=base_url),
     )
 
 

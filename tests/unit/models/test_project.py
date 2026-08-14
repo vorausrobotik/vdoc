@@ -1,6 +1,7 @@
 """Contains all tests for the project models."""
 
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -45,6 +46,36 @@ def test_list_project_versions(dummy_projects_dir: Path) -> None:  # noqa: ARG00
 
 def test_get_project_latest_version(dummy_projects_dir: Path) -> None:  # noqa: ARG001
     assert Project(name="dummy-project-03").latest == "2.0.0-beta"
+
+
+def test_list_published_projects(dummy_projects_dir: Path) -> None:
+    """A project directory with nothing publishable in it must not reach whoever lists projects."""
+    (dummy_projects_dir / "empty-project").mkdir()
+
+    assert Project.list_published() == [Project(name=project_name) for project_name in DUMMY_DOCS_STRUCTURE]
+
+
+def test_project_version_path(dummy_projects_dir: Path) -> None:
+    project = Project(name="dummy-project-01")
+
+    assert project.version_path(version="1.1.0") == dummy_projects_dir / "dummy-project-01" / "1.1.0"
+    assert project.latest_path == dummy_projects_dir / "dummy-project-01" / "2.0.0"
+
+
+def test_project_latest_contains(dummy_projects_dir: Path) -> None:
+    project = Project(name="dummy-project-01")
+    (dummy_projects_dir / "dummy-project-01" / "1.1.0" / "objects.inv").write_text("only in a superseded version")
+
+    assert project.latest_contains("index.html")
+    assert not project.latest_contains("objects.inv")
+
+
+def test_project_latest_published_on(dummy_projects_dir: Path) -> None:
+    published_on = datetime.fromtimestamp(
+        (dummy_projects_dir / "dummy-project-01" / "2.0.0").stat().st_mtime, tz=UTC
+    ).date()
+
+    assert Project(name="dummy-project-01").latest_published_on == published_on
 
 
 def test_get_version_and_docs_path(dummy_projects_dir: Path) -> None:
