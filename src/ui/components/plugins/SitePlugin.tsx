@@ -1,7 +1,5 @@
 import { alpha, Box, Link, Paper, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
 import Markdown, { type Components } from 'react-markdown'
-import { fetchPluginConfig } from '../../helpers/APIFunctions'
 import type SitePluginT from '../../interfacesAndTypes/plugins/SitePlugin'
 import testIDs from '../../interfacesAndTypes/testIDs'
 
@@ -27,19 +25,8 @@ const MARKDOWN_COMPONENTS: Components = {
   ),
 }
 
-/**
- * What this instance of vdoc is, as a banner above the projects it serves.
- *
- * Fetched rather than taken from the landing page's route loader, so that the page still renders its
- * projects if the plugin cannot be read. It is an introduction, not a prerequisite.
- */
-export const SitePlugin = () => {
-  const [sitePluginConfig, setSitePluginConfig] = useState<SitePluginT | null>(null)
-
-  useEffect(() => {
-    fetchPluginConfig<SitePluginT>('site').then((config) => setSitePluginConfig(config))
-  }, [])
-
+/** What this instance of vdoc is, as a banner above the projects it serves. */
+export const SitePlugin = ({ config: sitePluginConfig }: { config: SitePluginT | null }) => {
   if (sitePluginConfig == null || !sitePluginConfig.active || !sitePluginConfig.show_on_landing_page) {
     return null
   }
@@ -78,7 +65,6 @@ export const SitePlugin = () => {
           color="text.secondary"
           sx={{
             mt: 1,
-            // Held to a readable measure rather than to the full container width
             maxWidth: '90ch',
             lineHeight: 1.7,
             fontSize: { xs: '1rem', md: '1.125rem' },
