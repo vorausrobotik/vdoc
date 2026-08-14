@@ -15,6 +15,12 @@ CONFIG_FILE_ENV_VAR = f"{CONFIG_ENV_PREFIX}CONFIG_FILE"
 CONFIG_FILE_SECTION_VDOC = ("vdoc",)
 CONFIG_FILE_SECTION_PLUGINS = "plugins"
 
+## ADDRESSING
+
+# Where the published files are served from, and the version alias that resolves to the newest one.
+STATIC_PROJECTS_PREFIX = "/static/projects"
+LATEST_VERSION_ALIAS = "latest"
+
 DEFAULT_DOCS_DIR = Path("/srv/vdoc/docs/")
 DEFAULT_CONFIG_FILE = Path("/srv/vdoc/vdoc.yaml")
 DEFAULT_API_USERNAME = b"admin"
