@@ -1261,6 +1261,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/77/c1/6e422f34e569cf8e18df68d1939c81c099d2b61e4f7d9621c8a77560799c/pydantic_settings-2.14.2-py3-none-any.whl", hash = "sha256:a20c97b37910b6550d5ea50fbcc2d4187defe58cd57070b73863d069419c9440", size = 61715, upload-time = "2026-06-19T13:44:55.02Z" },
 ]
 
+[package.optional-dependencies]
+yaml = [
+    { name = "pyyaml" },
+]
+
 [[package]]
 name = "pygments"
 version = "2.20.0"
@@ -2116,6 +2121,15 @@ wheels = [
 ]
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.20260724"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/6f/a28f44bcd56bebed42b028a2894c79853e2f5e6b5279e633cb3f287a05e7/types_pyyaml-6.0.12.20260724.tar.gz", hash = "sha256:3c1ce1bb73cd5ec02e90390c2b1f00e810d241d8825fd73ff359696839271b6b", size = 17893, upload-time = "2026-07-24T04:58:43.453Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8b/42/0337fefc615e20ee55d1c8f71b774a9b2b734a04669139c20753b27a2a3a/types_pyyaml-6.0.12.20260724-py3-none-any.whl", hash = "sha256:d57db930a4b2efbc57cf430ec8882765d246929432fa253092f383902329a453", size = 20312, upload-time = "2026-07-24T04:58:42.486Z" },
+]
+
+[[package]]
 name = "types-requests"
 version = "2.33.0.20260712"
 source = { registry = "https://pypi.org/simple" }
@@ -2214,7 +2228,7 @@ dependencies = [
     { name = "importlib-metadata" },
     { name = "packaging" },
     { name = "pydantic" },
-    { name = "pydantic-settings" },
+    { name = "pydantic-settings", extra = ["yaml"] },
     { name = "python-multipart" },
     { name = "rich" },
     { name = "typer" },
@@ -2274,6 +2288,7 @@ dev = [
     { name = "tox-uv" },
     { name = "twine" },
     { name = "types-docutils" },
+    { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "types-setuptools" },
     { name = "voraus-pipeline-utils" },
@@ -2317,6 +2332,7 @@ lint = [
     { name = "ruff" },
     { name = "tenacity" },
     { name = "types-docutils" },
+    { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "types-setuptools" },
 ]
@@ -2356,7 +2372,7 @@ requires-dist = [
     { name = "importlib-metadata" },
     { name = "packaging" },
     { name = "pydantic", specifier = "~=2.0" },
-    { name = "pydantic-settings", specifier = "~=2.0" },
+    { name = "pydantic-settings", extras = ["yaml"], specifier = "~=2.0" },
     { name = "python-multipart" },
     { name = "rich" },
     { name = "typer" },
@@ -2412,6 +2428,7 @@ dev = [
     { name = "tox-uv", specifier = "~=1.0" },
     { name = "twine", specifier = "~=7.0" },
     { name = "types-docutils" },
+    { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "types-setuptools" },
     { name = "voraus-pipeline-utils", specifier = "~=0.0" },
@@ -2451,6 +2468,7 @@ lint = [
     { name = "ruff", specifier = "~=0.0" },
     { name = "tenacity" },
     { name = "types-docutils" },
+    { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "types-setuptools" },
 ]

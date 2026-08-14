@@ -1,0 +1,5 @@
+# Not valid YAML: the second key is indented into nothing. Reading this has to stop the
+# application, not be ignored.
+vdoc:
+  docs_dir: /somewhere
+   project_categories: []
