@@ -242,7 +242,7 @@ class Project(BaseModel):
             return next(category.id for category in settings.project_categories if category.name == category_name)
         return None
 
-    @property
+    @cached_property
     def versions(self) -> dict[Version, str]:
         """Returns a list of all available project versions.
 
@@ -252,10 +252,12 @@ class Project(BaseModel):
         Returns:
             A list of all versions of the project.
         """
-        # Path existence is validated at object construction
+        # Cached per instance, like everything derived from it: a Project is built per request and never
+        # outlives the upload that would change the answer. `_scan_versions` holds the cache that spans
+        # requests; this one keeps rendering a document from re-reading the same project a dozen times.
         return dict(_published(project_path=self._base_path).ordered)
 
-    @property
+    @cached_property
     def latest(self) -> str:
         """Returns the latest version available of the project.
 

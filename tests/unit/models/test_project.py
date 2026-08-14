@@ -55,6 +55,14 @@ def test_list_published_projects(dummy_projects_dir: Path) -> None:
     assert Project.list_published() == [Project(name=project_name) for project_name in DUMMY_DOCS_STRUCTURE]
 
 
+def test_project_equality_survives_its_caches(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    """What a project has been asked must not change what makes it the same project."""
+    read, untouched = Project(name="dummy-project-01"), Project(name="dummy-project-01")
+    _ = read.latest, read.versions, read.display_name
+
+    assert read == untouched
+
+
 def test_project_version_path(dummy_projects_dir: Path) -> None:
     project = Project(name="dummy-project-01")
 
