@@ -18,12 +18,12 @@ export function LandingPage() {
     return groupProjectsByCategories(projects, projectCategories)
   }, [projects, projectCategories])
   return (
-    <Container sx={{ mt: 2 }}>
+    <Container maxWidth="xl" sx={{ mt: 2 }}>
       <SitePlugin config={sitePluginConfig} />
       {Object.entries(getGroupedProjects).map(([category, projects]) => (
         <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
           <Typography
-            variant="h6"
+            variant="h5"
             sx={{ mb: 2, textTransform: 'uppercase' }}
             data-testid={testIDs.landingPage.projectCategories.projectCategory.title}
           >
@@ -53,15 +53,17 @@ export function LandingPage() {
 
 function IndexProjectCard({ project }: { project: Project }) {
   return (
-    <Grid size={{ xs: 6, md: 4, lg: 3 }}>
+    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
       <Card
-        sx={{ minHeight: 120 }}
+        // The minimum height keeps the cards of a row the same size. A single column has no row to
+        // match, and holding every card open there only makes the list longer than it has to be.
+        sx={{ minHeight: { xs: 'auto', sm: 120 } }}
         data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main}
       >
         <CardContent>
           <Typography
             gutterBottom
-            sx={{ color: 'text.secondary', fontSize: 14 }}
+            variant="h6"
             data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.title}
           >
             {project.display_name}
@@ -76,7 +78,6 @@ function IndexProjectCard({ project }: { project: Project }) {
             }
             to={`/$projectName/$version/$`}
             params={{ projectName: project.name, version: 'latest', _splat: '' }}
-            size="small"
           >
             Open
           </LinkButton>

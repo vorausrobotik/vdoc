@@ -18,7 +18,7 @@ export function ProjectVersionsOverview() {
   }, [versions])
 
   return (
-    <Container sx={{ mt: 2 }}>
+    <Container maxWidth="xl" sx={{ mt: 2 }}>
       <Typography variant="h5" sx={{ mb: 2 }}>
         Version index of {projectName}
       </Typography>
@@ -27,42 +27,41 @@ export function ProjectVersionsOverview() {
           {Object.keys(groupedVersions)
             .reverse()
             .map((major) => (
-              <Grid size={6} key={major}>
-                <Card key={major} data-testid={testIDs.project.versionOverview.majorVersionCard.main}>
+              <Grid size={{ xs: 12, md: 6 }} key={major}>
+                {/* Full height, so the cards of a row end on the same line however many versions
+                    each of them holds. */}
+                <Card
+                  key={major}
+                  sx={{ height: '100%' }}
+                  data-testid={testIDs.project.versionOverview.majorVersionCard.main}
+                >
                   <CardContent>
                     <Stack direction="row" sx={{ alignItems: 'center', gap: 2, mb: 2 }}>
                       <SellIcon />
                       <Typography variant="h6">v{major}</Typography>
                     </Stack>
-                    <Grid
-                      container
-                      direction="row"
-                      spacing={1}
-                      sx={{
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
+                    {/* The row gap leaves the "latest" badge room to sit above its chip rather than
+                        in the line above it. */}
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 1, rowGap: 1.5 }}>
                       {groupedVersions[Number(major)].map((version) => {
                         const chip = (
-                          <Grid key={version} sx={{ mb: 1 }}>
-                            <Chip
-                              data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
-                              label={version}
-                              component="a"
-                              onClick={() =>
-                                router.navigate({
-                                  to: '/$projectName/$version/$',
-                                  from: '/$projectName/',
-                                  params: {
-                                    projectName: projectName,
-                                    version: version,
-                                  },
-                                })
-                              }
-                              clickable
-                            />
-                          </Grid>
+                          <Chip
+                            key={version}
+                            data-testid={testIDs.project.versionOverview.majorVersionCard.versionItem.main}
+                            label={version}
+                            component="a"
+                            onClick={() =>
+                              router.navigate({
+                                to: '/$projectName/$version/$',
+                                from: '/$projectName/',
+                                params: {
+                                  projectName: projectName,
+                                  version: version,
+                                },
+                              })
+                            }
+                            clickable
+                          />
                         )
                         return version === latestVersion ? (
                           <Badge
@@ -77,7 +76,7 @@ export function ProjectVersionsOverview() {
                           chip
                         )
                       })}
-                    </Grid>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>

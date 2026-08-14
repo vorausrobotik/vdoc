@@ -1,14 +1,4 @@
-import {
-  AppBar,
-  Box,
-  Grid,
-  type SelectChangeEvent,
-  Slide,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material'
+import { AppBar, Box, type SelectChangeEvent, Slide, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { getRouteApi, useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useContentInset } from '../contexts/ContentInsetContext'
@@ -160,27 +150,38 @@ function RightGroup() {
   )
 }
 
-export default function MenuBar({ hide = false }: { hide?: boolean }) {
+export default function MenuBar({
+  hide = false,
+  onHeightChange,
+}: {
+  hide?: boolean
+  /** Called with the height the bar occupies, which the page below has to leave free. */
+  onHeightChange?: (height: number) => void
+}) {
   const theme = useTheme()
 
   const { setContentInset } = useContentInset()
   const toolbarRef = useRef<HTMLDivElement>(null)
 
   // Report where vdoc's own header content starts, so the framed documentation can line its header
-  // up with it. Measured rather than derived from the theme: the gutter is MUI's responsive
-  // `Toolbar` default today, and a second copy of that rule would be a second thing to keep in step.
-  // Observed rather than read once, because the gutter changes with the breakpoint.
+  // up with it, and how tall the bar is, so the page below can leave that much room. Measured rather
+  // than derived from the theme: gutter and height are MUI's responsive `Toolbar` defaults today, and
+  // a second copy of those rules would be a second thing to keep in step. Observed rather than read
+  // once, because both change with the breakpoint - and the height also with the orientation.
   useEffect(() => {
     const toolbar = toolbarRef.current
     if (toolbar === null) {
       return
     }
-    const report = () => setContentInset(Number.parseFloat(window.getComputedStyle(toolbar).paddingLeft) || 0)
+    const report = () => {
+      setContentInset(Number.parseFloat(window.getComputedStyle(toolbar).paddingLeft) || 0)
+      onHeightChange?.(toolbar.getBoundingClientRect().height)
+    }
     report()
     const observer = new ResizeObserver(report)
     observer.observe(toolbar)
     return () => observer.disconnect()
-  }, [setContentInset])
+  }, [setContentInset, onHeightChange])
 
   return (
     <Slide appear={false} direction="down" in={!hide}>
@@ -193,36 +194,27 @@ export default function MenuBar({ hide = false }: { hide?: boolean }) {
         elevation={0}
       >
         <Toolbar ref={toolbarRef}>
-          <Grid
-            container
-            spacing={1}
-            sx={{
-              display: 'flex',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-            wrap="nowrap"
-          >
+          {/* The outer groups take the width their content needs and the search bar takes what is
+              left, so no breakpoint has to guess a column split for them. A twelfth of a phone's
+              width is not enough for a logo, which is what a fixed split gave it. */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
             {/* Logo and/or Text */}
-            <Grid id="appBarLeftGroup" size={{ xs: 1, sm: 1, md: 1, lg: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <LeftGroup />
-              </Box>
-            </Grid>
-            {/* Searchbar */}
-            <Grid id="appBarMiddleGroup" size={{ xs: 6, sm: 7, md: 8, lg: 6 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <MiddleGroup />
-              </Box>
-            </Grid>
+            <Box id="appBarLeftGroup" sx={{ display: 'flex', flexShrink: 0 }}>
+              <LeftGroup />
+            </Box>
+            {/* Searchbar. `minWidth` lets it shrink below its content rather than push the groups
+                beside it off the bar. */}
+            <Box id="appBarMiddleGroup" sx={{ display: 'flex', flex: 1, minWidth: 0, justifyContent: 'center' }}>
+              <MiddleGroup />
+            </Box>
             {/* vdoc version, color mode toggle and the optional version dropdown */}
-            <Grid id="appBarRightGroup" size={{ xs: 5, sm: 4, md: 3, lg: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
-                <RightGroup />
-              </Box>
-            </Grid>
-          </Grid>
+            <Box
+              id="appBarRightGroup"
+              sx={{ display: 'flex', flexShrink: 0, justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}
+            >
+              <RightGroup />
+            </Box>
+          </Box>
         </Toolbar>
       </AppBar>
     </Slide>

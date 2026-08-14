@@ -54,6 +54,7 @@ function ThemedComponent() {
   const lastScrollY = useRef(0)
   const [hideElements, setHideElements] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
+  const [headerHeight, setHeaderHeight] = useState(0)
   const [footerHeight, setFooterHeight] = useState(0)
 
   const footerRef = useCallback((node: HTMLDivElement | null) => {
@@ -97,7 +98,7 @@ function ThemedComponent() {
 
   return (
     <Box id="rootComponent" sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <MenuBar hide={hideElements} />
+      <MenuBar hide={hideElements} onHeightChange={setHeaderHeight} />
       <Box
         data-testid="contentArea"
         sx={{
@@ -105,9 +106,11 @@ function ThemedComponent() {
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          pt: hideElements ? 0 : '64px',
+          pt: hideElements ? 0 : `${headerHeight}px`,
           pb: hideElements ? 0 : `${footerHeight}px`,
-          transition: 'padding 0.3s',
+          // Not animated until the header has been measured, so that its first measurement lands
+          // rather than sliding the content down from zero.
+          transition: headerHeight ? 'padding 0.3s' : 'none',
         }}
       >
         <Outlet />
