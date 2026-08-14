@@ -48,6 +48,15 @@ wheels = [
 ]
 
 [[package]]
+name = "asgiref"
+version = "3.12.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/26/3b59f2bdae5f640389becb1f673cded775287f5fc4f816309d9ca9a3f93d/asgiref-3.12.1.tar.gz", hash = "sha256:59dcb51c272ad209d59bed5708a64a333083e86017d7fcdd67498eeab7784340", size = 42378, upload-time = "2026-07-14T09:56:18.087Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl", hash = "sha256:fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094", size = 25478, upload-time = "2026-07-14T09:56:16.926Z" },
+]
+
+[[package]]
 name = "ast-serialize"
 version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1446,6 +1455,18 @@ wheels = [
 ]
 
 [[package]]
+name = "servestatic"
+version = "4.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asgiref" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/07/c1d5fe373c4f1d86a7a976f5a407daa9335cd8f9b9682b1c25d5f2386207/servestatic-4.3.1.tar.gz", hash = "sha256:e28bdd4fbe13a28374754c2554cec4e1d6c8af4dc65d604b71ef8860a16408fa", size = 32810, upload-time = "2026-06-07T06:17:05.512Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/2f/c1a7d5b949b55bda4a55e49b040f385bc098d307bd4bdeb498c550219473/servestatic-4.3.1-py3-none-any.whl", hash = "sha256:9792a4fe2de1df67e1e87aa4efb3c8d28bb3ebd64128a1a10162db84d87c6b36", size = 39921, upload-time = "2026-06-07T06:17:04.347Z" },
+]
+
+[[package]]
 name = "shellingham"
 version = "1.5.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1899,6 +1920,7 @@ dependencies = [
     { name = "pydantic-settings", extra = ["yaml"] },
     { name = "python-multipart" },
     { name = "rich" },
+    { name = "servestatic" },
     { name = "typer" },
     { name = "uvicorn" },
 ]
@@ -2016,6 +2038,7 @@ requires-dist = [
     { name = "pydantic-settings", extras = ["yaml"], specifier = "~=2.0" },
     { name = "python-multipart" },
     { name = "rich" },
+    { name = "servestatic", specifier = "~=4.0" },
     { name = "typer" },
     { name = "uvicorn" },
 ]

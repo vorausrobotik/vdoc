@@ -1,10 +1,13 @@
 """Contains all unit tests for misc functionalities of REST API."""
 
+import gzip
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+
+BUNDLE_CONTENT = "console.log('the bundle itself');\n" * 100
 
 
 @patch("vdoc.api.routes.version.get_app_version")
@@ -44,6 +47,75 @@ def test_serve_frontend_assets(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, 
     response = api.get("/style.css")
     assert response.status_code == 200
     assert response.text == "dummy style sheet"
+
+
+@pytest.fixture(name="built_webapp")
+def built_webapp_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """A web UI directory shaped like a build, with the compressed copies the build writes.
+
+    The bundle is padded because a compressed copy that is not smaller than the file it stands in for is
+    not worth sending, and is skipped.
+    """
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    (assets / "index-DdV67ccn.js").write_text(BUNDLE_CONTENT)
+    (assets / "index-DdV67ccn.js.br").write_bytes(b"standing in for brotli, which this client cannot read")
+    (assets / "index-DdV67ccn.js.gz").write_bytes(gzip.compress(b"the bundle, compressed at build time"))
+    (tmp_path / "index.html").write_text("dummy index.html content")
+
+    monkeypatch.setattr("vdoc.api.lifespan.webapp_path", tmp_path)
+
+    return tmp_path
+
+
+def test_serve_frontend_assets_sends_the_compressed_copy(
+    built_webapp: Path,  # noqa: ARG001
+    request: pytest.FixtureRequest,
+) -> None:
+    """The build compresses every asset once; a request only picks the copy the client can read."""
+    # The web UI is indexed when the app is built, so the app comes after the directory exists
+    api: TestClient = request.getfixturevalue("api")
+
+    response = api.get("/assets/index-DdV67ccn.js", headers={"accept-encoding": "gzip"})
+
+    assert response.status_code == 200
+    assert response.headers["content-encoding"] == "gzip"
+    assert response.headers["vary"] == "Accept-Encoding"
+    assert response.headers["content-type"].startswith("text/javascript")
+    assert response.text == "the bundle, compressed at build time"
+
+
+def test_serve_frontend_assets_prefers_brotli(built_webapp: Path, request: pytest.FixtureRequest) -> None:  # noqa: ARG001
+    """Both copies exist, so which one is sent is the client's preference rather than what is on disk."""
+    api: TestClient = request.getfixturevalue("api")
+
+    # Asked without a body, because this client has no brotli decoder to read one with
+    response = api.head("/assets/index-DdV67ccn.js", headers={"accept-encoding": "br, gzip"})
+
+    assert response.headers["content-encoding"] == "br"
+
+
+def test_serve_frontend_assets_without_a_matching_encoding(
+    built_webapp: Path,  # noqa: ARG001
+    request: pytest.FixtureRequest,
+) -> None:
+    api: TestClient = request.getfixturevalue("api")
+
+    response = api.get("/assets/index-DdV67ccn.js", headers={"accept-encoding": "identity"})
+
+    assert "content-encoding" not in response.headers
+    assert response.text == BUNDLE_CONTENT
+
+
+def test_serve_frontend_assets_cache_lifetimes(built_webapp: Path, request: pytest.FixtureRequest) -> None:  # noqa: ARG001
+    """A name carrying a content hash can be kept forever; the document naming it cannot."""
+    api: TestClient = request.getfixturevalue("api")
+
+    hashed = api.get("/assets/index-DdV67ccn.js", headers={"accept-encoding": "identity"})
+    shell = api.get("/index.html")
+
+    assert "immutable" in hashed.headers["cache-control"]
+    assert "immutable" not in shell.headers["cache-control"]
 
 
 def test_serve_frontend_assets_rejects_path_traversal(
