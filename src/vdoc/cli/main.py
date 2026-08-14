@@ -9,7 +9,7 @@ from rich.logging import RichHandler
 from vdoc import get_app_name, get_app_version
 from vdoc.cli.run import _cli_run
 from vdoc.constants import DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
-from vdoc.settings import VDocSettings
+from vdoc.settings import get_settings
 
 _logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def print_version(do_print: bool) -> None:  # noqa: FBT001
 
 def check_for_default_credentials() -> None:
     """Checks the configured API credentials and warns if the default credentials are used."""
-    settings = VDocSettings()
+    settings = get_settings()
     if settings.api_password == DEFAULT_API_PASSWORD and settings.api_username == DEFAULT_API_USERNAME:
         _logger.warning(
             "The application is running using the default credentials. Update them according to the documentation!"

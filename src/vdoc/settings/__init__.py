@@ -1,5 +1,6 @@
 """Contains the settings definition."""
 
+from functools import lru_cache
 from pathlib import Path
 from typing import Self
 
@@ -22,7 +23,8 @@ from vdoc.models.project_category import ProjectCategory
 class VDocSettings(BaseSettings):
     """The vdoc settings."""
 
-    model_config = SettingsConfigDict(env_prefix=CONFIG_ENV_PREFIX, env_parse_none_str="None")
+    # Frozen because `get_settings` hands the same instance to every caller
+    model_config = SettingsConfigDict(env_prefix=CONFIG_ENV_PREFIX, env_parse_none_str="None", frozen=True)
 
     docs_dir: Path = DEFAULT_DOCS_DIR
     api_username: bytes = DEFAULT_API_USERNAME
@@ -100,3 +102,23 @@ class VDocSettings(BaseSettings):
                 raise ValueError(msg)
 
         return self
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> VDocSettings:
+    """Returns the settings, reading the environment and the configuration file only once.
+
+    Prefer this over constructing ``VDocSettings`` directly. Building the model validates it and parses
+    the configuration file, which together cost most of a millisecond -- significant for something read
+    several times per request -- and there is nothing to re-read: vdoc is deployed as a container with a
+    fixed environment and a mounted file, so its configuration cannot change without the process being
+    replaced.
+
+    The returned instance is shared and frozen, so it is safe to hold on to but not to modify. A test
+    that changes the environment has to call ``get_settings.cache_clear()``, which the test suite does
+    around every test.
+
+    Returns:
+        The settings.
+    """
+    return VDocSettings()

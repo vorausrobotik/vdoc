@@ -7,7 +7,7 @@ from fastapi import Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from vdoc.exceptions import InvalidCredentials
-from vdoc.settings import VDocSettings
+from vdoc.settings import get_settings
 
 security = HTTPBasic()
 
@@ -24,7 +24,7 @@ def require_authentication(credentials: Annotated[HTTPBasicCredentials, Depends(
     Returns:
         True if the request is authenticated.
     """
-    settings = VDocSettings()
+    settings = get_settings()
     is_correct_username = secrets.compare_digest(credentials.username.encode("utf8"), settings.api_username)
     is_correct_password = secrets.compare_digest(credentials.password.encode("utf8"), settings.api_password)
     if not (is_correct_username and is_correct_password):
