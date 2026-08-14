@@ -10,8 +10,8 @@ from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
 
 from vdoc.exceptions import InvalidProjectName, InvalidVersion, ProjectVersionAlreadyExists, UploadedFileInvalid
-from vdoc.models.project import Project
-from vdoc.settings import VDocSettings
+from vdoc.models.project import Project, invalidate_published_versions
+from vdoc.settings import get_settings
 
 
 def list_projects_impl() -> list[Project]:
@@ -76,7 +76,7 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
     except PackagingInvalidVersion as error:
         raise InvalidVersion(version=version) from error
 
-    target_path = VDocSettings().docs_dir / name / version
+    target_path = get_settings().docs_dir / name / version
 
     if target_path.is_dir():
         raise ProjectVersionAlreadyExists(name=name, version=version)
@@ -97,6 +97,11 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
     except zipfile.BadZipFile as error:
         shutil.rmtree(path=target_path, ignore_errors=True)
         raise UploadedFileInvalid(str(error)) from error
+    finally:
+        # The only thing that changes what vdoc serves while it runs, so the only place that has to drop
+        # what was derived from it. In the `finally` because a half-written upload that was cleaned up
+        # again changed the directory just as much as a successful one.
+        invalidate_published_versions()
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED, content=f"Version '{version}' of project '{name}' uploaded successfully."

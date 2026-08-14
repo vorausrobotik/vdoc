@@ -1,7 +1,7 @@
 """Contains all projects REST API methods."""
 
 from vdoc.models.project_category import ProjectCategory
-from vdoc.settings import VDocSettings
+from vdoc.settings import get_settings
 
 
 def list_project_categories_impl() -> list[ProjectCategory]:
@@ -10,4 +10,4 @@ def list_project_categories_impl() -> list[ProjectCategory]:
     Returns:
         A list of all projects.
     """
-    return VDocSettings().project_categories
+    return get_settings().project_categories

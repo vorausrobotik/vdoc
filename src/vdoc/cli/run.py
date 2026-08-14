@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 
 from vdoc.methods.cli.cli_run_method import run_impl
-from vdoc.settings import VDocSettings
+from vdoc.settings import get_settings
 
 _logger = logging.getLogger(__name__)
 
@@ -15,11 +15,11 @@ def _cli_run(
     bind_address: Annotated[
         str,
         typer.Option(help="Application bind ip address."),
-    ] = VDocSettings().bind_address,
+    ] = get_settings().bind_address,
     bind_port: Annotated[
         int,
         typer.Option(help="Application bind port."),
-    ] = VDocSettings().bind_port,
+    ] = get_settings().bind_port,
 ) -> None:  # noqa: disable=D103
     try:
         run_impl(bind_address=bind_address, bind_port=bind_port)

@@ -15,7 +15,7 @@ from vdoc.api.routes import projects as projects_module
 from vdoc.api.routes import version as version_module
 from vdoc.config_file import log_configuration_source
 from vdoc.methods.api.projects import get_project_version_impl
-from vdoc.settings import VDocSettings
+from vdoc.settings import get_settings
 
 _PACKAGE_PATH = Path(__file__).parent.parent
 
@@ -64,7 +64,7 @@ def _include_static_documentation_routers(fastapi: FastAPI) -> FastAPI:
         ),
         Mount(
             "/static/projects",
-            app=StaticFiles(directory=VDocSettings().docs_dir.as_posix(), html=True, check_dir=False),
+            app=StaticFiles(directory=get_settings().docs_dir.as_posix(), html=True, check_dir=False),
             name="projects",
         ),
     ]:
@@ -86,7 +86,7 @@ def _include_intersphinx_router(fastapi: FastAPI) -> FastAPI:
         """
         served_version = get_project_version_impl(name=project_name, version=version)
 
-        return FileResponse(path=VDocSettings().docs_dir / project_name / served_version / "objects.inv")
+        return FileResponse(path=get_settings().docs_dir / project_name / served_version / "objects.inv")
 
     return fastapi
 

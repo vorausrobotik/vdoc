@@ -17,6 +17,7 @@ from typer.testing import CliRunner
 from tests.utils import start_vdoc_server_and_get_uri
 from vdoc.api import create_app
 from vdoc.constants import CONFIG_ENV_PREFIX, DEFAULT_API_PASSWORD, DEFAULT_API_USERNAME
+from vdoc.settings import get_settings
 
 DUMMY_VERSIONS = (
     ("0.0.1", "0.0.2", "0.1.0", "1.0.0", "1.1.0", "2.0.0"),
@@ -29,6 +30,35 @@ DUMMY_DOCS_STRUCTURE = {
     "dummy-project-02": DUMMY_VERSIONS[1],
     "dummy-project-03": DUMMY_VERSIONS[2],
 }
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_call(item: pytest.Item) -> Generator[None, object, object]:  # noqa: ARG001
+    """Rebuilds the settings around every test body.
+
+    ``get_settings`` reads the environment and the configuration file once, because a deployed vdoc
+    cannot have either changed under it. Tests do exactly that, and they do it inside the test rather
+    than before it -- with a decorator, or with ``patch.dict`` -- which is after the fixtures that build
+    the app have already read the settings once.
+
+    Clearing at this point rather than in an autouse fixture is what makes that work: fixtures are all
+    set up by now, so the next read is the one the test itself triggers, under the environment the test
+    set. Clearing again afterwards keeps the next test from inheriting it.
+
+    Args:
+        item: The test being run. Unread: this applies to all of them.
+
+    Yields:
+        To the test body.
+
+    Returns:
+        Whatever the test body returned.
+    """
+    get_settings.cache_clear()
+    try:
+        return (yield)
+    finally:
+        get_settings.cache_clear()
 
 
 @pytest.fixture(scope="session", name="resource_dir")
