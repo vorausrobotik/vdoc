@@ -16,9 +16,9 @@
     "@docusaurus/faster": "3.10.2",
     "@docusaurus/preset-classic": "3.10.2",
     "@docusaurus/theme-mermaid": "3.10.2",
-    "@voraus/docusaurus-theme": "0.2.2",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "@voraus/docusaurus-theme": "0.4.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@docusaurus/tsconfig": "3.10.2",
