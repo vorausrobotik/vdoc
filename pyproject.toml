@@ -139,7 +139,7 @@ lint-template = [
 ]
 test-template = [
     "pytest~=9.0",
-    "pytest-randomly~=4.0",
+    "pytest-randomly~=5.0",
     "pytest-cov~=7.0"
 ]
 coverage-template = [
