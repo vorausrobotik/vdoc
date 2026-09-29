@@ -21,7 +21,7 @@ export type IFrameHistoryMode = 'push' | 'replace'
  * {@link VDOC_THEME_PARAM} and applied the requested mode itself. Its value is the mode it applied.
  *
  * Frames that do not set it are driven through {@link toggleDocumentationColorScheme} instead.
- * See `docs/frame_contract.md`.
+ * See `docs/docs/06-frame-contract.md`.
  */
 export const VDOC_THEME_ATTRIBUTE = 'data-vdoc-theme'
 
