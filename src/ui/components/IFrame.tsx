@@ -5,7 +5,7 @@
 
 import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useContentInset } from '../contexts/ContentInsetContext'
 import { useIFrameScroll } from '../contexts/IFrameScrollContext'
 import { hookFramedDocument } from '../helpers/FramedDocument'
@@ -28,29 +28,19 @@ import { testIDs } from '../interfacesAndTypes/testIDs'
 
 interface Props {
   src: string
-  onPageChanged: (page: string) => void
-  onHashChanged: (hash: string) => void
-  onSearchChanged: (search: URLSearchParams) => void
+  /** The frame reached `href`, the address that reaches the file. */
+  onLocationChanged: (href: string) => void
   onTitleChanged: (title: string) => void
   onNotFound: () => void
   onHistoryModeChanged: (mode: IFrameHistoryMode) => void
 }
 
-export default function IFrame({
-  src,
-  onPageChanged,
-  onHashChanged,
-  onSearchChanged,
-  onTitleChanged,
-  onNotFound,
-  onHistoryModeChanged,
-}: Props) {
+export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFound, onHistoryModeChanged }: Props) {
   const { colorScheme, mode, systemMode } = useColorScheme()
   const { scrollY, setScrollY } = useIFrameScroll()
   const { contentInset } = useContentInset()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const sourceRef = useRef<string | undefined>(null)
-  const [contentWindow, setContentWindow] = useState<Window | null>()
 
   const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
 
@@ -129,9 +119,6 @@ export default function IFrame({
       return
     }
 
-    // Cache current active content windows for other processes
-    setContentWindow(iframeRef.current?.contentWindow)
-
     // Apply dark mode. A participating frame may need a reload to do so, in which case the document
     // below is already on its way out and there is nothing worth reporting about it.
     if (applyColorMode(frameParamsRef.current.mode)) {
@@ -170,20 +157,18 @@ export default function IFrame({
      */
     const report = (historyMode: IFrameHistoryMode): void => {
       const frameLocation = parseIFrameHref(iframeRef)
-      if (frameLocation == null) {
+      const frameHref = iframeRef.current?.contentWindow?.location.href
+      if (frameLocation == null || frameHref == null) {
         return
       }
 
-      // Before `onPageChanged`, which is what triggers the navigation that has to read the mode.
+      // Before `onLocationChanged`, which is what triggers the navigation that has to read the mode.
       onHistoryModeChanged(historyMode)
 
-      const frameHref = iframeRef.current?.contentWindow?.location.href
-      if (frameHref != null) {
-        // Keep the source in sync with where the frame actually is. Without this the effect at the
-        // bottom of this component would see a stale source after a client-side navigation and
-        // force-load the frame, throwing away the page the reader just navigated to.
-        sourceRef.current = normalizeIFrameSrc(frameHref)
-      }
+      // Keep the source in sync with where the frame actually is. Without this the effect at the
+      // bottom of this component would see a stale source after a client-side navigation and
+      // force-load the frame, throwing away the page the reader just navigated to.
+      sourceRef.current = normalizeIFrameSrc(frameHref)
 
       // A new page starts at the top, just like a document load does. A hash change does not:
       // jumping to the top is precisely the opposite of what the reader asked for.
@@ -192,9 +177,7 @@ export default function IFrame({
         setScrollY(0)
       }
 
-      onPageChanged(frameLocation.page)
-      onHashChanged(frameLocation.hash)
-      onSearchChanged(frameLocation.search)
+      onLocationChanged(frameHref)
       reportedTitleRef.current = frameLocation.title ?? ''
       onTitleChanged(reportedTitleRef.current)
     }
@@ -214,6 +197,8 @@ export default function IFrame({
     if (frameWindow != null) {
       hookFramedDocument(frameWindow, {
         onNavigated: report,
+
+        onHashChanged: (): void => onLocationChanged(frameWindow.location.href),
 
         onTitleChanged: (title: string): void => {
           if (title !== reportedTitleRef.current) {
@@ -273,53 +258,6 @@ export default function IFrame({
     // history entry of its own: this navigation is vdoc's to record.
     report('push')
   }
-
-  const hashChangeEventListener = useCallback((): void => {
-    if (iframeRef.current === null) {
-      console.error('hashChangeEvent from iframe but iframeRef is null')
-      return
-    }
-
-    const url = iframeRef.current?.contentDocument?.location.href
-    if (url == null) {
-      return
-    }
-
-    let hash = url.split('#')[1]
-    if (hash === null) {
-      hash = ''
-    }
-
-    onHashChanged(hash)
-  }, [onHashChanged])
-
-  const titleChangeEventListener = useCallback((): void => {
-    if (iframeRef.current === null) {
-      console.error('titleChangeEvent from iframe but iframeRef is null')
-      return
-    }
-
-    const title = iframeRef.current?.contentDocument?.title
-    if (title == null) {
-      return
-    }
-
-    onTitleChanged(title)
-  }, [onTitleChanged])
-
-  useEffect(() => {
-    if (!contentWindow) {
-      return
-    }
-
-    contentWindow.addEventListener('hashchange', hashChangeEventListener)
-    contentWindow.addEventListener('titlechange', titleChangeEventListener)
-
-    return () => {
-      contentWindow.removeEventListener('hashchange', hashChangeEventListener)
-      contentWindow.removeEventListener('titlechange', titleChangeEventListener)
-    }
-  }, [contentWindow, titleChangeEventListener, hashChangeEventListener])
 
   // While a navigation is pending, the router state is transiently inconsistent:
   // the location already points at the target while the matched params still hold

@@ -150,11 +150,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/example-project/1.0.0/index.html',
       title: 'Index Page',
       expected: {
-        name: 'example-project',
-        version: '1.0.0',
         page: 'index.html',
-        search: new URLSearchParams(''),
-        hash: '',
         title: 'Index Page',
       },
     },
@@ -163,11 +159,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/example-project/1.0.0/docs.html#section',
       title: 'Documentation',
       expected: {
-        name: 'example-project',
-        version: '1.0.0',
         page: 'docs.html',
-        search: new URLSearchParams(''),
-        hash: 'section',
         title: 'Documentation',
       },
     },
@@ -176,11 +168,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/example-project/2.0.0/api/modules/core.html',
       title: 'Core Module',
       expected: {
-        name: 'example-project',
-        version: '2.0.0',
         page: 'api/modules/core.html',
-        search: new URLSearchParams(''),
-        hash: '',
         title: 'Core Module',
       },
     },
@@ -189,11 +177,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/project/1.0.0/api/classes/MyClass.html#method',
       title: 'MyClass',
       expected: {
-        name: 'project',
-        version: '1.0.0',
         page: 'api/classes/MyClass.html',
-        search: new URLSearchParams(''),
-        hash: 'method',
         title: 'MyClass',
       },
     },
@@ -202,11 +186,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/example/1.0.0/page.html',
       title: undefined,
       expected: {
-        name: 'example',
-        version: '1.0.0',
         page: 'page.html',
-        search: new URLSearchParams(''),
-        hash: '',
         title: '',
       },
     },
@@ -215,11 +195,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/example/1.0.0/',
       title: 'Project Root',
       expected: {
-        name: 'example',
-        version: '1.0.0',
         page: '',
-        search: new URLSearchParams(''),
-        hash: '',
         title: 'Project Root',
       },
     },
@@ -228,11 +204,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html#section-1.2.3',
       title: 'Page',
       expected: {
-        name: 'proj',
-        version: '1.0.0',
         page: 'page.html',
-        search: new URLSearchParams(''),
-        hash: 'section-1.2.3',
         title: 'Page',
       },
     },
@@ -241,11 +213,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?highlight=term',
       title: 'Page',
       expected: {
-        name: 'proj',
-        version: '1.0.0',
         page: 'page.html',
-        search: new URLSearchParams('highlight=term'),
-        hash: '',
         title: 'Page',
       },
     },
@@ -254,11 +222,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search&filter=all#foo',
       title: 'Page',
       expected: {
-        name: 'proj',
-        version: '1.0.0',
         page: 'page.html',
-        search: new URLSearchParams('q=search&filter=all'),
-        hash: 'foo',
         title: 'Page',
       },
     },
@@ -267,11 +231,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=test#section',
       title: 'Page',
       expected: {
-        name: 'proj',
-        version: '1.0.0',
         page: 'page.html',
-        search: new URLSearchParams('q=test'),
-        hash: 'section',
         title: 'Page',
       },
     },
@@ -280,11 +240,7 @@ describe('parseIFrameHref', () => {
       href: 'http://localhost:3000/static/projects/proj/1.0.0/api/docs.html?tab=examples#code',
       title: 'API Docs',
       expected: {
-        name: 'proj',
-        version: '1.0.0',
         page: 'api/docs.html',
-        search: new URLSearchParams('tab=examples'),
-        hash: 'code',
         title: 'API Docs',
       },
     },
@@ -303,42 +259,5 @@ describe('parseIFrameHref', () => {
 
     // THEN: Returns expected result
     expect(result).toEqual(expected)
-  })
-})
-
-describe('parseIFrameHref and the color mode parameter', () => {
-  let iframeRef: React.RefObject<HTMLIFrameElement | null>
-
-  beforeEach(() => {
-    iframeRef = { current: document.createElement('iframe') }
-  })
-
-  test.each([
-    {
-      description: 'strips the vdoc-theme parameter vdoc appends for the frame itself',
-      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?vdoc-theme=dark',
-      expectedSearch: new URLSearchParams(''),
-      expectedHash: '',
-    },
-    {
-      description: 'strips vdoc-theme while preserving the other search parameters and the hash',
-      href: 'http://localhost:3000/static/projects/proj/1.0.0/page.html?q=search&vdoc-theme=light&filter=all#foo',
-      expectedSearch: new URLSearchParams('q=search&filter=all'),
-      expectedHash: 'foo',
-    },
-  ])('$description', ({ href, expectedSearch, expectedHash }) => {
-    // GIVEN: A frame sitting on an address vdoc composed for it
-    Object.defineProperty(iframeRef.current, 'contentDocument', {
-      value: { location: { href }, title: 'Page' },
-      configurable: true,
-    })
-
-    // WHEN: Reporting where the frame is
-    const result = parseIFrameHref(iframeRef)
-
-    // THEN: vdoc's own request does not reach its address bar, where the next compose would append
-    // it a second time
-    expect(result?.search).toEqual(expectedSearch)
-    expect(result?.hash).toBe(expectedHash)
   })
 })

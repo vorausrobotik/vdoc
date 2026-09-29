@@ -1,13 +1,10 @@
 import type { RefObject } from 'react'
 import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
-import { FRAME_PATH_PREFIX, VDOC_FRAME_PARAMS, VDOC_THEME_PARAM } from './RouteHelpers'
+import { FRAME_PATH_PREFIX, VDOC_THEME_PARAM } from './RouteHelpers'
 
+/** Where the frame is, as far as vdoc has to tell pages apart. */
 export interface IFrameLocation {
-  name: string
-  version: string
   page: string
-  search: URLSearchParams
-  hash: string
   title: string
 }
 
@@ -74,25 +71,10 @@ export function parseIFrameHref(iframeRef: RefObject<HTMLIFrameElement | null>):
     }
 
     // Split into: name/version/rest-of-path
-    const pathParts = pathAfterPrefix.split('/')
-    const [name, version, ...pageParts] = pathParts
-    const page = pageParts.join('/')
-
-    // Extract search as URLSearchParams object and hash without the '#' prefix.
-    // vdoc's own parameters are requests to the frame, not part of the page's address: they must not
-    // reach vdoc's address bar, or they would be appended a second time on the next compose.
-    const search = new URLSearchParams(url.search)
-    for (const param of VDOC_FRAME_PARAMS) {
-      search.delete(param)
-    }
-    const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
+    const [, , ...pageParts] = pathAfterPrefix.split('/')
 
     return {
-      name,
-      version,
-      page,
-      search,
-      hash,
+      page: pageParts.join('/'),
       title: iframeRef.current?.contentDocument?.title ?? '',
     }
   } catch {

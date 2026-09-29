@@ -24,11 +24,11 @@ export const VDOC_INSET_PARAM = 'vdoc-inset'
 /**
  * Every parameter vdoc adds to the frame URL for the frame's own benefit.
  *
- * These are vdoc's requests to the frame, never part of a page's address, so all three places that
- * turn a frame URL back into an address vdoc can show or compare drop the whole set:
- * {@link toReadableHref}, {@link normalizeIFrameSrc} and `parseIFrameHref`. Adding a parameter here
- * is what keeps that from having to be remembered three times - forgetting one of them once already
- * put `?vdoc-theme=…` into the href of every fragment link in a framed page.
+ * These are vdoc's requests to the frame, never part of a page's address, so both places that turn
+ * a frame URL back into an address vdoc can show or compare drop the whole set:
+ * {@link toReadableHref} and {@link normalizeIFrameSrc}. Adding a parameter here is what keeps that
+ * from having to be remembered twice - forgetting one of them once already
+ * put `?vdoc-theme=...` into the href of every fragment link in a framed page.
  */
 export const VDOC_FRAME_PARAMS: readonly string[] = [VDOC_THEME_PARAM, VDOC_INSET_PARAM]
 
@@ -117,7 +117,7 @@ export function toFrameHref(href: string, origin: string = window.location.origi
  * the frame and undo that very navigation. Composing the two sides differently is the mistake this
  * function exists to prevent.
  *
- * Two differences are deliberately not differences here:
+ * Three differences are deliberately not differences here:
  *
  * - {@link VDOC_FRAME_PARAMS}, which belong to the URL that gets loaded but never to the comparison.
  *   Otherwise changing the color mode would reload every frame - including the ones that apply it in
@@ -126,14 +126,59 @@ export function toFrameHref(href: string, origin: string = window.location.origi
  * - A trailing slash. A generator that publishes a page as a directory is reached through a
  *   redirect that adds one, while vdoc's router normalizes it away again; treating the two forms
  *   as different pages reloads the frame for as long as it is open.
+ * - The order of the keys and the encoding of the query. vdoc's router groups the values of a
+ *   repeated key and encodes a space as `+` (see {@link stringifySearch}), so the query it hands
+ *   back can differ from the frame's in both. Treating that as a new page reloads the frame after
+ *   every query the frame writes in another form.
  */
 export function normalizeIFrameSrc(src: string, origin: string = window.location.origin): string {
   const url = new URL(src, origin)
   deleteFrameParams(url)
+  url.searchParams.sort()
   if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
     url.pathname = url.pathname.slice(0, -1)
   }
   return url.href
+}
+
+/** Search parameters as vdoc's router holds them: a repeated key keeps all of its values. */
+type Search = Record<string, string | string[]>
+
+/**
+ * The search parameters of `searchStr`, for vdoc's router.
+ *
+ * The query of a documentation page belongs to the framed page and has to reach it unchanged, which
+ * the router's default does not do: it reads a value as JSON and keeps only one value per key. A
+ * search plugin that writes `?_highlight=robot&_highlight=ui` and reads it back with `getAll` would
+ * then find a single word. Every value stays a string here, and a repeated key keeps all of its
+ * values, in order. {@link stringifySearch} is the inverse.
+ */
+export function parseSearch(searchStr: string): Search {
+  const search: Search = {}
+  for (const [key, value] of new URLSearchParams(searchStr)) {
+    const previous = search[key]
+    search[key] = previous === undefined ? value : [previous, value].flat()
+  }
+  return search
+}
+
+/**
+ * The query string of `search`, with the leading `?`, or an empty string if there is none.
+ *
+ * The inverse of {@link parseSearch}. Values of a repeated key come out next to each other, so a
+ * query that interleaves keys comes back in another order, with the same meaning.
+ */
+export function stringifySearch(search: Record<string, unknown>): string {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(search)) {
+    for (const item of [value].flat()) {
+      if (item !== undefined) {
+        params.append(key, String(item))
+      }
+    }
+  }
+  const searchStr = params.toString()
+  return searchStr ? `?${searchStr}` : ''
 }
 
 /**
