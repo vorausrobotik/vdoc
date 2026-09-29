@@ -173,6 +173,10 @@ So every page has two addresses, and mapping between them is a pure function in 
 vdoc's own parameters never appear in the readable form. They are requests to the frame, not part of
 a page's address.
 
+Every other parameter belongs to the page. vdoc copies the query into the readable form as the frame
+wrote it, repeated keys included, so `?_highlight=alpha&_highlight=beta` still reads back as two
+values with `getAll`. A key the frame removes disappears from the address bar as well.
+
 A client that fetches the readable address without running scripts gets a `Link` header naming the
 static one, so the mapping does not have to be known in advance.
 [Agent and crawler discovery](05-agent-discovery.md) covers that, and the files a crawler looks for.

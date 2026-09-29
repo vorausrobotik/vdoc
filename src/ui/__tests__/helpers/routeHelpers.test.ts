@@ -2,7 +2,9 @@ import { describe, expect, test } from 'vitest'
 import {
   composeIFrameSrc,
   normalizeIFrameSrc,
+  parseSearch,
   sanitizeDocuUri,
+  stringifySearch,
   stripFramePrefix,
   toFrameHref,
   toReadableHref,
@@ -517,5 +519,55 @@ describe('composeIFrameSrc and the content inset', () => {
 
     // WHEN/THEN: What the reader hovers and copies is free of both of vdoc's parameters
     expect(toReadableHref(inFrame, origin)).toBe('http://localhost:3000/proj/1.0.0/#section1')
+  })
+})
+
+describe('parseSearch and stringifySearch', () => {
+  test.each([
+    { description: 'an empty query', search: '' },
+    { description: 'a single parameter', search: '?tab=examples' },
+    { description: 'a repeated key, in order', search: '?_highlight=alpha&_highlight=beta' },
+    { description: 'a repeated key among other parameters', search: '?q=search&_highlight=alpha&_highlight=beta' },
+    { description: 'a value that reads as JSON', search: '?page=1&flag=true' },
+  ])('round-trip $description unchanged', ({ search }) => {
+    expect(stringifySearch(parseSearch(search))).toBe(search)
+  })
+
+  test('keeps every value of a repeated key', () => {
+    expect(parseSearch('?_highlight=alpha&_highlight=beta')).toStrictEqual({ _highlight: ['alpha', 'beta'] })
+  })
+
+  test('keeps a value that reads as JSON a string', () => {
+    expect(parseSearch('?page=1')).toStrictEqual({ page: '1' })
+  })
+})
+
+describe('toReadableHref and the query of the frame', () => {
+  const origin = 'http://localhost:3000'
+
+  test('keeps a repeated key, in order', () => {
+    expect(toReadableHref('/static/projects/proj/1.0.0/page?_highlight=alpha&_highlight=beta', origin)).toBe(
+      'http://localhost:3000/proj/1.0.0/page?_highlight=alpha&_highlight=beta'
+    )
+  })
+
+  test('carries no parameter the frame does not carry', () => {
+    expect(toReadableHref('/static/projects/proj/1.0.0/page', origin)).toBe('http://localhost:3000/proj/1.0.0/page')
+  })
+
+  test('drops the parameters of vdoc, and only those', () => {
+    expect(
+      toReadableHref('/static/projects/proj/1.0.0/page?_highlight=beta&vdoc-theme=dark&vdoc-inset=24', origin)
+    ).toBe('http://localhost:3000/proj/1.0.0/page?_highlight=beta')
+  })
+})
+
+describe('normalizeIFrameSrc and the query of the frame', () => {
+  const origin = 'http://localhost:3000'
+
+  test('a query the router serialized again keeps the identity of the one the frame reported', () => {
+    const reported = '/static/projects/proj/1.0.0/page?_highlight=alpha&tab=api&_highlight=beta%20gamma'
+    const serialized = `/static/projects/proj/1.0.0/page${stringifySearch(parseSearch(reported.split('?')[1]))}`
+    expect(normalizeIFrameSrc(serialized, origin)).toBe(normalizeIFrameSrc(reported, origin))
   })
 })

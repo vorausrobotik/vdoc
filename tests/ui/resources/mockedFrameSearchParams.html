@@ -1,0 +1,15 @@
+<html lang="en">
+  <head>
+    <!--
+      Minimal stand-in for a search plugin that keeps its state in the query of the framed page, the
+      way @easyops-cn/docusaurus-search-local keeps the search words in repeated `_highlight` keys.
+    -->
+    <title>Frame search parameters</title>
+  </head>
+  <body>
+    <button type="button" onclick="history.pushState(null, '', '?_highlight=alpha&_highlight=beta')">
+      Highlight two words
+    </button>
+    <button type="button" onclick="history.pushState(null, '', location.pathname)">Clear the highlight</button>
+  </body>
+</html>

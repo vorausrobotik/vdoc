@@ -17,6 +17,8 @@ type HookedWindow = Window & typeof globalThis & { __vdocFrameHooked?: boolean }
 export interface FramedDocumentHandlers {
   /** The frame navigated itself, without discarding the document. */
   onNavigated: (historyMode: IFrameHistoryMode) => void
+  /** The frame moved to another fragment of the same document. */
+  onHashChanged: () => void
   /** The framed document changed its title, which a client-side router does after navigating. */
   onTitleChanged: (title: string) => void
   /**
@@ -95,6 +97,10 @@ export function hookFramedDocument(frameWindow: Window, handlers: FramedDocument
     }
     handlers.onNavigated('replace')
   })
+
+  // The fragment navigations vdoc performs itself are filtered out of `popstate` above, because vdoc
+  // records them before they happen. The new hash still has to reach vdoc's address bar.
+  frameWindow.addEventListener('hashchange', () => handlers.onHashChanged())
 
   // A client-side router sets the title after the navigation, so the title read while handling the
   // navigation itself is still the previous page's. Watch the head for the one that arrives late.

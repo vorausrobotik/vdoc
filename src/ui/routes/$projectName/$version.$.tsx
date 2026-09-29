@@ -1,11 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { object, optional, string } from 'valibot'
 import { DocumentationComponent } from '../../components/DocumentationComponent'
-
-// Schema for search parameters
-const searchSchema = object({
-  q: optional(string()),
-})
 
 /**
  * A single documentation page.
@@ -16,5 +10,4 @@ const searchSchema = object({
  */
 export const Route = createFileRoute('/$projectName/$version/$')({
   component: DocumentationComponent,
-  validateSearch: searchSchema,
 })
