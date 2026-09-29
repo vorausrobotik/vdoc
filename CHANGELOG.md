@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.27.1](https://github.com/vorausrobotik/vdoc/compare/0.27.0...0.27.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **ui:** Mirror the query string of documentation pages exactly ([a41a71d](https://github.com/vorausrobotik/vdoc/commit/a41a71d8580c3f2da39fea94a9438d139a9ab2a5))
+
+
+### Documentation
+
+* **ui:** Point the frame contract reference at its current path ([72f79f9](https://github.com/vorausrobotik/vdoc/commit/72f79f9d4490807117bfdfd39539d6c3e77293b9))
+
+
+### Continuous Integration
+
+* Name the exact release in every action pin comment ([51c9750](https://github.com/vorausrobotik/vdoc/commit/51c9750df97a4af1483f11df8489c327ed5940c4))
+
 ## [0.27.0](https://github.com/vorausrobotik/vdoc/compare/0.26.1...0.27.0) (2026-08-14)
 
 
