@@ -9,7 +9,7 @@ import type {
   TestType,
 } from '@playwright/test'
 import test from '@playwright/test'
-import type { ColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
+import type { ColorMode } from '@/interfacesAndTypes/ColorModes'
 
 export const prepareTestSuite = async (
   test: TestType<PlaywrightTestArgs & PlaywrightTestOptions, PlaywrightWorkerArgs & PlaywrightWorkerOptions>

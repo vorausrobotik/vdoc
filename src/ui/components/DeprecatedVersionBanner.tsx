@@ -1,6 +1,6 @@
 import { Grid, Typography, useTheme } from '@mui/material'
 import { Link } from '@tanstack/react-router'
-import testIDs from '../interfacesAndTypes/testIDs'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 interface DeprecatedVersionBannerPropsI {
   name: string

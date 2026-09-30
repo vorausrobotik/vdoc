@@ -2,8 +2,8 @@ import SellIcon from '@mui/icons-material/Sell'
 import { Badge, Box, Card, CardContent, Chip, Container, Grid, Stack, Typography } from '@mui/material'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { groupVersionsByMajorVersion } from '../helpers/Versions'
-import testIDs from '../interfacesAndTypes/testIDs'
+import { groupVersionsByMajorVersion } from '@/helpers/Versions'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 const route = getRouteApi('/_site/$projectName/')
 

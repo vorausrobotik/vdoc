@@ -1,5 +1,5 @@
 import type { AuthProvider } from 'react-admin'
-import { fetchCurrentUser, login, logout } from '../helpers/APIFunctions'
+import { fetchCurrentUser, login, logout } from '@/helpers/APIFunctions'
 import { withHttpErrors } from './dataProvider'
 
 /** Logs in with a session cookie that vdoc sets, so the password never stays in the browser. */

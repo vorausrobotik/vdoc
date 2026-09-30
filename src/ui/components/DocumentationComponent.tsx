@@ -1,9 +1,9 @@
 import { getRouteApi, useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { IFrameHistoryMode } from '../helpers/IFrame'
-import { toReadableHref } from '../helpers/RouteHelpers'
-import testIDs from '../interfacesAndTypes/testIDs'
+import type { IFrameHistoryMode } from '@/helpers/IFrame'
+import { toReadableHref } from '@/helpers/RouteHelpers'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import { DeprecatedVersionBanner } from './DeprecatedVersionBanner'
 import IFrame from './IFrame'
 

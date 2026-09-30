@@ -18,7 +18,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    /* Imports from elsewhere in the frontend start at its root */
+    "paths": { "@/*": ["./src/ui/*"] }
   },
   "include": ["src"]
 }

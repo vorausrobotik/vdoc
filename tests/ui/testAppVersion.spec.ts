@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from './base'
 
 await prepareTestSuite(test)

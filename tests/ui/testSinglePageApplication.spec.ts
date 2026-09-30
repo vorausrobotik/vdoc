@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { expect, type Locator, type Page } from '@playwright/test'
-import type { EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite, themes } from './base'
 import {
   assertLinkOpensInNewTab,

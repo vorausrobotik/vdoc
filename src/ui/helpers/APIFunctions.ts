@@ -1,6 +1,6 @@
 import axios from 'axios'
-import type { FastAPIAxiosErrorT } from '../interfacesAndTypes/Error'
-import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
+import type { FastAPIAxiosErrorT } from '@/interfacesAndTypes/Error'
+import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
 
 /** The message vdoc answered an API error with, or the error's own message if it did not answer. */
 export const apiErrorMessage = (error: unknown): string =>

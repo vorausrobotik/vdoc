@@ -1,7 +1,7 @@
 import { alpha, Box, Link, Paper, Typography } from '@mui/material'
 import Markdown, { type Components } from 'react-markdown'
-import type SitePluginT from '../../interfacesAndTypes/plugins/SitePlugin'
-import testIDs from '../../interfacesAndTypes/testIDs'
+import type SitePluginT from '@/interfacesAndTypes/plugins/SitePlugin'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 /**
  * What the long description may render.

@@ -9,8 +9,8 @@ import {
   fetchProjects,
   renameProjectCategory,
   updateProject,
-} from '../helpers/APIFunctions'
-import type { Project } from '../interfacesAndTypes/Project'
+} from '@/helpers/APIFunctions'
+import type { Project } from '@/interfacesAndTypes/Project'
 
 /** Answers a failed request as react-admin expects it: the message vdoc sent, and the status. */
 export async function withHttpErrors<T>(request: () => Promise<T>): Promise<T> {

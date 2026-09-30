@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DocumentationComponent } from '../../../components/DocumentationComponent'
+import { DocumentationComponent } from '@/components/DocumentationComponent'
 
 /**
  * A single documentation page.

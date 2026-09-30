@@ -6,15 +6,15 @@
 import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useContentInset } from '../contexts/ContentInsetContext'
-import { useIFrameScroll } from '../contexts/IFrameScrollContext'
-import { hookFramedDocument } from '../helpers/FramedDocument'
+import { useContentInset } from '@/contexts/ContentInsetContext'
+import { useIFrameScroll } from '@/contexts/IFrameScrollContext'
+import { hookFramedDocument } from '@/helpers/FramedDocument'
 import {
   type IFrameHistoryMode,
   parseIFrameHref,
   toggleDocumentationColorScheme,
   VDOC_THEME_ATTRIBUTE,
-} from '../helpers/IFrame'
+} from '@/helpers/IFrame'
 import {
   composeIFrameSrc,
   type FrameParams,
@@ -22,9 +22,9 @@ import {
   sanitizeDocuUri,
   toFrameHref,
   toReadableHref,
-} from '../helpers/RouteHelpers'
-import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
-import { testIDs } from '../interfacesAndTypes/testIDs'
+} from '@/helpers/RouteHelpers'
+import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
+import { testIDs } from '@/interfacesAndTypes/testIDs'
 
 interface Props {
   src: string

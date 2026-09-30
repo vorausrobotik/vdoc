@@ -8,7 +8,7 @@ import {
   stripFramePrefix,
   toFrameHref,
   toReadableHref,
-} from '../../helpers/RouteHelpers'
+} from '@/helpers/RouteHelpers'
 
 describe('sanitizeDocuUri', () => {
   test('sanitizes valid uris as expected', () => {

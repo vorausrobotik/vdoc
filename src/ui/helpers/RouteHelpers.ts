@@ -1,4 +1,4 @@
-import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
 
 /**
  * Path prefix under which vdoc serves the published documentation files themselves.

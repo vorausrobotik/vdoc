@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test'
-import type { FooterPluginT } from '../../src/ui/interfacesAndTypes/plugins/FooterPlugin'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import type { FooterPluginT } from '@/interfacesAndTypes/plugins/FooterPlugin'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from './base'
 import {
   expectHeaderHidden,

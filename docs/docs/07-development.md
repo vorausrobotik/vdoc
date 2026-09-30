@@ -18,6 +18,10 @@ vdoc is a Python backend and a React frontend in one repository, plus this docum
 The frontend builds into `src/vdoc/webapp/`, which is why that directory is git-ignored and shipped
 inside the wheel — a `pip install vdoc` carries the interface with it.
 
+Frontend code imports a module from its own directory relatively, as `./Module`, and every other one
+from the root of `src/ui/`, as `@/helpers/Module`. The `paths` in `tsconfig.app.json` define `@/`,
+and Vite, Vitest and Playwright all read it from there.
+
 ## Setting up
 
 ```shell

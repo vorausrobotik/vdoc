@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test'
-import type { Project } from '../../src/ui/interfacesAndTypes/Project'
+import type { Project } from '@/interfacesAndTypes/Project'
 import test, { prepareTestSuite } from './base'
 
 await prepareTestSuite(test)

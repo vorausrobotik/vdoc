@@ -1,4 +1,4 @@
-import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
+import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
 
 /** The name a reader is shown: the display name if one is set, otherwise the project name. */
 export const projectTitle = (project: Project): string => project.display_name ?? project.name

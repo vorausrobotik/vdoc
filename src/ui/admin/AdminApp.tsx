@@ -13,8 +13,8 @@ import {
   required,
   TextInput,
 } from 'react-admin'
-import { projectTitle } from '../helpers/Projects'
-import type { Project } from '../interfacesAndTypes/Project'
+import { projectTitle } from '@/helpers/Projects'
+import type { Project } from '@/interfacesAndTypes/Project'
 import { authProvider } from './authProvider'
 import { CategoryCreate, CategoryEdit, CategoryList } from './categories'
 import { dataProvider } from './dataProvider'

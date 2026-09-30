@@ -28,8 +28,8 @@ import {
   useRedirect,
   useRefresh,
 } from 'react-admin'
-import { deleteProjectVersion } from '../helpers/APIFunctions'
-import type { Project, ProjectCategory, ProjectVersion } from '../interfacesAndTypes/Project'
+import { deleteProjectVersion } from '@/helpers/APIFunctions'
+import type { Project, ProjectCategory, ProjectVersion } from '@/interfacesAndTypes/Project'
 import { withHttpErrors } from './dataProvider'
 import { CategoryChip, CategoryOption, VisibilityChip, VisibilityOption } from './fields'
 import { VISIBILITY_CHOICES } from './visibility'

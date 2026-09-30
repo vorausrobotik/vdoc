@@ -1,9 +1,9 @@
 import { Box, Button, Container, Divider, Link, Paper, Typography, useTheme } from '@mui/material'
 import { Fragment, useEffect, useState } from 'react'
-import { fetchPluginConfig } from '../../helpers/APIFunctions'
-import type FooterPluginT from '../../interfacesAndTypes/plugins/FooterPlugin'
-import { iconMap } from '../../interfacesAndTypes/plugins/FooterPlugin'
-import testIDs from '../../interfacesAndTypes/testIDs'
+import { fetchPluginConfig } from '@/helpers/APIFunctions'
+import type FooterPluginT from '@/interfacesAndTypes/plugins/FooterPlugin'
+import { iconMap } from '@/interfacesAndTypes/plugins/FooterPlugin'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 export const FooterPlugin = () => {
   const [footerPluginConfig, setFooterPluginConfig] = useState<FooterPluginT | null>(null)

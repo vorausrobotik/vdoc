@@ -3,6 +3,8 @@ import 'dotenv/config'
 
 export default defineConfig({
   testDir: 'tests/ui',
+  // The frontend's own, so the `@/` imports resolve in the tests and in the frontend code they import
+  tsconfig: './tsconfig.app.json',
   timeout: 30000,
   retries: 0,
   fullyParallel: true,
