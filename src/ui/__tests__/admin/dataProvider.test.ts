@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { listPage } from '../../admin/dataProvider'
+import { listPage } from '@/admin/dataProvider'
 
 const records = [
   { id: 'b', name: 'beta', display_name: 'Second' },

@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
-import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import { themes } from './base'
 export const BASE_URL = 'http://localhost:3000'
 

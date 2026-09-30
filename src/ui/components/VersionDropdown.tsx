@@ -1,5 +1,5 @@
 import { Chip, FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material'
-import testIDs from '../interfacesAndTypes/testIDs'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 interface VersionDropdownProps extends React.ComponentProps<'div'> {
   selectedVersion: string

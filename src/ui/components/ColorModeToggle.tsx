@@ -4,8 +4,8 @@ import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import { IconButton, Tooltip } from '@mui/material'
 import { useColorScheme } from '@mui/material/styles'
-import { type ColorMode, nextColorMode } from '../interfacesAndTypes/ColorModes'
-import testIDs from '../interfacesAndTypes/testIDs'
+import { type ColorMode, nextColorMode } from '@/interfacesAndTypes/ColorModes'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 const colorModeIcons: Record<ColorMode, SvgIconComponent> = {
   system: ContrastIcon,

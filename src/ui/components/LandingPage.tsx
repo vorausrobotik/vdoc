@@ -1,11 +1,11 @@
 import { Box, Card, CardActions, CardContent, Container, Grid, Typography } from '@mui/material'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { groupProjectsByCategories, projectTitle } from '../helpers/Projects'
-import { LinkButton } from '../interfacesAndTypes/LinkButton'
-import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
-import type SitePluginT from '../interfacesAndTypes/plugins/SitePlugin'
-import testIDs from '../interfacesAndTypes/testIDs'
+import { groupProjectsByCategories, projectTitle } from '@/helpers/Projects'
+import { LinkButton } from '@/interfacesAndTypes/LinkButton'
+import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
+import type SitePluginT from '@/interfacesAndTypes/plugins/SitePlugin'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import { SitePlugin } from './plugins/SitePlugin'
 
 const route = getRouteApi('/_site/')

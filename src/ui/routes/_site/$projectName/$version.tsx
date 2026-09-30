@@ -1,11 +1,11 @@
 import SearchOffIcon from '@mui/icons-material/SearchOff'
 import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import ErrorComponent from '../../../components/ErrorComponent'
-import { LoadingSpinner } from '../../../components/LoadingSpinner'
-import { fetchProjectVersion } from '../../../helpers/APIFunctions'
-import { sanitizeDocuUri } from '../../../helpers/RouteHelpers'
-import type { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
+import ErrorComponent from '@/components/ErrorComponent'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { fetchProjectVersion } from '@/helpers/APIFunctions'
+import { sanitizeDocuUri } from '@/helpers/RouteHelpers'
+import type { FastAPIAxiosErrorT } from '@/interfacesAndTypes/Error'
 
 const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown

@@ -1,6 +1,6 @@
 import { createTheme, type PaletteOptions, type Theme } from '@mui/material/styles'
-import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
-import type ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
+import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
+import type ThemePluginT from '@/interfacesAndTypes/plugins/ThemePlugin'
 
 /**
  * Turns the theme plugin's configuration into a MUI theme.

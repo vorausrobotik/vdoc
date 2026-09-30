@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { expect, type Locator, type Page } from '@playwright/test'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from './base'
 import { BASE_URL, openProjectDocumentation } from './helpers'
 

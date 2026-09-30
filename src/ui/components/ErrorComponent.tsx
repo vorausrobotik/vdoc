@@ -4,7 +4,7 @@ import type { TypographyVariant } from '@mui/material/styles'
 import type { BoxProps } from '@mui/system'
 import { AxiosError } from 'axios'
 import { type ElementType, useEffect, useState } from 'react'
-import testIDs from '../interfacesAndTypes/testIDs'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 type SvgIconColor = SvgIconProps['color']
 

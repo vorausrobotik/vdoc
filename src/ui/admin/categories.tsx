@@ -11,7 +11,7 @@ import {
   TextInput,
   Toolbar,
 } from 'react-admin'
-import type { ProjectCategory } from '../interfacesAndTypes/Project'
+import type { ProjectCategory } from '@/interfacesAndTypes/Project'
 import { CategoryChip } from './fields'
 
 export const CategoryList = () => (

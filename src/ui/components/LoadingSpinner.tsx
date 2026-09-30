@@ -1,5 +1,5 @@
 import { Box, CircularProgress } from '@mui/material'
-import testIDs from '../interfacesAndTypes/testIDs'
+import testIDs from '@/interfacesAndTypes/testIDs'
 
 export const LoadingSpinner = () => (
   <Box

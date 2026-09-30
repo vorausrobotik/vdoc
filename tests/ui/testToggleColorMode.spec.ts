@@ -1,5 +1,5 @@
-import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
-import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
+import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from './base'
 import { assertCurrentColorMode, assertTheme, switchColorMode } from './helpers'
 

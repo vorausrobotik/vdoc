@@ -29,6 +29,8 @@ export default defineConfig({
     }),
   ],
   root: 'src/ui',
+  // Resolves the `@/` imports from the `paths` in tsconfig.app.json, the one place that maps them
+  resolve: { tsconfigPaths: true },
   build: {
     outDir: '../vdoc/webapp',
     emptyOutDir: true,

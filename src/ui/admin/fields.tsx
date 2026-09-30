@@ -2,7 +2,7 @@ import LabelIcon from '@mui/icons-material/Label'
 import LabelOffIcon from '@mui/icons-material/LabelOff'
 import { alpha, Box, Chip, type ChipProps, Stack, Typography, useTheme } from '@mui/material'
 import { type RaRecord, useRecordContext } from 'react-admin'
-import type { ProjectCategory, ProjectVisibility } from '../interfacesAndTypes/Project'
+import type { ProjectCategory, ProjectVisibility } from '@/interfacesAndTypes/Project'
 import { categoryHue } from './categoryColors'
 import { VISIBILITY_CHOICES, type VisibilityChoice } from './visibility'
 

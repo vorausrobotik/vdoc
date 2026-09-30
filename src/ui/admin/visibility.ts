@@ -1,7 +1,7 @@
 import LinkIcon from '@mui/icons-material/Link'
 import LockIcon from '@mui/icons-material/Lock'
 import PublicIcon from '@mui/icons-material/Public'
-import type { ProjectVisibility } from '../interfacesAndTypes/Project'
+import type { ProjectVisibility } from '@/interfacesAndTypes/Project'
 
 export interface VisibilityChoice {
   id: ProjectVisibility

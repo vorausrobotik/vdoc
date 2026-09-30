@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
-import type { SitePluginT } from '../../../src/ui/interfacesAndTypes/plugins/SitePlugin'
-import testIDs from '../../../src/ui/interfacesAndTypes/testIDs'
+import type { SitePluginT } from '@/interfacesAndTypes/plugins/SitePlugin'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from '../base'
 
 await prepareTestSuite(test)

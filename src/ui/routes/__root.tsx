@@ -1,8 +1,8 @@
 import { createRootRoute } from '@tanstack/react-router'
 
-import { RootComponent } from '../components/RootLayout'
-import { fetchPluginConfig } from '../helpers/APIFunctions'
-import type ThemePluginT from '../interfacesAndTypes/plugins/ThemePlugin'
+import { RootComponent } from '@/components/RootLayout'
+import { fetchPluginConfig } from '@/helpers/APIFunctions'
+import type ThemePluginT from '@/interfacesAndTypes/plugins/ThemePlugin'
 
 export const Route = createRootRoute({
   // Resolved before anything paints, because the palette decides how the whole interface looks and a

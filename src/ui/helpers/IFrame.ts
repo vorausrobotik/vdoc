@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import type { EffectiveColorMode } from '../interfacesAndTypes/ColorModes'
+import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
 import { FRAME_PATH_PREFIX, VDOC_THEME_PARAM } from './RouteHelpers'
 
 /** Where the frame is, as far as vdoc has to tell pages apart. */
