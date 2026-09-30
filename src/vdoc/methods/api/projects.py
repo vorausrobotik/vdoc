@@ -9,18 +9,9 @@ from fastapi.responses import JSONResponse
 from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
 
+from vdoc.constants import RESERVED_PROJECT_NAMES
 from vdoc.exceptions import InvalidProjectName, InvalidVersion, ProjectVersionAlreadyExists, UploadedFileInvalid
-from vdoc.models.project import Project, invalidate_published_versions
-from vdoc.settings import get_settings
-
-
-def list_projects_impl() -> list[Project]:
-    """Lists all projects.
-
-    Returns:
-        A list of all projects.
-    """
-    return Project.list()
+from vdoc.models.project import Project
 
 
 def list_project_versions_impl(name: str) -> list[str]:
@@ -32,7 +23,7 @@ def list_project_versions_impl(name: str) -> list[str]:
     Returns:
         A list of all available versions of the project.
     """
-    return list(Project(name=name).versions.values())
+    return [published.version for published in Project.get(name=name).versions]
 
 
 def get_project_version_impl(name: str, version: str) -> str:
@@ -58,7 +49,7 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
         file: The uploaded file.
 
     Raises:
-        InvalidProjectName: If the project name is invalid.
+        InvalidProjectName: If the project name is invalid or reserved.
         InvalidVersion: If the project version is invalid.
         ProjectVersionAlreadyExists: If the uploaded version already exists for the project.
         UploadedFileInvalid: If the uploaded file's content type is invalid.
@@ -69,14 +60,14 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
     Returns:
         _description_
     """
-    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
+    if not re.match(r"^[a-zA-Z0-9_-]+$", name) or name in RESERVED_PROJECT_NAMES:
         raise InvalidProjectName(name=name)
     try:
         Version(version=version)
     except PackagingInvalidVersion as error:
         raise InvalidVersion(version=version) from error
 
-    target_path = get_settings().docs_dir / name / version
+    target_path = Project(name=name).version_path(version=version)
 
     if target_path.is_dir():
         raise ProjectVersionAlreadyExists(name=name, version=version)
@@ -97,11 +88,7 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
     except zipfile.BadZipFile as error:
         shutil.rmtree(path=target_path, ignore_errors=True)
         raise UploadedFileInvalid(str(error)) from error
-    finally:
-        # The only thing that changes what vdoc serves while it runs, so the only place that has to drop
-        # what was derived from it. In the `finally` because a half-written upload that was cleaned up
-        # again changed the directory just as much as a successful one.
-        invalidate_published_versions()
+    Project.publish(name=name, version=version)
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED, content=f"Version '{version}' of project '{name}' uploaded successfully."

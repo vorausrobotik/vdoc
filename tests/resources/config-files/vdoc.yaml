@@ -2,13 +2,7 @@
 
 vdoc:
   docs_dir: /from/the/file
-  project_categories:
-    - { id: 0, name: General }
-    - { id: 1, name: Components }
-  project_category_mapping:
-    voraus-software-manual: General
-  project_display_name_mapping:
-    voraus-software-manual: Software Manual
+  bind_port: 9000
 
 plugins:
   footer:

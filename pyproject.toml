@@ -44,6 +44,9 @@ dependencies = [
     "pydantic-settings[yaml]~=2.0",
     "jinja2~=3.0",
     "servestatic~=4.0",
+    "sqlalchemy~=2.0",
+    "alembic~=1.20",
+    "starsessions~=2.2",
 ]
 
 # Add CLI entry points here
@@ -174,6 +177,24 @@ default-groups = ["tox"]
 # this at the whole directory would drag `docs/node_modules` in.
 include = ["src/**", "tests/**", "docs/_scripts/**"]
 
+[tool.alembic]
+# For the `alembic` command line, which is how a revision is written. vdoc runs the migrations on its
+# own when it starts, and points Alembic at the same directory inside the installed package.
+script_location = "%(here)s/src/vdoc/db/migrations"
+file_template = "%%(year)d_%%(month).2d_%%(day).2d-%%(rev)s_%%(slug)s"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff_fix"
+type = "module"
+module = "ruff"
+options = "check --fix REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff_format"
+type = "module"
+module = "ruff"
+options = "format REVISION_SCRIPT_FILENAME"
+
 [tool.ruff]
 line-length = 120
 src = ["src"]
@@ -202,7 +223,14 @@ lint.pydocstyle.convention = "google"
     "S311",     # Random numbers in our tests aren't for cryptographic purposes
     "SLF001",   # Private member access
     "T201",     # Allow print in tests as this is preferred over logging
-    "PLR2004"   # Allow "magic value comparison", e.g. "assert len(list) == 5"
+    "PLR2004",  # Allow "magic value comparison", e.g. "assert len(list) == 5"
+    "S106",     # Tests authenticate with made-up credentials
+]
+"src/vdoc/db/migrations/versions/**" = [
+    "D400",     # The first docstring line is the revision message, which Alembic writes without a period
+    "D415",     # Same as D400
+    "INP001",   # Alembic loads revisions by path, not as a package
+    "N999",     # Revision file names start with their date
 ]
 "**/__init__.py" = [
     "F401", # Imported but unused
@@ -234,6 +262,7 @@ addopts = """
     --ignore-glob=vdoc-[0-9]*
     --ignore="docs/_scripts"
     --ignore="tests/resources/sample-docs/"
+    --ignore="src/vdoc/db/migrations/"
     --cov=vdoc
     --cov-config=pyproject.toml
     --cov-report=
@@ -241,6 +270,9 @@ addopts = """
 
 [tool.coverage.run]
 branch = true
+# Alembic loads the migrations by path, under module names of its own, so they would count as never
+# run. Every test runs them, and a test checks that they match the tables.
+omit = ["*/vdoc/db/migrations/*"]
 
 [tool.coverage.paths]
 # Maps coverage measured in site-packages to source files in src

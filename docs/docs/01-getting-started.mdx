@@ -18,19 +18,19 @@ export const RunOptions = () => {
       value: 'uv',
       label: 'uv',
       description: 'Runs vdoc straight from PyPI, installing nothing permanently.',
-      command: 'uvx vdoc run',
+      command: 'VDOC_API_USERNAME=me VDOC_API_PASSWORD=change-me uvx vdoc run',
     },
     {
       value: 'pip',
       label: 'pip',
       description: 'Installs vdoc into the active environment, then starts it.',
-      command: 'pip install vdoc && vdoc run',
+      command: 'pip install vdoc && VDOC_API_USERNAME=me VDOC_API_PASSWORD=change-me vdoc run',
     },
     {
       value: 'docker',
       label: 'Docker',
-      description: 'Mounts a directory for the uploads, so they outlive the container.',
-      command: `docker run -p 8080:8080 -v ./vdoc-docs:/srv/vdoc/docs/ voraus.jfrog.io/docker/vdoc:${version}`,
+      description: 'Mounts directories for the uploads and the database, so they outlive the container.',
+      command: `docker run -p 8080:8080 -e VDOC_API_USERNAME=me -e VDOC_API_PASSWORD=change-me -v ./vdoc-docs:/srv/vdoc/docs/ -v ./vdoc-data:/srv/vdoc/data/ voraus.jfrog.io/docker/vdoc:${version}`,
     },
   ]
   return (
@@ -53,9 +53,10 @@ Three steps: run vdoc, publish a version, open it.
 
 :::tip[🚀 vdoc is now available]
 
-It answers on [localhost:8080](http://localhost:8080) — an empty landing page, and the API
-credentials still on their defaults, which it says in the log. Changing them is the first thing
-[Configuration](03-configuration.md) covers.
+It answers on [localhost:8080](http://localhost:8080) with an empty landing page. The credentials
+set above are what uploads and the admin pages ask for. vdoc refuses both while the credentials are
+still the defaults `admin`/`admin`, because those are published here.
+[Configuration](03-configuration.md) covers the rest of the settings.
 
 :::
 
@@ -66,7 +67,7 @@ Take any directory with an `index.html` in it, zip it up and post it:
 ```shell
 cd path/to/built/docs
 zip -r ../docs.zip .
-curl --user admin:admin \
+curl --user me:change-me \
   --form "file=@../docs.zip;type=application/zip" \
   http://localhost:8080/api/projects/example/versions/1.0.0
 ```
@@ -85,6 +86,7 @@ the newer one.
 
 ## Then what
 
-An instance that serves more than one project usually wants a name, a logo and some grouping. That
-is all configuration: [Configuration](03-configuration.md) for vdoc's own settings,
-[Plugins](04-plugins/index.mdx) for how it presents itself.
+An instance that serves more than one project usually wants a name, a logo and some grouping.
+[Configuration](03-configuration.md) covers vdoc's own settings and the admin page, which sets the
+display name, description, category and visibility of each project.
+[Plugins](04-plugins/index.mdx) covers how the instance presents itself.

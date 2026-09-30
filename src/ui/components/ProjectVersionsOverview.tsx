@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { groupVersionsByMajorVersion } from '../helpers/Versions'
 import testIDs from '../interfacesAndTypes/testIDs'
 
-const route = getRouteApi('/$projectName/')
+const route = getRouteApi('/_site/$projectName/')
 
 export function ProjectVersionsOverview() {
   const { projectName } = route.useParams()

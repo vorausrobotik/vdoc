@@ -1,5 +1,6 @@
 """Contains all constant values."""
 
+from datetime import timedelta
 from pathlib import Path
 
 from pydantic import AnyHttpUrl
@@ -16,6 +17,11 @@ CONFIG_FILE_SECTION_VDOC = ("vdoc",)
 CONFIG_FILE_SECTION_PLUGINS = "plugins"
 
 ## ADDRESSING
+
+# The address of the admin page. The web UI routes it in the same namespace as the projects, so no
+# project may be named like it, nor like any other path vdoc answers for itself.
+ADMIN_ROUTE = "admin"
+RESERVED_PROJECT_NAMES = frozenset({ADMIN_ROUTE, "api", "apidoc", "static"})
 
 # Where the published files are served from, and the version alias that resolves to the newest one.
 STATIC_PROJECTS_PREFIX = "/static/projects"
@@ -41,6 +47,12 @@ PAGE_INVENTORY_FILES = {
 
 DEFAULT_DOCS_DIR = Path("/srv/vdoc/docs/")
 DEFAULT_CONFIG_FILE = Path("/srv/vdoc/vdoc.yaml")
+DEFAULT_DATABASE_URL = "sqlite:////srv/vdoc/data/vdoc.db"
+
+# The key under which the session holds the name of whoever logged in on the login page
+SESSION_USER_KEY = "user"
+# How long a login lasts without being used
+SESSION_IDLE_TIMEOUT = timedelta(hours=8)
 DEFAULT_API_USERNAME = b"admin"
 DEFAULT_API_PASSWORD = b"admin"
 DEFAULT_BIND_ADDRESS = "0.0.0.0"  # noqa: S104

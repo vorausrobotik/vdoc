@@ -48,7 +48,8 @@ function shouldHideNavigation(
   return currentlyHidden
 }
 
-function ThemedComponent() {
+/** vdoc's own pages: its app bar above them and its footer below. The admin pages bring their own. */
+export function SiteLayout() {
   const { mode } = useColorScheme()
   const { scrollY } = useIFrameScroll()
   const lastScrollY = useRef(0)
@@ -125,6 +126,7 @@ function ThemedComponent() {
   )
 }
 
+/** What every page shares: the theme and the color mode. The layout comes from the route below it. */
 export function RootComponent() {
   const { themePluginConfig } = route.useLoaderData()
   const theme = useMemo(() => buildTheme(themePluginConfig), [themePluginConfig])
@@ -135,7 +137,7 @@ export function RootComponent() {
       <InitColorSchemeScript />
       <IFrameScrollProvider>
         <ContentInsetProvider>
-          <ThemedComponent />
+          <Outlet />
         </ContentInsetProvider>
       </IFrameScrollProvider>
     </ThemeProvider>

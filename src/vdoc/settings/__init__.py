@@ -6,6 +6,7 @@ from typing import Self
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+from sqlalchemy import make_url
 
 from vdoc.config_file import ConfigFileSettingsSource
 from vdoc.constants import (
@@ -15,9 +16,9 @@ from vdoc.constants import (
     DEFAULT_API_USERNAME,
     DEFAULT_BIND_ADDRESS,
     DEFAULT_BIND_PORT,
+    DEFAULT_DATABASE_URL,
     DEFAULT_DOCS_DIR,
 )
-from vdoc.models.project_category import ProjectCategory
 
 
 class VDocSettings(BaseSettings):
@@ -31,11 +32,7 @@ class VDocSettings(BaseSettings):
     api_password: bytes = DEFAULT_API_PASSWORD
     bind_address: str = DEFAULT_BIND_ADDRESS
     bind_port: int = DEFAULT_BIND_PORT
-
-    project_display_name_mapping: dict[str, str] = {}
-
-    project_categories: list[ProjectCategory] = []
-    project_category_mapping: dict[str, str] = {}
+    database_url: str = DEFAULT_DATABASE_URL
 
     @classmethod
     def settings_customise_sources(
@@ -69,36 +66,33 @@ class VDocSettings(BaseSettings):
             ConfigFileSettingsSource(settings_cls, section=CONFIG_FILE_SECTION_VDOC),
         )
 
+    @property
+    def uses_default_credentials(self) -> bool:
+        """Reports whether the API credentials are still the published defaults.
+
+        Returns:
+            True if both the username and the password are the defaults, False otherwise.
+        """
+        return self.api_username == DEFAULT_API_USERNAME and self.api_password == DEFAULT_API_PASSWORD
+
     @model_validator(mode="after")
-    def validate_model(self) -> Self:
-        """Validates the model.
+    def validate_database_outside_docs_dir(self) -> Self:
+        """Ensures that the database file is not inside the documentation directory.
 
-        The following checks are performed:
-
-        - Ensures that all category IDs in `project_categories` are unique.
-        - Ensures that all category names in `project_categories` are unique.
-        - Ensures that all categories in `project_category_mapping` are defined in `project_categories`.
+        Everything in the documentation directory is served as a static file, so a database placed
+        there could be downloaded by anyone.
 
         Raises:
-            ValueError: If any check fails.
+            ValueError: If the database file is inside the documentation directory.
 
         Returns:
             Self: The validated model.
         """
-        project_category_ids = [category.id for category in self.project_categories]
-        project_category_names = [category.name for category in self.project_categories]
-        if len(set(project_category_ids)) != len(project_category_ids):
-            msg = "Duplicate category IDs are not allowed in `project_categories`"
-            raise ValueError(msg)
-        if len(set(project_category_names)) != len(project_category_names):
-            msg = "Duplicate category names are not allowed in `project_categories`"
-            raise ValueError(msg)
-        for category_name in self.project_category_mapping.values():
-            if category_name not in project_category_names:
-                msg = (
-                    f"Category name '{category_name}' in `project_category_mapping` is "
-                    "not defined in `project_categories`"
-                )
+        url = make_url(self.database_url)
+        if url.get_backend_name() == "sqlite" and url.database:
+            database_path = Path(url.database).resolve()
+            if database_path.is_relative_to(self.docs_dir.resolve()):
+                msg = f"The database '{database_path}' must not be inside the documentation directory"
                 raise ValueError(msg)
 
         return self

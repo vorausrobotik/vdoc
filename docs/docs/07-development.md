@@ -31,7 +31,13 @@ tests, and everything in it beats the configuration file:
 ```shell
 VDOC_CONFIG_FILE=vdoc.yaml
 VDOC_DOCS_DIR=/path/to/some/documentation
+VDOC_DATABASE_URL=sqlite:////path/to/some/vdoc.db
+VDOC_API_USERNAME=someone
+VDOC_API_PASSWORD=something
 ```
+
+The credentials are there because uploads and the admin pages stay disabled with the default ones.
+They are what you log in with at [localhost:8090/admin](http://localhost:8090/admin).
 
 ## Running it
 
@@ -87,6 +93,21 @@ missing image, and invalid MDX. Link between pages by file path, for example
 `.md` is parsed as CommonMark and `.mdx` as MDX. That is what keeps the generated license page —
 which contains whatever third-party metadata says, including things that look like HTML tags — from
 being able to break the build.
+
+## Changing the database
+
+vdoc brings the database up to date with [Alembic](https://alembic.sqlalchemy.org/) every time it
+starts. The tables are defined in `src/vdoc/db/tables.py`. After changing them, write the migration
+for it:
+
+```shell
+uv run --group lint alembic revision --autogenerate -m "Add a column for something"
+```
+
+Alembic compares the tables against the database named in `.env`, so that database has to be at the
+current schema first, which running vdoc once does. The `lint` group provides `ruff`, which formats
+the new revision. Read what it wrote before committing it. A test fails as long as the tables and
+the migrations disagree.
 
 ## Releasing
 

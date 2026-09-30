@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DocumentationComponent } from '../../components/DocumentationComponent'
+import { DocumentationComponent } from '../../../components/DocumentationComponent'
 
 /**
  * A single documentation page.
@@ -8,6 +8,6 @@ import { DocumentationComponent } from '../../components/DocumentationComponent'
  * for single page documentation happens without a document load - would otherwise re-run it. What
  * has to be resolved for the whole project version is resolved by the route above.
  */
-export const Route = createFileRoute('/$projectName/$version/$')({
+export const Route = createFileRoute('/_site/$projectName/$version/$')({
   component: DocumentationComponent,
 })

@@ -11,7 +11,6 @@ from yaml import YAMLError
 from vdoc.config_file import config_file_path, log_configuration_source
 from vdoc.constants import CONFIG_FILE_ENV_VAR, DEFAULT_CONFIG_FILE
 from vdoc.models.plugins import FooterPlugin, OramaPlugin, ThemePlugin
-from vdoc.models.project_category import ProjectCategory
 from vdoc.settings import VDocSettings
 
 
@@ -49,12 +48,7 @@ def test_settings_from_the_config_file(config_files: Path) -> None:
         settings = VDocSettings()
 
     assert settings.docs_dir == Path("/from/the/file")
-    assert settings.project_categories == [
-        ProjectCategory(id=0, name="General"),
-        ProjectCategory(id=1, name="Components"),
-    ]
-    assert settings.project_category_mapping == {"voraus-software-manual": "General"}
-    assert settings.project_display_name_mapping == {"voraus-software-manual": "Software Manual"}
+    assert settings.bind_port == 9000
 
 
 def test_environment_wins_over_the_config_file(config_files: Path) -> None:
@@ -68,7 +62,7 @@ def test_environment_wins_over_the_config_file(config_files: Path) -> None:
 
     assert settings.docs_dir == Path("/from/the/environment")
     # Only the overridden setting comes from the environment, the rest still comes from the file
-    assert settings.project_category_mapping == {"voraus-software-manual": "General"}
+    assert settings.bind_port == 9000
 
 
 def test_plugins_read_their_own_section(config_files: Path) -> None:
@@ -113,6 +107,18 @@ def test_an_unparsable_value_in_the_config_file_fails_validation(config_files: P
         pytest.raises(ValidationError, match="Input should be a valid URL"),
     ):
         ThemePlugin()
+
+
+def test_unknown_keys_in_the_config_file_are_ignored(config_files: Path, caplog: pytest.LogCaptureFixture) -> None:
+    """Two releases sharing one file, like a production and a preview deployment, must both start."""
+    with patch.dict(os.environ, {CONFIG_FILE_ENV_VAR: str(config_files / "unknown-keys.yaml")}, clear=True):
+        settings = VDocSettings()
+        footer = FooterPlugin()
+
+    assert settings.bind_port == 9000
+    assert footer.copyright == "voraus robotik GmbH"
+    assert "Ignoring 'project_categories' in section 'vdoc'" in caplog.text
+    assert "Ignoring 'a_setting_from_the_future' in section 'plugins.footer'" in caplog.text
 
 
 def test_a_section_that_is_not_a_mapping_is_ignored(config_files: Path) -> None:

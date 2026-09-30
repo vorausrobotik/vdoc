@@ -1,58 +1,106 @@
 """Contains all tests for the project models."""
 
-import os
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
-from packaging.version import Version
 
 from tests.conftest import DUMMY_DOCS_STRUCTURE
-from vdoc.exceptions import InvalidVersion, ProjectVersionNotFound
+from vdoc.exceptions import CategoryNotFound, InvalidVersion, ProjectNotFound, ProjectVersionNotFound
 from vdoc.models.project import Project
+from vdoc.models.project_category import ProjectCategory
+from vdoc.models.project_visibility import ProjectVisibility
 
 
-@patch.dict(os.environ, {"VDOC_PROJECT_DISPLAY_NAME_MAPPING": '{"dummy-project-01": "Dummy Project 01"}'})
-def test_project_display_name(dummy_projects_dir: Path) -> None:  # noqa: ARG001
-    assert Project(name="dummy-project-01").display_name == "Dummy Project 01"
-    assert Project(name="dummy-project-02").display_name == "dummy-project-02"
+def test_project_defaults(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    project = Project.get(name="dummy-project-01")
+
+    assert project == Project(name="dummy-project-01")
+    assert project.title == "dummy-project-01"
+    assert project.visibility is ProjectVisibility.LISTED
 
 
-@patch.dict(
-    os.environ,
-    {
-        "VDOC_PROJECT_CATEGORIES": '[{"id": 1, "name": "General"}, {"id": 2, "name": "API"}]',
-        "VDOC_PROJECT_CATEGORY_MAPPING": '{"dummy-project-01": "API"}',
-    },
-)
-def test_project_category(dummy_projects_dir: Path) -> None:  # noqa: ARG001
-    assert Project(name="dummy-project-01").category_id == 2
-    assert Project(name="dummy-project-02").category_id is None
+def test_project_save(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    category = ProjectCategory.create(name="General")
+    Project(name="dummy-project-01", display_name="One", description="  ", category_id=category.id).save()
+
+    project = Project.get(name="dummy-project-01")
+    assert project.title == "One"
+    assert project.description is None, "A blank text is stored as not set"
+    assert project.category_id == category.id
 
 
-def test_list_projects(dummy_projects_dir: Path) -> None:  # noqa: ARG001
-    projects = Project.list()
-    assert projects == [Project(name=project_name) for project_name in DUMMY_DOCS_STRUCTURE]
+def test_project_save_unknown_category(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    with pytest.raises(CategoryNotFound):
+        Project(name="dummy-project-01", category_id=42).save()
+
+
+def test_project_category_deleted(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    """Deleting a category moves its projects out of it rather than failing or deleting them."""
+    category = ProjectCategory.create(name="General")
+    Project(name="dummy-project-01", category_id=category.id).save()
+    ProjectCategory.delete(category_id=category.id)
+
+    assert Project.get(name="dummy-project-01").category_id is None
+
+
+def test_project_not_found(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    with pytest.raises(ProjectNotFound):
+        Project.get(name="not-a-project")
+
+
+def test_locked_project(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    Project(name="dummy-project-01", visibility=ProjectVisibility.LOCKED).save()
+
+    with pytest.raises(ProjectNotFound):
+        Project.get(name="dummy-project-01")
+    assert Project.get(name="dummy-project-01", visibility=ProjectVisibility).visibility is ProjectVisibility.LOCKED
+    assert not Project.is_published(name="dummy-project-01", version="1.0.0")
+
+
+def test_all_projects_by_visibility(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    Project(name="dummy-project-01", visibility=ProjectVisibility.UNLISTED).save()
+    Project(name="dummy-project-02", visibility=ProjectVisibility.LOCKED).save()
+
+    assert [project.name for project in Project.all()] == ["dummy-project-03"]
+    assert [project.name for project in Project.all(visibility=ProjectVisibility)] == list(DUMMY_DOCS_STRUCTURE)
+    # Unlisted is only left out of listings, it is still readable
+    assert Project.is_published(name="dummy-project-01", version="1.0.0")
 
 
 def test_list_project_versions(dummy_projects_dir: Path) -> None:  # noqa: ARG001
-    assert Project(name="dummy-project-03").versions == {
-        Version("1.0.0"): "1.0.0",
-        Version("1.3.0"): "1.3.0",
-        Version("2.0.0-b0"): "2.0.0-beta",
-    }
+    assert [published.version for published in Project(name="dummy-project-03").versions] == [
+        "1.0.0",
+        "1.3.0",
+        "2.0.0-beta",
+    ]
 
 
 def test_get_project_latest_version(dummy_projects_dir: Path) -> None:  # noqa: ARG001
     assert Project(name="dummy-project-03").latest == "2.0.0-beta"
 
 
-def test_list_published_projects(dummy_projects_dir: Path) -> None:
-    """A project directory with nothing publishable in it must not reach whoever lists projects."""
+def test_register_unrecorded(dummy_projects_dir: Path) -> None:
+    """Only version directories become versions, and registering again adds nothing twice."""
     (dummy_projects_dir / "empty-project").mkdir()
+    (dummy_projects_dir / "dummy-project-01" / "not-a-version").mkdir()
+    (dummy_projects_dir / "dummy-project-01" / "3.0.0").mkdir()
 
-    assert Project.list_published() == [Project(name=project_name) for project_name in DUMMY_DOCS_STRUCTURE]
+    Project.register_unrecorded()
+
+    assert Project.all() == [Project(name=project_name) for project_name in DUMMY_DOCS_STRUCTURE]
+    assert Project(name="dummy-project-01").latest == "3.0.0"
+
+
+def test_register_unrecorded_keeps_versions_without_files(dummy_projects_dir: Path) -> None:
+    """An unmounted volume must not cost the settings of every project."""
+    Project(name="dummy-project-01", display_name="One").save()
+    shutil.rmtree(dummy_projects_dir / "dummy-project-01")
+
+    Project.register_unrecorded()
+
+    assert Project.get(name="dummy-project-01").title == "One"
 
 
 def test_project_equality_survives_its_caches(dummy_projects_dir: Path) -> None:  # noqa: ARG001
@@ -67,7 +115,6 @@ def test_project_version_path(dummy_projects_dir: Path) -> None:
     project = Project(name="dummy-project-01")
 
     assert project.version_path(version="1.1.0") == dummy_projects_dir / "dummy-project-01" / "1.1.0"
-    assert project.latest_path == dummy_projects_dir / "dummy-project-01" / "2.0.0"
 
 
 def test_project_latest_contains(dummy_projects_dir: Path) -> None:
@@ -108,3 +155,17 @@ def test_get_version_and_docs_path_incomplete_version(
 ) -> None:
     with pytest.raises(ProjectVersionNotFound):
         Project.get_version_and_docs_path(name="dummy-project-01", version="1")
+
+
+def test_project_version_published_at_is_utc(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    """A time without a timezone would be read by a browser as its own local time."""
+    assert Project.get(name="dummy-project-01").versions[0].published_at.tzinfo is UTC
+
+
+def test_delete_version_without_files(dummy_projects_dir: Path) -> None:
+    """The registration keeps a version whose files are gone, so deleting it must not need them."""
+    shutil.rmtree(dummy_projects_dir / "dummy-project-01" / "2.0.0")
+
+    Project.get(name="dummy-project-01").delete_version(version="2.0.0")
+
+    assert Project.get(name="dummy-project-01").latest == "1.1.0"
