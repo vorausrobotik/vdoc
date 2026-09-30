@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.28.0](https://github.com/vorausrobotik/vdoc/compare/0.27.1...0.28.0) (2026-09-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* `project_categories`, `project_category_mapping` and `project_display_name_mapping` are no longer settings, and are ignored with a warning. Set categories, display names and visibility on the admin pages instead. vdoc needs a writable `database_url` outside `docs_dir`, by default `/srv/vdoc/data/vdoc.db`, for which a container needs a volume, and it has to run as a single process. Uploads with the default credentials `admin`/`admin` are refused, and login attempts are not rate limited, which is left to the reverse proxy.
+
+### Features
+
+* Store projects and versions in a database, with admin pages ([654de24](https://github.com/vorausrobotik/vdoc/commit/654de2455b921206f68ce39363511cb37c325046))
+
+
+### Miscellaneous Chores
+
+* Release 0.28.0 ([2701d8e](https://github.com/vorausrobotik/vdoc/commit/2701d8e34d0a97db90738dd8e26be9d71f087088))
+
 ## [0.27.1](https://github.com/vorausrobotik/vdoc/compare/0.27.0...0.27.1) (2026-09-29)
 
 
