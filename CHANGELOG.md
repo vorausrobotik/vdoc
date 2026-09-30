@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.1](https://github.com/vorausrobotik/vdoc/compare/0.28.0...0.28.1) (2026-09-30)
+
+
+### Code Refactoring
+
+* **ui:** Import from the frontend root through an `@/` alias ([fab9914](https://github.com/vorausrobotik/vdoc/commit/fab99146d00b74a2662f4563b0b28b724ccdc619))
+
 ## [0.28.0](https://github.com/vorausrobotik/vdoc/compare/0.27.1...0.28.0) (2026-09-30)
 
 
