@@ -1,14 +1,14 @@
 import { Box, Card, CardActions, CardContent, Container, Grid, Typography } from '@mui/material'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { groupProjectsByCategories } from '../helpers/Projects'
+import { groupProjectsByCategories, projectTitle } from '../helpers/Projects'
 import { LinkButton } from '../interfacesAndTypes/LinkButton'
 import type { Project, ProjectCategory } from '../interfacesAndTypes/Project'
 import type SitePluginT from '../interfacesAndTypes/plugins/SitePlugin'
 import testIDs from '../interfacesAndTypes/testIDs'
 import { SitePlugin } from './plugins/SitePlugin'
 
-const route = getRouteApi('/')
+const route = getRouteApi('/_site/')
 
 export function LandingPage() {
   const [projects, projectCategories, sitePluginConfig]: readonly [Project[], ProjectCategory[], SitePluginT | null] =
@@ -66,8 +66,17 @@ function IndexProjectCard({ project }: { project: Project }) {
             variant="h6"
             data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.title}
           >
-            {project.display_name}
+            {projectTitle(project)}
           </Typography>
+          {project.description && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.description}
+            >
+              {project.description}
+            </Typography>
+          )}
         </CardContent>
         <CardActions
           data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.main}

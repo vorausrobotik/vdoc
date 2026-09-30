@@ -4,10 +4,38 @@ import type { Project, ProjectCategory } from '../../interfacesAndTypes/Project'
 
 describe('groupProjectsByCategories', () => {
   const baseProjects: Project[] = [
-    { name: 'Project A', display_name: 'Proj A', category_id: 1 },
-    { name: 'Project B', display_name: 'Proj B', category_id: 2 },
-    { name: 'Project C', display_name: 'Proj C', category_id: null },
-    { name: 'Project D', display_name: 'Proj D', category_id: 1 },
+    {
+      name: 'Project A',
+      display_name: 'Proj A',
+      category_id: 1,
+      description: null,
+      visibility: 'listed',
+      versions: [],
+    },
+    {
+      name: 'Project B',
+      display_name: 'Proj B',
+      category_id: 2,
+      description: null,
+      visibility: 'listed',
+      versions: [],
+    },
+    {
+      name: 'Project C',
+      display_name: 'Proj C',
+      category_id: null,
+      description: null,
+      visibility: 'listed',
+      versions: [],
+    },
+    {
+      name: 'Project D',
+      display_name: 'Proj D',
+      category_id: 1,
+      description: null,
+      visibility: 'listed',
+      versions: [],
+    },
   ]
 
   const baseCategories: ProjectCategory[] = [
@@ -43,8 +71,22 @@ describe('groupProjectsByCategories', () => {
 
   test('should correctly handle additional categories and projects dynamically', () => {
     const extraProjects: Project[] = [
-      { name: 'Project E', display_name: 'Proj E', category_id: 3 },
-      { name: 'Project F', display_name: 'Proj F', category_id: null },
+      {
+        name: 'Project E',
+        display_name: 'Proj E',
+        category_id: 3,
+        description: null,
+        visibility: 'listed',
+        versions: [],
+      },
+      {
+        name: 'Project F',
+        display_name: 'Proj F',
+        category_id: null,
+        description: null,
+        visibility: 'listed',
+        versions: [],
+      },
     ]
 
     const extraCategories: ProjectCategory[] = [...baseCategories, { id: 3, name: 'Category 3' }]

@@ -1,0 +1,11 @@
+# Settings another release of vdoc knows and this one does not, next to ones it does know.
+
+vdoc:
+  bind_port: 9000
+  project_categories:
+    - { id: 0, name: General }
+
+plugins:
+  footer:
+    copyright: voraus robotik GmbH
+    a_setting_from_the_future: true

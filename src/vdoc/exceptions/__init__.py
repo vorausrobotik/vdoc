@@ -12,11 +12,16 @@ class VDocException(HTTPException):
 class InvalidCredentials(VDocException):
     """Exception when the provided credentials are invalid."""
 
-    def __init__(self) -> None:  # noqa: D107
+    def __init__(self, *, challenge: bool = True) -> None:
+        """Initializes the exception.
+
+        Args:
+            challenge: Whether to ask for HTTP Basic credentials, which makes a browser show its login dialog.
+        """
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username and/or password",
-            headers={"WWW-Authenticate": "Basic"},
+            headers={"WWW-Authenticate": "Basic"} if challenge else None,
         )
 
 
@@ -77,3 +82,28 @@ class UploadedFileInvalid(VDocException):
 
     def __init__(self, reason: str) -> None:  # noqa: D107
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=f"The uploaded file is invalid: {reason}.")
+
+
+class CategoryNotFound(VDocException):
+    """Exception when a project category doesn't exist."""
+
+    def __init__(self, category_id: int | None) -> None:  # noqa: D107
+        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=f"Category '{category_id}' doesn't exist.")
+
+
+class CategoryAlreadyExists(VDocException):
+    """Exception when a project category of the same name already exists."""
+
+    def __init__(self, name: str) -> None:  # noqa: D107
+        super().__init__(status_code=status.HTTP_409_CONFLICT, detail=f"Category '{name}' already exists.")
+
+
+class DefaultCredentialsInUse(VDocException):
+    """Exception when an authenticated request arrives while the default credentials are in use."""
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Refused while the default credentials are in use. "
+            "Set VDOC_API_USERNAME and VDOC_API_PASSWORD to enable uploads and the admin pages.",
+        )

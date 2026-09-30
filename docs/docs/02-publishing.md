@@ -24,23 +24,35 @@ A successful upload answers `201` and the version is live immediately.
 
 | Rule                                                                                                       | Otherwise |
 | ---------------------------------------------------------------------------------------------------------- | --------- |
-| The project name holds only letters, digits, `-` and `_`                                                   | `400`     |
+| The project name holds only letters, digits, `-` and `_`, and is not `admin`, `api`, `apidoc` or `static`  | `400`     |
 | The version is a valid [PEP 440](https://peps.python.org/pep-0440/) version, such as `1.0.0` or `2.1.0rc1` | `400`     |
 | The upload is a ZIP archive, sent with content type `application/zip`                                      | `400`     |
 | The archive has an `index.html` at its root                                                                | `400`     |
 | The version does not exist yet                                                                             | `403`     |
+| The credentials are not the defaults `admin`/`admin`                                                       | `403`     |
 
 An upload that fails leaves nothing behind: a half-extracted archive is removed again.
 
-The project directory does not have to be created first — the first upload for a name creates it.
-Everything else about a project, its display name and its category, is configured on the vdoc side
-and never travels with the upload. See [Configuration](03-configuration.md).
+The project does not have to be created first. The first upload for a name creates it, listed and
+without a category. Everything else about a project is set on the admin page and never travels with
+the upload. See [Projects and categories](03-configuration.md#projects-and-categories).
 
 ## Versions are immutable
 
 A version that exists is never overwritten, which is why re-running a release pipeline answers
-`403` rather than quietly replacing what readers already have. There is no delete endpoint either;
-removing a version means removing its directory under `docs_dir` on the server.
+`403` rather than quietly replacing what readers already have.
+
+A version is deleted on its project's admin page, or with the API:
+
+```text
+DELETE /api/projects/<project>/versions/<version>
+DELETE /api/projects/<project>
+```
+
+Both delete the files as well. Deleting the last version of a project deletes the project. To take a
+project offline without deleting anything, lock it instead.
+
+A version directory that is copied into `docs_dir` by hand is picked up the next time vdoc starts.
 
 `latest` resolves to the **highest** version, not the most recently uploaded one — publishing a fix
 for an older release does not move it.
@@ -65,7 +77,7 @@ It reads `API_URL`, `API_USER` and `API_TOKEN` from the environment and defaults
 ## Reading what is published
 
 ```text
-GET /api/projects/                      # every project
+GET /api/projects/                      # every listed project
 GET /api/projects/<project>/versions/   # its versions, oldest first
 ```
 

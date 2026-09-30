@@ -2,275 +2,286 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import shutil
 from datetime import UTC, date, datetime
-from functools import cached_property, lru_cache
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
-from pydantic import BaseModel, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, computed_field, field_validator
+from sqlalchemy import delete, select, update
+from sqlalchemy.exc import IntegrityError
 
 from vdoc.constants import LATEST_VERSION_ALIAS
-from vdoc.exceptions import InvalidVersion, ProjectNotFound, ProjectVersionNotFound
+from vdoc.db import session
+from vdoc.db.tables import ProjectRow, VersionRow
+from vdoc.exceptions import CategoryNotFound, InvalidVersion, ProjectNotFound, ProjectVersionNotFound
+from vdoc.models.project_visibility import ProjectVisibility
 from vdoc.settings import get_settings
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable
     from pathlib import Path
 
-
-@dataclass(frozen=True)
-class _PublishedVersions:
-    """What is published for one project, in each of the forms its readers ask for."""
-
-    ordered: tuple[tuple[Version, str], ...]
-    """Every version and the directory it is published under, oldest first, so the newest is last."""
-
-    public_forms: frozenset[str]
-    """The normalized form of each, to test a requested version against without walking them all."""
+READABLE = (ProjectVisibility.LISTED, ProjectVisibility.UNLISTED)
+"""The visibilities whose documentation can be read."""
 
 
-def _directory_generation(path: Path) -> int:
-    """Returns a token that changes whenever an entry is added to a directory or removed from it.
+class ProjectVersion(BaseModel):
+    """A published version of a project."""
 
-    Args:
-        path: The directory to read.
+    model_config = ConfigDict(from_attributes=True)
 
-    Returns:
-        The directory's modification time in nanoseconds.
-    """
-    return path.stat().st_mtime_ns
+    version: str
+    """Spelled as it was published, which is also the name of its directory."""
+    published_at: datetime
 
+    @field_validator("published_at")
+    @classmethod
+    def naive_is_utc(cls, value: datetime) -> datetime:
+        """Marks a time without a timezone as UTC.
 
-@lru_cache(maxsize=64)
-def _scan_versions(project_path: Path, _generation: int) -> _PublishedVersions:
-    """Reads the versions published for a project, once per state of its directory.
+        vdoc stores every time in UTC, but SQLite keeps no timezone, so a time read back from it has
+        none. Left without one, a browser would read it as its own local time.
 
-    Listing a project of two dozen versions costs a directory walk and a version parse per entry, and it
-    is on the path of nearly every request. The generation makes this cache self-invalidating rather than
-    something to remember to clear: the operating system bumps a directory's modification time when a
-    version is added to it, which is a cache key that has never been seen, while the entry for the
-    previous state ages out of the cache on its own.
+        Args:
+            value: The time.
 
-    A version directory's own contents are deliberately not part of the generation, because an upload
-    refuses to overwrite a version that already exists. What is published is only ever added to.
-
-    Args:
-        project_path: The path of the project.
-        _generation: The state of the project directory the result belongs to. Unread: it exists to be
-            part of the cache key.
-
-    Returns:
-        The published versions of the project.
-    """
-    parsed_versions = {Version(path.name): path.name for path in project_path.glob("[!.]*") if path.is_dir()}
-    ordered = tuple(sorted(parsed_versions.items()))
-
-    return _PublishedVersions(ordered=ordered, public_forms=frozenset(version.public for version, _ in ordered))
-
-
-def invalidate_published_versions() -> None:
-    """Drops what has been read about the published versions of every project.
-
-    Call this after publishing or removing a version. The scan notices a change on its own too, but only
-    as precisely as the filesystem timestamp it reads, and those are too coarse to tell two uploads that
-    land in the same millisecond apart. Whoever writes knows exactly, so whoever writes says so.
-    """
-    _scan_versions.cache_clear()
-
-
-def _published(project_path: Path) -> _PublishedVersions:
-    """Returns the versions published for a project.
-
-    Args:
-        project_path: The path of the project.
-
-    Returns:
-        The published versions of the project.
-    """
-    return _scan_versions(project_path=project_path, _generation=_directory_generation(path=project_path))
+        Returns:
+            The time, in UTC if it had no timezone.
+        """
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
 
 
 class Project(BaseModel):
-    """Pydantic model for a project."""
+    """A project and how it is presented.
+
+    Every project and version is a row in the database. The documentation directory only holds the
+    files of each version, at ``<name>/<version>/``.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
 
     name: str
+    display_name: str | None = None
+    description: str | None = None
+    """Plain text, shown with the project on the landing page."""
+    category_id: int | None = None
+    visibility: ProjectVisibility = ProjectVisibility.LISTED
 
-    @field_validator("name")
+    @field_validator("display_name", "description")
     @classmethod
-    def validate_project_exists(cls, value: str) -> str:
-        """Validates the project's existence.
+    def blank_is_unset(cls, value: str | None) -> str | None:
+        """Treats a text that is only whitespace as not set.
 
         Args:
-            value: The project name.
+            value: The text.
+
+        Returns:
+            The stripped text, or None if nothing is left of it.
+        """
+        return (value or "").strip() or None
+
+    @classmethod
+    def get(cls, name: str, visibility: Iterable[ProjectVisibility] = READABLE) -> Project:
+        """Returns a project.
+
+        Args:
+            name: The project name.
+            visibility: The visibilities the project may have. By default, a locked project is not found.
+
+        Raises:
+            ProjectNotFound: If there is no such project with one of those visibilities.
+
+        Returns:
+            The project.
+        """
+        query = select(ProjectRow).where(ProjectRow.name == name, ProjectRow.visibility.in_(visibility))
+        with session() as db:
+            if (row := db.scalar(query)) is None:
+                raise ProjectNotFound(name=name)
+            return cls.model_validate(row)
+
+    @classmethod
+    def all(cls, visibility: Iterable[ProjectVisibility] = (ProjectVisibility.LISTED,)) -> list[Project]:
+        """Returns every project with one of the given visibilities, sorted by name.
+
+        Args:
+            visibility: The visibilities to return. By default, only the listed projects.
+
+        Returns:
+            The projects.
+        """
+        query = select(ProjectRow).where(ProjectRow.visibility.in_(visibility)).order_by(ProjectRow.name)
+        with session() as db:
+            return [cls.model_validate(row) for row in db.scalars(query)]
+
+    def save(self) -> None:
+        """Stores how the project is presented.
 
         Raises:
             ProjectNotFound: If the project doesn't exist.
-
-        Returns:
-            The validated project name.
+            CategoryNotFound: If the category doesn't exist.
         """
-        project_dir = get_settings().docs_dir / value
-        if not project_dir.is_dir():
-            raise ProjectNotFound(name=value)
-        return value
+        query = (
+            update(ProjectRow)
+            .where(ProjectRow.name == self.name)
+            .values(**self.model_dump(exclude={"name"}, exclude_computed_fields=True))
+        )
+        with session() as db:
+            if db.get(ProjectRow, self.name) is None:
+                raise ProjectNotFound(name=self.name)
+            try:
+                db.execute(query)
+                db.commit()
+            except IntegrityError as error:
+                raise CategoryNotFound(category_id=self.category_id) from error
 
-    @cached_property
-    def _base_path(self) -> Path:
-        """Returns and caches the project's base path.
-
-        Returns:
-            The project's base path.
-        """
-        return get_settings().docs_dir / self.name
-
-    @classmethod
-    def list(cls, search_path: Path | None = None) -> list[Project]:
-        """Returns a list of all projects.
+    @staticmethod
+    def publish(name: str, version: str, published_at: datetime | None = None) -> None:
+        """Records a published version, and the project if it is its first.
 
         Args:
-            search_path: Optional search path. If None, the docs_dir of the settings will be used.
+            name: The project name.
+            version: The version, spelled as its directory is named.
+            published_at: When the version was published. Defaults to now.
+        """
+        with session() as db:
+            if db.get(ProjectRow, name) is None:
+                db.add(ProjectRow(name=name))
+            db.add(VersionRow(project_name=name, version=version, published_at=published_at or datetime.now(UTC)))
+            db.commit()
+
+    @staticmethod
+    def register_unrecorded() -> None:
+        """Records every version in the documentation directory that the database does not know yet.
+
+        This is what makes files that were put there by hand, or before there was a database, appear.
+        It only ever adds: a version whose files are missing keeps its row, so an unmounted volume never
+        costs the settings of every project.
+        """
+        with session() as db:
+            recorded = {(row.project_name, row.version) for row in db.scalars(select(VersionRow))}
+
+        for version_path in sorted(get_settings().docs_dir.glob("[!.]*/[!.]*")):
+            name, version = version_path.parent.name, version_path.name
+            if version_path.is_dir() and (name, version) not in recorded and _is_version(version):
+                published_at = datetime.fromtimestamp(version_path.stat().st_mtime, tz=UTC)
+                Project.publish(name=name, version=version, published_at=published_at)
+
+    @computed_field  # type: ignore[prop-decorator]  # https://docs.pydantic.dev/2.0/usage/computed_fields/
+    @cached_property
+    def versions(self) -> list[ProjectVersion]:
+        """Returns every published version, oldest first, so the newest is last.
+
+        Sorted here rather than by the database, which cannot order version numbers.
 
         Returns:
-            A a list of all projects.
+            The published versions.
         """
-        search_path = search_path or get_settings().docs_dir
-        paths = search_path.glob("[!.]*")
-        projects = [Project(name=path.name) for path in paths if path.is_dir()]
+        with session() as db:
+            rows = db.scalars(select(VersionRow).where(VersionRow.project_name == self.name))
+            versions = [ProjectVersion.model_validate(row) for row in rows]
+        return sorted(versions, key=lambda published: Version(published.version))
 
-        return sorted(projects, key=lambda project: project.name)
+    @property
+    def latest(self) -> str:
+        """Returns the newest published version.
+
+        Returns:
+            The newest version.
+        """
+        return self.versions[-1].version
+
+    @property
+    def latest_published_on(self) -> date:
+        """Returns the day the newest published version appeared.
+
+        Returns:
+            The publication date of the newest version.
+        """
+        return self.versions[-1].published_at.date()
+
+    def resolve(self, version: str) -> str:
+        """Returns the published version a requested one names.
+
+        Args:
+            version: The requested version, or ``latest`` for the newest.
+
+        Raises:
+            InvalidVersion: If the version is of an invalid format.
+            ProjectVersionNotFound: If the project doesn't have the requested version.
+
+        Returns:
+            The version, spelled as it was published.
+        """
+        if version == LATEST_VERSION_ALIAS:
+            return self.latest
+        try:
+            requested = Version(version)
+        except PackagingInvalidVersion as error:
+            raise InvalidVersion(version=version) from error
+        # Compared as normalized strings, because Version("1") == Version("1.0.0")
+        for published in self.versions:
+            if Version(published.version).public == requested.public:
+                return published.version
+        raise ProjectVersionNotFound(name=self.name, version=requested)
 
     @classmethod
-    def list_published(cls) -> Sequence[Project]:
-        """Returns every project that has a version to serve.
+    def get_version_and_docs_path(cls, name: str, version: str) -> tuple[str, Path]:
+        """Returns the resolved version of a readable project and the directory of its files.
 
-        A project directory holding nothing that parses as a version has none, and asking it for its
-        latest version raises.
+        Args:
+            name: The project name.
+            version: The project version, or ``latest`` for the newest.
 
         Returns:
-            The projects with at least one published version.
+            The resolved version and the directory holding it.
         """
-        return [project for project in cls.list() if project.versions]
+        project = cls.get(name=name)
+        resolved = project.resolve(version=version)
+        return resolved, project.version_path(version=resolved)
 
     @classmethod
     def is_published(cls, name: str, version: str | None = None) -> bool:
-        """Reports whether a project, and if given a version of it, is published.
-
-        Answers what ``get_version_and_docs_path`` answers, as a bool rather than as an exception, and
-        without building a ``Project`` for it. This is asked on every request the web UI serves, where
-        validating a model per request buys nothing.
+        """Reports whether a project, and if given a version of it, can be read.
 
         Args:
             name: The project name.
             version: The project version, ``latest``, or None to ask only about the project.
 
         Returns:
-            True if it is published, False otherwise.
+            True if it can be read, False otherwise.
         """
-        project_path = get_settings().docs_dir / name
-        if not project_path.is_dir():
-            return False
-        if version is None:
-            return True
-
-        published = _published(project_path=project_path)
-        if version == LATEST_VERSION_ALIAS:
-            return bool(published.ordered)
-
         try:
-            parsed_version = Version(version)
-        except PackagingInvalidVersion:
+            project = cls.get(name=name)
+            if version is not None:
+                project.resolve(version=version)
+        except (ProjectNotFound, InvalidVersion, ProjectVersionNotFound):
             return False
+        return True
 
-        # Compared as normalized strings for the same reason as in get_version_and_docs_path
-        return parsed_version.public in published.public_forms
-
-    @classmethod
-    def get_version_and_docs_path(cls, name: str, version: str) -> tuple[str, Path]:
-        """Returns the validated version and the path containing the documentation.
-
-        Args:
-            name: The project name.
-            version: The project version. If ``latest``, the path to the newest version will be returned.
-
-        Raises:
-            ProjectNotFound: If the project doesn't exist.
-            InvalidVersion: If the version is of an invalid format.
-            ProjectVersionNotFound: If the project doesn't have the requested version.
+    @property
+    def title(self) -> str:
+        """Returns the name a reader is shown: the display name if set, otherwise the project name.
 
         Returns:
-            The validated version and the path containing the documentation.
+            The project title.
         """
-        project = Project(name=name)
-        return_version: str
+        return self.display_name or self.name
 
-        if version == LATEST_VERSION_ALIAS:
-            return_version = project.latest
-        else:
-            try:
-                parsed_version = Version(version)
-                return_version = version
-            except PackagingInvalidVersion as error:
-                raise InvalidVersion(version=version) from error
-            # Version("1") == Version("1.0.0") validates to True, comparing the plain public string mitigates this issue
-            if parsed_version.public not in _published(project_path=project._base_path).public_forms:
-                raise ProjectVersionNotFound(name=name, version=parsed_version)
-
-        return return_version, project.version_path(version=return_version)
-
-    @computed_field  # type: ignore[prop-decorator]  # https://docs.pydantic.dev/2.0/usage/computed_fields/
-    @cached_property
-    def display_name(self) -> str:
-        """Returns the display name of the project if configured, otherwise the project name.
+    @property
+    def path(self) -> Path:
+        """Returns the directory the versions of the project are published in.
 
         Returns:
-            str: The project display name.
+            The project's directory.
         """
-        return get_settings().project_display_name_mapping.get(self.name, self.name)
-
-    @computed_field  # type: ignore[prop-decorator]  # https://docs.pydantic.dev/2.0/usage/computed_fields/
-    @cached_property
-    def category_id(self) -> int | None:
-        """Returns the category ID of the project if configured, otherwise None.
-
-        Returns:
-            int | None: The optional project category ID.
-        """
-        settings = get_settings()
-        if category_name := settings.project_category_mapping.get(self.name):
-            return next(category.id for category in settings.project_categories if category.name == category_name)
-        return None
-
-    @cached_property
-    def versions(self) -> dict[Version, str]:
-        """Returns a list of all available project versions.
-
-        Raises:
-            ProjectNotFound: If the project doesn't exist.
-
-        Returns:
-            A list of all versions of the project.
-        """
-        # Cached per instance, like everything derived from it: a Project is built per request and never
-        # outlives the upload that would change the answer. `_scan_versions` holds the cache that spans
-        # requests; this one keeps rendering a document from re-reading the same project a dozen times.
-        return dict(_published(project_path=self._base_path).ordered)
-
-    @cached_property
-    def latest(self) -> str:
-        """Returns the latest version available of the project.
-
-        Returns:
-            The newest published version of the project.
-        """
-        return _published(project_path=self._base_path).ordered[-1][1]
+        return get_settings().docs_dir / self.name
 
     def version_path(self, version: str) -> Path:
-        """Returns the directory a published version of this project is served from.
-
-        The one place that knows how a version maps onto a location, so that whoever needs a file of a
-        version asks for it here instead of composing the layout again.
+        """Returns the directory the files of a published version are served from.
 
         Args:
             version: The version, spelled as it is published.
@@ -278,28 +289,41 @@ class Project(BaseModel):
         Returns:
             The directory holding that version.
         """
-        return self._base_path / version
+        return self.path / version
 
-    @property
-    def latest_path(self) -> Path:
-        """Returns the directory the newest published version is served from.
+    def delete_version(self, version: str) -> None:
+        """Deletes a published version, files and all, and the project with its last version.
 
-        Returns:
-            The directory holding the newest published version.
+        The files go first. A version whose row went first would be recorded again from its files the
+        next time vdoc starts, if deleting them failed.
+
+        Args:
+            version: The version, spelled exactly as it was published.
+
+        Raises:
+            ProjectVersionNotFound: If the project doesn't have that version.
         """
-        return self.version_path(version=self.latest)
+        if version not in {published.version for published in self.versions}:
+            raise ProjectVersionNotFound(name=self.name, version=version)
+        if len(self.versions) == 1:
+            self.delete()
+            return
+        # Missing files are no reason to keep the version, they are what the registration leaves behind
+        shutil.rmtree(self.version_path(version=version), ignore_errors=True)
+        with session() as db:
+            db.execute(delete(VersionRow).where(VersionRow.project_name == self.name, VersionRow.version == version))
+            db.commit()
 
-    @property
-    def latest_published_on(self) -> date:
-        """Returns the day the newest published version appeared.
+    def delete(self) -> None:
+        """Deletes the project, with every version and all their files.
 
-        A version directory is written once, when it is published, so its modification time is when
-        that version arrived.
-
-        Returns:
-            The publication date of the newest published version.
+        The files go first, for the same reason as in ``delete_version``.
         """
-        return datetime.fromtimestamp(self.latest_path.stat().st_mtime, tz=UTC).date()
+        shutil.rmtree(self.path, ignore_errors=True)
+        with session() as db:
+            # Its versions go with it, by the foreign key
+            db.execute(delete(ProjectRow).where(ProjectRow.name == self.name))
+            db.commit()
 
     def latest_contains(self, file_name: str) -> bool:
         """Reports whether the newest published version ships a file.
@@ -310,4 +334,20 @@ class Project(BaseModel):
         Returns:
             True if the newest published version contains it, False otherwise.
         """
-        return (self.latest_path / file_name).is_file()
+        return (self.version_path(version=self.latest) / file_name).is_file()
+
+
+def _is_version(name: str) -> bool:
+    """Reports whether a directory name is a version number.
+
+    Args:
+        name: The directory name.
+
+    Returns:
+        True if it parses as a version, False otherwise.
+    """
+    try:
+        Version(name)
+    except PackagingInvalidVersion:
+        return False
+    return True

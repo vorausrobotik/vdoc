@@ -8,15 +8,20 @@ from urllib.parse import quote
 from fastapi import FastAPI, status
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse, RedirectResponse
+from starlette.concurrency import run_in_threadpool
+from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse, RedirectResponse, Response
+from starlette.types import Scope
 
 from vdoc.api.routes import agent_discovery as agent_discovery_module
+from vdoc.api.routes import auth as auth_module
 from vdoc.api.routes import plugins as plugins_module
 from vdoc.api.routes import project_categories as project_categories_module
 from vdoc.api.routes import projects as projects_module
 from vdoc.api.routes import version as version_module
 from vdoc.config_file import log_configuration_source
-from vdoc.constants import LATEST_VERSION_ALIAS, STATIC_PROJECTS_PREFIX
+from vdoc.constants import ADMIN_ROUTE, LATEST_VERSION_ALIAS, STATIC_PROJECTS_PREFIX
+from vdoc.db import migrate
 from vdoc.exceptions import ProjectInventoryNotFound
 from vdoc.methods.api.projects import get_project_version_impl
 from vdoc.models.project import Project
@@ -46,6 +51,8 @@ async def routes_loader_lifespan(fastapi: FastAPI) -> AsyncGenerator[None, None]
     # Reported here rather than from the CLI, because `start_dev.py` runs uvicorn directly and never
     # goes through it, while every way of starting the app goes through the lifespan.
     log_configuration_source()
+    migrate()
+    Project.register_unrecorded()
 
     fastapi = _include_static_api_routers(fastapi=fastapi)
     fastapi = _include_agent_discovery_router(fastapi=fastapi)
@@ -58,6 +65,7 @@ async def routes_loader_lifespan(fastapi: FastAPI) -> AsyncGenerator[None, None]
 
 def _include_static_api_routers(fastapi: FastAPI) -> FastAPI:
     fastapi.include_router(projects_module.router, prefix="/api")
+    fastapi.include_router(auth_module.router, prefix="/api")
     fastapi.include_router(project_categories_module.router, prefix="/api")
     fastapi.include_router(version_module.router, prefix="/api")
     fastapi.include_router(plugins_module.get_router(), prefix="/api")
@@ -69,11 +77,36 @@ def _include_agent_discovery_router(fastapi: FastAPI) -> FastAPI:
     return fastapi
 
 
+class _ReadableProjectFiles(StaticFiles):
+    """Serves the files of every published version whose project is not locked."""
+
+    async def get_response(self, path: str, scope: Scope) -> Response:
+        """Returns the requested file, unless its version is not published or its project is locked.
+
+        Args:
+            path: The requested path, relative to the documentation directory.
+            scope: The ASGI scope of the request.
+
+        Raises:
+            HTTPException: If the file does not belong to a readable version.
+
+        Returns:
+            The response for the requested file.
+        """
+        parts = Path(path).parts
+        name = parts[0] if parts else ""
+        version = parts[1] if len(parts) > 1 else None
+        # In a thread, because it queries the database
+        if not await run_in_threadpool(Project.is_published, name=name, version=version):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return await super().get_response(path, scope)
+
+
 def _include_static_documentation_routers(fastapi: FastAPI) -> FastAPI:
     fastapi.routes.append(
         Mount(
             STATIC_PROJECTS_PREFIX,
-            app=StaticFiles(directory=get_settings().docs_dir.as_posix(), html=True, check_dir=False),
+            app=_ReadableProjectFiles(directory=get_settings().docs_dir.as_posix(), html=True, check_dir=False),
             name="projects",
         )
     )
@@ -179,12 +212,34 @@ def _static_alternate(file_path: str) -> str | None:
     return f"{STATIC_PROJECTS_PREFIX}/{quote(file_path.lstrip('/'), safe='/')}"
 
 
+# The admin pages may not be framed by another site, which could otherwise trick an admin into clicking
+# on them, and no search engine is to list them. `robots.txt` would do neither: it is public, and a
+# page it keeps crawlers away from can still be listed from a link to it.
+_ADMIN_HEADERS = {
+    "Content-Security-Policy": "frame-ancestors 'none'",
+    "X-Frame-Options": "DENY",
+    "X-Robots-Tag": "noindex, nofollow",
+}
+
+
+def _is_admin_route(file_path: str) -> bool:
+    """Reports whether a request path is one of the admin pages.
+
+    Args:
+        file_path: The requested file path.
+
+    Returns:
+        True if the path is the admin page or below it, False otherwise.
+    """
+    return file_path.strip("/").split("/")[0] == ADMIN_ROUTE
+
+
 def _is_frontend_route(file_path: str) -> bool:
     """Reports whether the web UI has a route for a request path.
 
-    The UI's route surface is the landing page, a project, a version of a project, and any page within
-    that version. So a path is a route exactly when the project it names exists and the version it names,
-    if any, is published.
+    Besides the admin pages, which are answered on their own, the UI's route surface is the landing
+    page, a project, a version of a project, and any page within that version. So a path is a route
+    exactly when the project it names can be read and the version it names, if any, is published.
 
     The page itself is deliberately not checked: a single page documentation routes its pages client
     side, so most of them have no file of their own to look for.
@@ -226,6 +281,9 @@ def _include_frontend_router(fastapi: FastAPI) -> FastAPI:
         """
         if (asset_path := _resolve_webapp_asset(file_path=file_path)) is not None:
             return FileResponse(path=asset_path)
+
+        if _is_admin_route(file_path=file_path):
+            return FileResponse(path=webapp_path / "index.html", headers=_ADMIN_HEADERS)
 
         is_route = _is_frontend_route(file_path=file_path)
         alternate = _static_alternate(file_path=file_path) if is_route else None

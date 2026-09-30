@@ -7,10 +7,10 @@ import testIDs from '../interfacesAndTypes/testIDs'
 import { DeprecatedVersionBanner } from './DeprecatedVersionBanner'
 import IFrame from './IFrame'
 
-const route = getRouteApi('/$projectName/$version/$')
+const route = getRouteApi('/_site/$projectName/$version/$')
 // The resolved version belongs to the project version, not to the page, so it is loaded one route
 // up - which is what keeps a page change from re-running that lookup.
-const versionRoute = getRouteApi('/$projectName/$version')
+const versionRoute = getRouteApi('/_site/$projectName/$version')
 
 export function DocumentationComponent() {
   const location = useLocation()

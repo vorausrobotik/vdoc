@@ -58,9 +58,21 @@ export const mockAPIRequests = async (page: Page) => {
       pattern: '*/**/api/projects/',
       response: {
         json: [
-          { name: 'example-project-01', display_name: 'Example Project 01', category_id: 0 },
-          { name: 'example-project-02', display_name: 'example-project-02', category_id: 1 },
-          { name: 'example-project-03', display_name: 'example-project-03', category_id: null },
+          {
+            name: 'example-project-01',
+            display_name: 'Example Project 01',
+            description: 'The first example',
+            category_id: 0,
+            visibility: 'listed',
+          },
+          { name: 'example-project-02', display_name: null, description: null, category_id: 1, visibility: 'listed' },
+          {
+            name: 'example-project-03',
+            display_name: null,
+            description: null,
+            category_id: null,
+            visibility: 'listed',
+          },
         ],
       },
     },

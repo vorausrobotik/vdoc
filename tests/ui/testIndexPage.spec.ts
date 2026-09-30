@@ -11,9 +11,9 @@ test('Test navigation index to documentation to version overview', async ({ page
 
   await assertIndexPage(page, {
     categories: {
-      General: [{ name: 'example-project-01', display_name: 'Example Project 01', category_id: 0 }],
-      Extensions: [{ name: 'example-project-02', display_name: 'example-project-02', category_id: 1 }],
-      Misc: [{ name: 'example-project-03', display_name: 'example-project-03', category_id: null }],
+      General: [{ name: 'example-project-01', title: 'Example Project 01', description: 'The first example' }],
+      Extensions: [{ name: 'example-project-02', title: 'example-project-02' }],
+      Misc: [{ name: 'example-project-03', title: 'example-project-03' }],
     },
   })
 

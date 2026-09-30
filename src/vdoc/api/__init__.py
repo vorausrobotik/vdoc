@@ -5,8 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from servestatic.asgi import ServeStaticASGI
 from starlette.requests import Request
+from starsessions import InMemoryStore, SessionAutoloadMiddleware, SessionMiddleware
 
 from vdoc.api import lifespan
+from vdoc.constants import SESSION_IDLE_TIMEOUT
 from vdoc.exceptions import VDocException
 
 # Vite writes the build's content hash into the name of every asset it emits, as eight characters
@@ -28,6 +30,21 @@ def create_app() -> ServeStaticASGI:
     """
     app = FastAPI(docs_url="/apidoc", lifespan=lifespan.routes_loader_lifespan)
 
+    # Loaded for the API only, so serving a documentation file never looks up a session
+    app.add_middleware(SessionAutoloadMiddleware, paths=["/api"])
+    app.add_middleware(
+        SessionMiddleware,
+        # Held by the server, so logging out ends a session for good, and a restart ends all of them.
+        # A second vdoc process would not see them: more than one needs a shared store such as Redis.
+        store=InMemoryStore(),
+        lifetime=SESSION_IDLE_TIMEOUT,
+        rolling=True,
+        # Strict, so no other site can make a browser send it along, which is what keeps the admin API
+        # safe from cross-site requests
+        cookie_same_site="strict",
+        # Secure, so the login never travels unencrypted. Browsers treat http://localhost as secure too.
+        cookie_https_only=True,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -46,6 +63,6 @@ def create_app() -> ServeStaticASGI:
         Returns:
             The exception as formatted JSONResponse.
         """
-        return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
+        return JSONResponse(status_code=exc.status_code, content={"message": exc.detail}, headers=exc.headers)
 
     return ServeStaticASGI(application=app, root=lifespan.webapp_path, immutable_file_test=_HASHED_ASSET_NAME)

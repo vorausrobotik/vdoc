@@ -50,5 +50,5 @@ RUN --mount=type=bind,from=py-build,source=/dist,target=/pip-packages/ \
     --no-cache-dir \
     --no-compile \
     /pip-packages/*.whl \
-    # Default projects directory (mount a volume here in Dokploy)
-    && mkdir -p /srv/vdoc/docs
+    # Default projects and database directories (mount a volume on each in Dokploy)
+    && mkdir -p /srv/vdoc/docs /srv/vdoc/data

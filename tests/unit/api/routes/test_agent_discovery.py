@@ -11,6 +11,9 @@ from fastapi.testclient import TestClient
 from httpx import Response
 
 from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
+from vdoc.models.project import Project
+from vdoc.models.project_category import ProjectCategory
+from vdoc.models.project_visibility import ProjectVisibility
 
 
 def test_llms_txt_is_served_as_plain_text(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
@@ -96,21 +99,27 @@ def test_llms_txt_says_which_address_to_pass_on(dummy_projects_dir: Path, api: T
     assert "Read from the static address, pass on the readable one." in body
 
 
-def test_llms_txt_groups_projects_into_configured_categories(
-    dummy_projects_dir: Path, request: pytest.FixtureRequest
-) -> None:
-    environment = {
-        "VDOC_DOCS_DIR": str(dummy_projects_dir),
-        "VDOC_PROJECT_CATEGORIES": '[{"id": 1, "name": "Components"}, {"id": 0, "name": "General"}]',
-        "VDOC_PROJECT_CATEGORY_MAPPING": '{"dummy-project-01": "General"}',
-    }
-    with patch.dict(os.environ, environment):
-        api: TestClient = request.getfixturevalue("api")
-        body = api.get("/llms.txt").text
+def test_llms_txt_groups_projects_into_categories(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
+    general = ProjectCategory.create(name="General")
+    ProjectCategory.create(name="Components")
+    Project(name="dummy-project-01", category_id=general.id).save()
+
+    body = api.get("/llms.txt").text
 
     # The categorized project gets its own section, and the uncategorized rest trails it
     assert "## Components" not in body, "A category without projects gets no empty section"
     assert body.index("## General") < body.index("dummy-project-01") < body.index("## Projects")
+
+
+def test_llms_txt_and_sitemap_leave_out_hidden_projects(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
+    Project(name="dummy-project-01", visibility=ProjectVisibility.UNLISTED).save()
+    Project(name="dummy-project-02", visibility=ProjectVisibility.LOCKED).save()
+
+    for document in ("/llms.txt", "/sitemap.xml"):
+        body = api.get(document).text
+        assert "dummy-project-01" not in body
+        assert "dummy-project-02" not in body
+        assert "dummy-project-03" in body
 
 
 def test_llms_txt_skips_projects_without_a_version(dummy_projects_dir: Path, api: TestClient) -> None:
@@ -123,8 +132,10 @@ def test_llms_txt_skips_projects_without_a_version(dummy_projects_dir: Path, api
     assert "dummy-project-01" in body
 
 
-def test_llms_txt_on_an_empty_instance(tmp_path: Path, request: pytest.FixtureRequest) -> None:
-    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path)}, clear=True):
+def test_llms_txt_on_an_empty_instance(
+    tmp_path: Path, request: pytest.FixtureRequest, database_env: dict[str, str]
+) -> None:
+    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path), **database_env}, clear=True):
         api: TestClient = request.getfixturevalue("api")
         response = api.get("/llms.txt")
 
@@ -222,9 +233,11 @@ def test_sitemap_xml_uses_the_forwarded_host_and_scheme(dummy_projects_dir: Path
     assert "testserver" not in response.text
 
 
-def test_sitemap_xml_on_an_empty_instance(tmp_path: Path, request: pytest.FixtureRequest) -> None:
+def test_sitemap_xml_on_an_empty_instance(
+    tmp_path: Path, request: pytest.FixtureRequest, database_env: dict[str, str]
+) -> None:
     """Nothing published is an empty sitemap, which is still a valid one."""
-    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path)}, clear=True):
+    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path), **database_env}, clear=True):
         api: TestClient = request.getfixturevalue("api")
         response = api.get("/sitemap.xml")
 
@@ -232,9 +245,11 @@ def test_sitemap_xml_on_an_empty_instance(tmp_path: Path, request: pytest.Fixtur
     assert _sitemap_locations(response) == []
 
 
-def test_llms_txt_before_the_docs_directory_exists(tmp_path: Path, request: pytest.FixtureRequest) -> None:
+def test_llms_txt_before_the_docs_directory_exists(
+    tmp_path: Path, request: pytest.FixtureRequest, database_env: dict[str, str]
+) -> None:
     """A deployment whose documentation volume has not been populated yet is empty, not broken."""
-    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path / "never-created")}, clear=True):
+    with patch.dict(os.environ, {"VDOC_DOCS_DIR": str(tmp_path / "never-created"), **database_env}, clear=True):
         api: TestClient = request.getfixturevalue("api")
         response = api.get("/llms.txt")
 

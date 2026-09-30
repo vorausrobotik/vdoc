@@ -1,11 +1,11 @@
 import SearchOffIcon from '@mui/icons-material/SearchOff'
 import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import ErrorComponent from '../../components/ErrorComponent'
-import { LoadingSpinner } from '../../components/LoadingSpinner'
-import { fetchProjectVersion } from '../../helpers/APIFunctions'
-import { sanitizeDocuUri } from '../../helpers/RouteHelpers'
-import type { FastAPIAxiosErrorT } from '../../interfacesAndTypes/Error'
+import ErrorComponent from '../../../components/ErrorComponent'
+import { LoadingSpinner } from '../../../components/LoadingSpinner'
+import { fetchProjectVersion } from '../../../helpers/APIFunctions'
+import { sanitizeDocuUri } from '../../../helpers/RouteHelpers'
+import type { FastAPIAxiosErrorT } from '../../../interfacesAndTypes/Error'
 
 const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown
@@ -23,7 +23,7 @@ const fetchVersionAndLatestVersion = async (projectName: string, version: string
  * two sequential, uncached HTTP requests for an answer that cannot have changed. Single page
  * documentation turns pages without a document load, so that happened on every click.
  */
-export const Route = createFileRoute('/$projectName/$version')({
+export const Route = createFileRoute('/_site/$projectName/$version')({
   component: Outlet,
   loader: async ({ params: { projectName, version }, location }) => {
     const latestVersion = await fetchVersionAndLatestVersion(projectName, version)

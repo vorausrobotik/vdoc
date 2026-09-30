@@ -45,7 +45,7 @@ It contains, in this order:
 - how the two addresses relate, which one to fetch, which one to quote, and that `latest` stands in for
   a version
 - a link to `/openapi.json`, for a client that would rather read JSON
-- every project, grouped by its configured category, linked at the **newest published version** by its
+- every listed project, grouped by its category, linked at the **newest published version** by its
   static address
 - a `## Page indexes` section listing whatever machine-readable page index each version happens to ship
 
@@ -71,7 +71,7 @@ other two files, which no crawler would otherwise know to look for: `/llms.txt` 
 
 ## `/sitemap.xml`
 
-A [sitemap](https://www.sitemaps.org/protocol.html) with one entry per project: the **static** address
+A [sitemap](https://www.sitemaps.org/protocol.html) with one entry per listed project: the **static** address
 of its newest version's `index.html`, dated by the day that version was published.
 
 That is one entry point, not one entry per page. From a version's index the crawler follows the
@@ -94,9 +94,9 @@ the two if what you want is every page of a project.
 ## Configuring what they say
 
 None of the three files has settings of its own. The name and the summary come from the
-[site plugin](04-plugins/02-site.md), the grouping from `project_categories` and
-`project_category_mapping` in the [configuration](03-configuration.md#configuration-file), and
-everything else from the documentation directory.
+[site plugin](04-plugins/02-site.md). Which projects appear, their names and their grouping come from
+the [admin page](03-configuration.md#projects-and-categories). Unlisted and locked projects appear in
+neither file. Everything else comes from what is published.
 
 ```yaml
 plugins:

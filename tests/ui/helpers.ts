@@ -1,7 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '../../src/ui/interfacesAndTypes/ColorModes'
-import type { Project } from '../../src/ui/interfacesAndTypes/Project'
 import testIDs from '../../src/ui/interfacesAndTypes/testIDs'
 import { themes } from './base'
 export const BASE_URL = 'http://localhost:3000'
@@ -148,7 +147,10 @@ export const assertMenuBar = async (page: Page, logoHref: string, logoURL?: stri
  */
 export const assertIndexPage = async (
   page: Page,
-  options?: { timeout?: number; categories?: Record<string, Project[]> }
+  options?: {
+    timeout?: number
+    categories?: Record<string, { name: string; title: string; description?: string }[]>
+  }
 ) => {
   await expect(page).toHaveURL(BASE_URL, { timeout: options?.timeout })
   if (options?.categories) {
@@ -172,7 +174,17 @@ export const assertIndexPage = async (
           projectCards
             .nth(projectIndex)
             .getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.title)
-        ).toContainText(project.display_name)
+        ).toContainText(project.title)
+
+        // Assert project description
+        const description = projectCards
+          .nth(projectIndex)
+          .getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.description)
+        if (project.description) {
+          await expect(description).toHaveText(project.description)
+        } else {
+          await expect(description).not.toBeVisible()
+        }
 
         // Assert documentation button
         const documentationButton = projectCards

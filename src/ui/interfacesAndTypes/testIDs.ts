@@ -32,6 +32,7 @@ export const testIDs = {
           projectCard: {
             main: 'landingPage.projectCategories.projectCategory.projects.projectCard',
             title: 'landingPage.projectCategories.projectCategory.projects.projectCard.title',
+            description: 'landingPage.projectCategories.projectCategory.projects.projectCard.description',
             actions: {
               main: 'landingPage.projectCategories.projectCategory.projects.projectCard.actions',
               documentationLink:

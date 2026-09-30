@@ -40,7 +40,7 @@ The REST API described by `{{ base_url }}/openapi.json` lists projects, versions
 
 {% for project in projects %}
 {% set count = project.versions | length %}
-- [{{ project.display_name }} {{ project.latest }}]({{ static(project, "index.html") }}): {% if count == 1 %}the only published version{% else %}the newest of {{ count }} published versions{% endif %}
+- [{{ project.title }} {{ project.latest }}]({{ static(project, "index.html") }}): {% if count == 1 %}the only published version{% else %}the newest of {{ count }} published versions{% endif %}
 
 {% endfor %}
 
@@ -51,6 +51,6 @@ The REST API described by `{{ base_url }}/openapi.json` lists projects, versions
 One request that enumerates every page of a version, instead of crawling it:
 
 {% for project, file_name, description in inventories %}
-- [{{ project.display_name }} {{ project.latest }} {{ file_name }}]({{ static(project, file_name) }}): {{ description }}
+- [{{ project.title }} {{ project.latest }} {{ file_name }}]({{ static(project, file_name) }}): {{ description }}
 {% endfor %}
 {% endif %}

@@ -20,7 +20,7 @@ from vdoc.constants import (
 )
 from vdoc.models.plugins.site import SitePlugin
 from vdoc.models.project import Project
-from vdoc.settings import get_settings
+from vdoc.models.project_category import ProjectCategory
 
 _UNCATEGORIZED_SECTION_TITLE = "Projects"
 
@@ -78,11 +78,10 @@ def _sections(projects: Sequence[Project]) -> list[tuple[str, list[Project]]]:
         # By display name, because that is the name the reader sees in the list
         return sorted(
             (project for project in projects if project.category_id == category_id),
-            key=lambda project: project.display_name,
+            key=lambda project: project.title,
         )
 
-    categories = sorted(get_settings().project_categories, key=lambda category: category.id)
-    sections = [(category.name, members(category_id=category.id)) for category in categories]
+    sections = [(category.name, members(category_id=category.id)) for category in ProjectCategory.all()]
     sections.append((_UNCATEGORIZED_SECTION_TITLE, members(category_id=None)))
 
     return [(title, section_projects) for title, section_projects in sections if section_projects]
@@ -156,7 +155,7 @@ def render_llms_txt_impl(base_url: str) -> str:
         The rendered ``llms.txt`` as markdown.
     """
     site = SitePlugin()
-    projects = Project.list_published()
+    projects = Project.all()
 
     return _templates.get_template("llms.txt.j2").render(
         title=site.title or DEFAULT_SITE_TITLE,
@@ -181,7 +180,7 @@ def render_sitemap_xml_impl(base_url: str) -> str:
         The rendered ``sitemap.xml``.
     """
     return _templates.get_template("sitemap.xml.j2").render(
-        urls=_entry_points(projects=Project.list_published(), base_url=base_url),
+        urls=_entry_points(projects=Project.all(), base_url=base_url),
     )
 
 

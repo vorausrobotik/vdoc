@@ -1,10 +1,10 @@
 import SentimentDissatisfied from '@mui/icons-material/SentimentDissatisfied'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import ErrorComponent from '../components/ErrorComponent'
-import { fetchPluginConfig, fetchProjectCategories, fetchProjects } from '../helpers/APIFunctions'
-import type SitePluginT from '../interfacesAndTypes/plugins/SitePlugin'
+import ErrorComponent from '../../components/ErrorComponent'
+import { fetchPluginConfig, fetchProjectCategories, fetchProjects } from '../../helpers/APIFunctions'
+import type SitePluginT from '../../interfacesAndTypes/plugins/SitePlugin'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_site/')({
   loader: async () => {
     const [projects, projectCategories, sitePluginConfig] = await Promise.all([
       fetchProjects(),

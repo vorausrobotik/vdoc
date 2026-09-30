@@ -56,6 +56,10 @@ class ConfigFileSettingsSource(YamlConfigSettingsSource):
     other model's keys. This narrows it to the mapping the model owns, and returns nothing when that
     mapping -- or the file itself -- is absent, so an instance with no configuration file behaves
     exactly as it did before there was one.
+
+    A key the model does not know is left out with a warning rather than refused. Two releases of
+    vdoc can share one file, such as a production and a preview deployment, and a setting only one of
+    them knows must not stop the other.
     """
 
     def __init__(self, settings_cls: type[BaseSettings], section: tuple[str, ...] = ()) -> None:
@@ -79,5 +83,15 @@ class ConfigFileSettingsSource(YamlConfigSettingsSource):
             if not isinstance(document, dict):
                 return {}
             document = document.get(key, {})
+        if not isinstance(document, dict):
+            return {}
 
-        return document if isinstance(document, dict) else {}
+        known = self.settings_cls.model_fields.keys()
+        if unknown := sorted(document.keys() - known):
+            _logger.warning(
+                "Ignoring %s in section '%s' of '%s': no such setting in this release of vdoc",
+                ", ".join(f"'{key}'" for key in unknown),
+                ".".join(self._section),
+                config_file_path(),
+            )
+        return {key: value for key, value in document.items() if key in known}

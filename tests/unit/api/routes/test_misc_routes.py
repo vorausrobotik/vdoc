@@ -7,6 +7,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
+from vdoc.models.project import Project
+from vdoc.models.project_visibility import ProjectVisibility
+
 BUNDLE_CONTENT = "console.log('the bundle itself');\n" * 100
 
 
@@ -149,6 +152,8 @@ def test_serve_frontend_assets_rejects_path_traversal(
         # A conventional root file vdoc does not serve. The ones it does -- `/robots.txt`, `/llms.txt`
         # and `/sitemap.xml` -- never reach this route, see test_agent_discovery.py
         ("/humans.txt", 404),
+        ("/admin", 200),
+        ("/admin/projects", 200),
     ],
 )
 def test_serve_frontend_index_status_codes(
@@ -242,3 +247,36 @@ def test_static_latest_of_an_unknown_project(api: TestClient) -> None:
     response = api.get("/static/projects/not-a-project/latest/index.html", follow_redirects=False)
 
     assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/dummy-project-01",
+        "/dummy-project-01/1.0.0/index.html",
+        "/static/projects/dummy-project-01/1.0.0/index.html",
+        "/static/projects/dummy-project-01/latest/index.html",
+        "/dummy-project-01/1.0.0/objects.inv",
+        "/api/projects/dummy-project-01/versions/",
+        "/api/projects/dummy-project-01/versions/latest",
+    ],
+)
+def test_locked_project_is_not_found_anywhere(
+    path: str,
+    dummy_projects_dir: Path,
+    webapp_index: Path,  # noqa: ARG001
+    api: TestClient,
+) -> None:
+    (dummy_projects_dir / "dummy-project-01" / "1.0.0" / "objects.inv").write_bytes(b"inventory")
+    Project(name="dummy-project-01", visibility=ProjectVisibility.LOCKED).save()
+
+    assert api.get(path, follow_redirects=False).status_code == 404
+
+
+def test_unlisted_project_is_served(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
+    Project(name="dummy-project-01", visibility=ProjectVisibility.UNLISTED).save()
+
+    response = api.get("/static/projects/dummy-project-01/1.0.0/index.html")
+
+    assert response.status_code == 200
+    assert response.text == "This is 1.0.0 of dummy-project-01"
