@@ -1,6 +1,16 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import { Box, Button as MuiButton, Tooltip, Typography } from '@mui/material'
+import UploadIcon from '@mui/icons-material/Upload'
+import {
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button as MuiButton,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { useState } from 'react'
 import {
   ArrayField,
@@ -11,6 +21,9 @@ import {
   DateField,
   DeleteButton,
   Edit,
+  FileField,
+  FileInput,
+  Form,
   FunctionField,
   List,
   ReferenceField,
@@ -28,7 +41,7 @@ import {
   useRedirect,
   useRefresh,
 } from 'react-admin'
-import { deleteProjectVersion } from '@/helpers/APIFunctions'
+import { deleteProjectVersion, uploadProjectVersion } from '@/helpers/APIFunctions'
 import type { Project, ProjectCategory, ProjectVersion } from '@/interfacesAndTypes/Project'
 import { withHttpErrors } from './dataProvider'
 import { CategoryChip, CategoryOption, VisibilityChip, VisibilityOption } from './fields'
@@ -142,6 +155,52 @@ function DeleteVersionButton({ project, version }: { project: Project; version: 
   )
 }
 
+function UploadVersionButton({ project }: { project: Project }) {
+  const [open, setOpen] = useState(false)
+  const notify = useNotify()
+  const refresh = useRefresh()
+
+  const handleSubmit = async (values: Record<string, unknown>) => {
+    const { version, file } = values as { version: string; file: { rawFile: File } }
+    try {
+      await withHttpErrors(() => uploadProjectVersion(project.name, version, file.rawFile))
+      notify(`Version ${version} uploaded`, { type: 'info' })
+      setOpen(false)
+      refresh()
+    } catch (error) {
+      notify((error as Error).message, { type: 'error' })
+    }
+  }
+
+  return (
+    <>
+      <Button label="Upload version" onClick={() => setOpen(true)}>
+        <UploadIcon />
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+        <Form onSubmit={handleSubmit}>
+          <DialogTitle>Upload a version of {project.name}</DialogTitle>
+          <DialogContent>
+            <TextInput source="version" validate={required()} fullWidth helperText="Such as 1.0.0" />
+            <FileInput
+              source="file"
+              accept={{ 'application/zip': ['.zip'] }}
+              validate={required()}
+              helperText="A ZIP archive with an index.html at its root."
+            >
+              <FileField source="src" title="title" />
+            </FileInput>
+          </DialogContent>
+          <DialogActions>
+            <Button label="Cancel" onClick={() => setOpen(false)} />
+            <SaveButton label="Upload" icon={<UploadIcon />} />
+          </DialogActions>
+        </Form>
+      </Dialog>
+    </>
+  )
+}
+
 function Versions() {
   const project = useRecordContext<Project>()
   if (!project) {
@@ -149,9 +208,10 @@ function Versions() {
   }
   return (
     <Box sx={{ px: 2, pb: 2 }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Versions
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="h6">Versions</Typography>
+        <UploadVersionButton project={project} />
+      </Box>
       <ArrayField source="versions" sort={{ field: 'published_at', order: 'DESC' }}>
         <DataTable bulkActionButtons={false} rowClick={false} size="medium">
           <DataTable.Col source="version" disableSort />

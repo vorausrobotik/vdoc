@@ -20,6 +20,9 @@ curl --user "$API_USER:$API_PASSWORD" \
 
 A successful upload answers `201` and the version is live immediately.
 
+A new version of a project that exists already can also be uploaded by hand, with **Upload version**
+on the project's [admin page](03-configuration.md#projects-and-categories). The same rules apply.
+
 ## What is accepted
 
 | Rule                                                                                                       | Otherwise |

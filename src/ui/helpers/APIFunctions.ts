@@ -30,6 +30,12 @@ export const deleteProjectVersion = async (name: string, version: string): Promi
   await axios.delete(`/api/projects/${name}/versions/${version}`)
 }
 
+export const uploadProjectVersion = async (name: string, version: string, file: File): Promise<void> => {
+  const form = new FormData()
+  form.append('file', file)
+  await axios.post(`/api/projects/${name}/versions/${version}`, form)
+}
+
 export const fetchAppVersion = async (): Promise<string> => {
   return (await axios.get('/api/version/')).data
 }

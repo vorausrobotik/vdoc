@@ -93,14 +93,15 @@ def test_get_project_version_route(get_project_version_impl_mock: MagicMock, api
     )
 
 
+@pytest.mark.parametrize("content_type", ["application/zip", "application/x-zip-compressed"])
 def test_upload_project_version_route(
-    dummy_projects_dir: Path, authenticated_api: TestClient, example_docs_zip: Path
+    dummy_projects_dir: Path, authenticated_api: TestClient, example_docs_zip: Path, content_type: str
 ) -> None:
     project_version_dir = dummy_projects_dir / "dummy-project-01" / "3.0.0"
     assert not project_version_dir.is_dir()
     response = authenticated_api.post(
         "/api/projects/dummy-project-01/versions/3.0.0",
-        files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
+        files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), content_type)},
     )
     assert_api_response(
         response=response,
