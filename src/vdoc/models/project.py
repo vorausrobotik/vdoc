@@ -69,8 +69,12 @@ class Project(BaseModel):
     """Plain text, shown with the project on the landing page."""
     category_id: int | None = None
     visibility: ProjectVisibility = ProjectVisibility.LISTED
+    featured: bool = False
+    """Whether the landing page offers to start with this project. At most one project is."""
+    featured_label: str | None = None
+    """The text of the button that starts with this project. Unset, the frontend words it itself."""
 
-    @field_validator("display_name", "description")
+    @field_validator("display_name", "description", "featured_label")
     @classmethod
     def blank_is_unset(cls, value: str | None) -> str | None:
         """Treats a text that is only whitespace as not set.
@@ -120,6 +124,9 @@ class Project(BaseModel):
     def save(self) -> None:
         """Stores how the project is presented.
 
+        Featuring the project takes the mark off the one that had it, in the same transaction, so there
+        is never a moment with two.
+
         Raises:
             ProjectNotFound: If the project doesn't exist.
             CategoryNotFound: If the category doesn't exist.
@@ -133,6 +140,8 @@ class Project(BaseModel):
             if db.get(ProjectRow, self.name) is None:
                 raise ProjectNotFound(name=self.name)
             try:
+                if self.featured:
+                    db.execute(update(ProjectRow).where(ProjectRow.name != self.name).values(featured=False))
                 db.execute(query)
                 db.commit()
             except IntegrityError as error:

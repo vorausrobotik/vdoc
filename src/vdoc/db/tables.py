@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import Enum, ForeignKey, MetaData
+from sqlalchemy import Enum, ForeignKey, Index, MetaData, false, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from vdoc.models.project_visibility import ProjectVisibility
@@ -48,6 +48,21 @@ class ProjectRow(Base):
             ProjectVisibility, native_enum=False, values_callable=lambda members: [member.value for member in members]
         ),
         default=ProjectVisibility.LISTED,
+    )
+    featured: Mapped[bool] = mapped_column(default=False, server_default=false())
+    """Whether the landing page offers to start with this project."""
+    featured_label: Mapped[str | None]
+    """The text of the button that starts with this project, when it is featured."""
+
+    __table_args__ = (
+        # Unique over the featured rows alone, so the database itself holds every instance to one
+        Index(
+            "uq_project_featured",
+            "featured",
+            unique=True,
+            sqlite_where=text("featured"),
+            postgresql_where=text("featured"),
+        ),
     )
 
 
