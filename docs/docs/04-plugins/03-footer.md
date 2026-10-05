@@ -1,7 +1,9 @@
 # Footer plugin
 
 **vdoc** can be extended with a footer plugin, which renders a copyright line and groups of links
-below the documentation.
+below the documentation. Each link is drawn as its icon, with its title as the tooltip and as the
+name a screen reader announces. The group title names the group for a screen reader and is not
+printed.
 
 ## Configuration
 

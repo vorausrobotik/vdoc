@@ -83,7 +83,6 @@ export const testIDs = {
       copyright: 'footer.copyright',
       linkGroup: {
         main: 'footer.linkGroup',
-        title: 'footer.linkGroup.title',
         link: {
           main: 'footer.linkGroup.link.main',
         },
