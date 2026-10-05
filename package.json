@@ -23,7 +23,7 @@
     "@tanstack/react-router": "^1.170.18",
     "@voraus/assets": "^0.2.0",
     "@voraus/css": "^0.3.1",
-    "@voraus/mui-theme": "^0.3.1",
+    "@voraus/mui-theme": "^0.3.2",
     "@voraus/react": "^0.3.1",
     "@voraus/tokens": "^0.3.0",
     "axios": "^1.18.1",
