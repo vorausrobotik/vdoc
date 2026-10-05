@@ -20,6 +20,7 @@ const configured: SitePluginT = {
   description,
   long_description: longDescription,
   show_on_landing_page: true,
+  theme: 'default',
 }
 
 test.describe('Site plugin', () => {

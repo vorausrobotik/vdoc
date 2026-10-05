@@ -10,7 +10,7 @@ from yaml import YAMLError
 
 from vdoc.config_file import config_file_path, log_configuration_source
 from vdoc.constants import CONFIG_FILE_ENV_VAR, DEFAULT_CONFIG_FILE
-from vdoc.models.plugins import FooterPlugin, OramaPlugin, ThemePlugin
+from vdoc.models.plugins import FooterPlugin, OramaPlugin, SitePlugin
 from vdoc.settings import VDocSettings
 
 
@@ -68,7 +68,7 @@ def test_environment_wins_over_the_config_file(config_files: Path) -> None:
 def test_plugins_read_their_own_section(config_files: Path) -> None:
     with patch.dict(os.environ, {CONFIG_FILE_ENV_VAR: str(config_files / "vdoc.yaml")}, clear=True):
         footer = FooterPlugin()
-        theme = ThemePlugin()
+        site = SitePlugin()
         orama = OramaPlugin()
 
     assert footer.active is True
@@ -76,7 +76,7 @@ def test_plugins_read_their_own_section(config_files: Path) -> None:
     assert footer.links[0].title == "Links"
     assert footer.links[0].links[0].title == "Homepage"
 
-    assert str(theme.light.logo_url) == "https://example.com/light.png"
+    assert site.theme == "voraus"
 
     # A plugin with no section in the file keeps its defaults
     assert orama.active is False
@@ -106,7 +106,7 @@ def test_an_unparsable_value_in_the_config_file_fails_validation(config_files: P
         patch.dict(os.environ, {CONFIG_FILE_ENV_VAR: str(config_files / "invalid-value.yaml")}, clear=True),
         pytest.raises(ValidationError, match="Input should be a valid URL"),
     ):
-        ThemePlugin()
+        OramaPlugin()
 
 
 def test_unknown_keys_in_the_config_file_are_ignored(config_files: Path, caplog: pytest.LogCaptureFixture) -> None:

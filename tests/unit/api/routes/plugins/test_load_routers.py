@@ -6,14 +6,13 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import AnyHttpUrl
 
-from vdoc.constants import PLUGIN_THEME_DEFAULT_LOGO_URL, PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL
-from vdoc.models.plugins import OramaPlugin, ThemePlugin
+from vdoc.models.plugins import FooterPlugin, OramaPlugin
 
 
 @patch("vdoc.api.routes.plugins.Plugin.load_plugins")
 def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: pytest.FixtureRequest) -> None:
     load_plugins_mock.return_value = [
-        ThemePlugin(),
+        FooterPlugin(),
         OramaPlugin(
             endpoint=AnyHttpUrl("https://cloud.orama.run/v1/indexes/demo-index"),
             api_key="super-secret-key",
@@ -25,35 +24,7 @@ def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: pytest.
 
     response = api.get("/api/plugins/")
     assert response.status_code == 200
-    assert response.json() == ["theme", "orama"]
-
-    # Test the theme plugin endpoint
-    assert api.get("/api/plugins/theme/").json() == {
-        "name": "theme",
-        "active": True,
-        "border_radius": None,
-        "flat_cards": False,
-        "dark": {
-            "logo_url": str(PLUGIN_THEME_DEFAULT_LOGO_URL),
-            "logo_url_small": str(PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL),
-            "palette": {
-                "primary": None,
-                "divider": None,
-                "background_default": None,
-                "background_paper": None,
-            },
-        },
-        "light": {
-            "logo_url": str(PLUGIN_THEME_DEFAULT_LOGO_URL),
-            "logo_url_small": str(PLUGIN_THEME_DEFAULT_LOGO_URL_SMALL),
-            "palette": {
-                "primary": None,
-                "divider": None,
-                "background_default": None,
-                "background_paper": None,
-            },
-        },
-    }
+    assert response.json() == ["footer", "orama"]
 
     # Test the Orama plugin endpoint
     assert api.get("/api/plugins/orama/").json() == {
@@ -70,7 +41,7 @@ def test_plugin_routers_are_added(load_plugins_mock: MagicMock, request: pytest.
 def test_inactive_plugins(api: TestClient) -> None:
     response = api.get("/api/plugins/")
     assert response.status_code == 200
-    assert response.json() == ["footer", "orama", "site", "theme"]
+    assert response.json() == ["footer", "orama", "site"]
 
     # Test the Orama plugin endpoint
     assert api.get("/api/plugins/orama/").json() == {

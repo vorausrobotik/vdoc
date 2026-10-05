@@ -1,5 +1,7 @@
 """Contains the site plugin."""
 
+from typing import Literal
+
 from vdoc.models.plugins.base import Plugin, ValidPluginsT
 
 
@@ -35,6 +37,9 @@ class SitePlugin(Plugin):
     # Only the landing page honors this. Whoever reads llms.txt has nothing else to go on, so the
     # text is always in it.
     show_on_landing_page: bool = True
+
+    # `default` is Material UI's own look, so that a build nobody configured carries no brand.
+    theme: Literal["voraus", "default"] = "default"
 
     @property
     def active(self) -> bool:

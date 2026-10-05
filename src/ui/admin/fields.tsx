@@ -1,6 +1,6 @@
 import LabelIcon from '@mui/icons-material/Label'
 import LabelOffIcon from '@mui/icons-material/LabelOff'
-import { alpha, Box, Chip, type ChipProps, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Chip, type ChipProps, Stack, Typography, useColorScheme, useTheme } from '@mui/material'
 import { type RaRecord, useRecordContext } from 'react-admin'
 import type { ProjectCategory, ProjectVisibility } from '@/interfacesAndTypes/Project'
 import { categoryHue } from './categoryColors'
@@ -13,13 +13,13 @@ import { VISIBILITY_CHOICES, type VisibilityChoice } from './visibility'
 const TonalChip = ({ color, ...props }: Omit<ChipProps, 'color'> & { color: string }) => (
   <Chip
     size="small"
-    sx={{
+    sx={(theme) => ({
       color,
-      bgcolor: alpha(color, 0.14),
+      bgcolor: theme.alpha(color, 0.14),
       fontWeight: 500,
       '& .MuiChip-icon': { color, fontSize: 16, ml: 0.75, mr: -0.25 },
       '& .MuiChip-label': { px: 1 },
-    }}
+    })}
     {...props}
   />
 )
@@ -54,11 +54,13 @@ export const VisibilityOption = () => {
 /** A category in the color it is always shown in, or Misc for a project without one. */
 export const CategoryChip = ({ category }: { category?: ProjectCategory }) => {
   const theme = useTheme()
+  // Not `theme.palette.mode`: under a theme built on CSS variables that stays at the default scheme
+  const { colorScheme } = useColorScheme()
   if (!category) {
     return <TonalChip color={theme.palette.text.secondary} icon={<LabelOffIcon />} label="Misc" />
   }
   // A lighter shade on a dark background and a darker one on a light background, so both read well
-  const color = categoryHue(category.id)[theme.palette.mode === 'dark' ? 300 : 700]
+  const color = categoryHue(category.id)[colorScheme === 'dark' ? 300 : 700]
   return <TonalChip color={color} icon={<LabelIcon />} label={category.name} />
 }
 

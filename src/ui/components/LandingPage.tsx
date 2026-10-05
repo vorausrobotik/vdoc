@@ -1,97 +1,87 @@
-import { Box, Card, CardActions, CardContent, Container, Grid, Typography } from '@mui/material'
+import { Box, CardActions, CardContent, Typography } from '@mui/material'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { groupProjectsByCategories, projectTitle } from '@/helpers/Projects'
-import { LinkButton } from '@/interfacesAndTypes/LinkButton'
+import { useBrand } from '@/brands/Brand'
+import { groupProjectsByCategories, latestVersion, PROJECTS_SECTION_ID, projectTitle } from '@/helpers/Projects'
+import { LinkCard } from '@/interfacesAndTypes/LinkCard'
 import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
-import type SitePluginT from '@/interfacesAndTypes/plugins/SitePlugin'
 import testIDs from '@/interfacesAndTypes/testIDs'
+import { ContentColumn } from './ContentColumn'
 import { SitePlugin } from './plugins/SitePlugin'
 
 const route = getRouteApi('/_site/')
+const rootRoute = getRouteApi('__root__')
+
+const categoryIDs = testIDs.landingPage.projectCategories.projectCategory
+const cardIDs = categoryIDs.projects.projectCard
 
 export function LandingPage() {
-  const [projects, projectCategories, sitePluginConfig]: readonly [Project[], ProjectCategory[], SitePluginT | null] =
-    route.useLoaderData()
+  const [projects, projectCategories]: readonly [Project[], ProjectCategory[]] = route.useLoaderData()
+  const { sitePluginConfig } = rootRoute.useLoaderData()
+  const { SectionLabel } = useBrand()
 
-  const getGroupedProjects = useMemo(() => {
-    return groupProjectsByCategories(projects, projectCategories)
-  }, [projects, projectCategories])
+  const groupedProjects = useMemo(
+    () => Object.entries(groupProjectsByCategories(projects, projectCategories)),
+    [projects, projectCategories]
+  )
+
   return (
-    <Container maxWidth="xl" sx={{ mt: 2 }}>
-      <SitePlugin config={sitePluginConfig} />
-      {Object.entries(getGroupedProjects).map(([category, projects]) => (
-        <Box key={category} sx={{ mb: 4 }} data-testid={testIDs.landingPage.projectCategories.projectCategory.main}>
-          <Typography
-            variant="h5"
-            sx={{ mb: 2, textTransform: 'uppercase' }}
-            data-testid={testIDs.landingPage.projectCategories.projectCategory.title}
-          >
-            {category}
-          </Typography>
-          <Box sx={{ flexGrow: 1 }}>
-            <Grid
-              container
-              direction="row"
-              sx={{
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-              }}
-              spacing={2}
-              data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.main}
+    // A block of its own: the content area is a flex column, which would squeeze a hero that clips
+    // its overflow, as the voraus hero does, since such a hero has no minimum height of its own
+    <Box>
+      <SitePlugin config={sitePluginConfig} projects={projects} />
+      <ContentColumn id={PROJECTS_SECTION_ID} sx={{ py: 6 }}>
+        {groupedProjects.map(([category, projects]) => (
+          <Box key={category} component="section" sx={{ mb: 6 }} data-testid={categoryIDs.main}>
+            <SectionLabel data-testid={categoryIDs.title}>{category}</SectionLabel>
+            <Box
+              data-testid={categoryIDs.projects.main}
+              sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' } }}
             >
               {projects.map((project) => (
-                <IndexProjectCard key={project.name} project={project} />
+                <ProjectCard key={project.name} project={project} />
               ))}
-            </Grid>
+            </Box>
           </Box>
-        </Box>
-      ))}
-    </Container>
+        ))}
+      </ContentColumn>
+    </Box>
   )
 }
 
-function IndexProjectCard({ project }: { project: Project }) {
+/**
+ * A project as a tile: its title and newest version, its description, then how many versions it has. The
+ * whole tile opens the newest version, so it carries no action of its own.
+ */
+function ProjectCard({ project }: { project: Project }) {
+  const { VersionBadge } = useBrand()
+  const count = project.versions.length
+  const version = latestVersion(project)?.version
   return (
-    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-      <Card
-        // The minimum height keeps the cards of a row the same size. A single column has no row to
-        // match, and holding every card open there only makes the list longer than it has to be.
-        sx={{ minHeight: { xs: 'auto', sm: 120 } }}
-        data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.main}
-      >
-        <CardContent>
-          <Typography
-            gutterBottom
-            variant="h6"
-            data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.title}
-          >
+    <LinkCard
+      variant="tile"
+      data-testid={cardIDs.main}
+      to="/$projectName/$version/$"
+      params={{ projectName: project.name, version: 'latest', _splat: '' }}
+    >
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1.75 }}>
+          <Typography variant="h3" data-testid={cardIDs.title}>
             {projectTitle(project)}
           </Typography>
-          {project.description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.description}
-            >
-              {project.description}
-            </Typography>
-          )}
-        </CardContent>
-        <CardActions
-          data-testid={testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.main}
-        >
-          <LinkButton
-            data-testid={
-              testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink
-            }
-            to={`/$projectName/$version/$`}
-            params={{ projectName: project.name, version: 'latest', _splat: '' }}
-          >
-            Open
-          </LinkButton>
-        </CardActions>
-      </Card>
-    </Grid>
+          {version && <VersionBadge version={version} />}
+        </Box>
+        {project.description && (
+          <Typography color="textSecondary" sx={{ mt: 1.5 }} data-testid={cardIDs.description}>
+            {project.description}
+          </Typography>
+        )}
+      </CardContent>
+      <CardActions data-testid={cardIDs.actions.main}>
+        <Typography variant="caption" color="textSecondary">
+          {count} {count === 1 ? 'version' : 'versions'} published
+        </Typography>
+      </CardActions>
+    </LinkCard>
   )
 }

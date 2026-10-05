@@ -19,6 +19,23 @@ def test_site_plugin_inactive() -> None:
     assert plugin.description is None
     assert plugin.long_description is None
     assert plugin.show_on_landing_page is True
+    assert plugin.theme == "default"
+
+
+@patch.dict(os.environ, {f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_THEME": "voraus"})
+def test_site_plugin_theme_leaves_it_inactive() -> None:
+    """The theme is how the instance looks, not something it introduces itself with."""
+    plugin = SitePlugin()
+
+    assert plugin.theme == "voraus"
+    assert plugin.active is False
+
+
+@patch.dict(os.environ, {f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_THEME": "corporate"})
+def test_site_plugin_rejects_an_unknown_theme() -> None:
+    """A typo has to fail at startup rather than quietly fall back to the unbranded look."""
+    with pytest.raises(ValidationError, match="Input should be 'voraus' or 'default'"):
+        SitePlugin()
 
 
 @patch.dict(os.environ, {f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_LONG_DESCRIPTION": '["- one", "- two"]'})

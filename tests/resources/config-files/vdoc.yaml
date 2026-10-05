@@ -14,7 +14,5 @@ plugins:
             icon: home
             href: https://vorausrobotik.com
 
-  # A plugin whose settings are themselves nested, to prove mappings below the plugin's own work
-  theme:
-    light:
-      logo_url: https://example.com/light.png
+  site:
+    theme: voraus

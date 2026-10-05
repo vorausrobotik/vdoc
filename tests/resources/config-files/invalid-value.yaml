@@ -1,5 +1,4 @@
 # Valid YAML holding a value the setting will not accept.
 plugins:
-  theme:
-    light:
-      logo_url: this-is-not-a-valid-url
+  orama:
+    endpoint: this-is-not-a-valid-url

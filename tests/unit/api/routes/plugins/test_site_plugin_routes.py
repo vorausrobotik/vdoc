@@ -20,6 +20,7 @@ def test_site_plugin_route_inactive(api: TestClient) -> None:
         "description": None,
         "long_description": None,
         "show_on_landing_page": True,
+        "theme": "default",
     }
 
 
@@ -51,4 +52,5 @@ def test_site_plugin_route(request: pytest.FixtureRequest) -> None:
             "- **voraus.pioneer** \u2014 the environment",
         ],
         "show_on_landing_page": True,
+        "theme": "default",
     }

@@ -10,6 +10,7 @@ import type {
 } from '@playwright/test'
 import test from '@playwright/test'
 import type { ColorMode } from '@/interfacesAndTypes/ColorModes'
+import type { Project } from '@/interfacesAndTypes/Project'
 
 export const prepareTestSuite = async (
   test: TestType<PlaywrightTestArgs & PlaywrightTestOptions, PlaywrightWorkerArgs & PlaywrightWorkerOptions>
@@ -22,6 +23,44 @@ export const prepareTestSuite = async (
     await page.unrouteAll()
   })
 }
+
+/** Versions as the projects endpoint lists them, oldest first, one day apart. */
+const published = (...versions: string[]) =>
+  versions.map((version, index) => ({ version, published_at: new Date(Date.UTC(2026, 0, index + 1)).toISOString() }))
+
+/** The projects the projects endpoint answers with. */
+export const mockedProjects: Project[] = [
+  {
+    name: 'example-project-01',
+    display_name: 'Example Project 01',
+    description: 'The first example',
+    category_id: 0,
+    visibility: 'listed',
+    featured: false,
+    featured_label: null,
+    versions: published('0.1.0', '0.2.0', '1.0.0', '2.0.0', '3.0.0', '3.1.0', '3.2.0'),
+  },
+  {
+    name: 'example-project-02',
+    display_name: null,
+    description: null,
+    category_id: 1,
+    visibility: 'listed',
+    featured: false,
+    featured_label: null,
+    versions: published('1.0.0'),
+  },
+  {
+    name: 'example-project-03',
+    display_name: null,
+    description: null,
+    category_id: null,
+    visibility: 'listed',
+    featured: false,
+    featured_label: null,
+    versions: published('0.1.0', '1.0.0'),
+  },
+]
 
 export const mockAPIRequests = async (page: Page) => {
   const routes = [
@@ -57,23 +96,7 @@ export const mockAPIRequests = async (page: Page) => {
     {
       pattern: '*/**/api/projects/',
       response: {
-        json: [
-          {
-            name: 'example-project-01',
-            display_name: 'Example Project 01',
-            description: 'The first example',
-            category_id: 0,
-            visibility: 'listed',
-          },
-          { name: 'example-project-02', display_name: null, description: null, category_id: 1, visibility: 'listed' },
-          {
-            name: 'example-project-03',
-            display_name: null,
-            description: null,
-            category_id: null,
-            visibility: 'listed',
-          },
-        ],
+        json: mockedProjects,
       },
     },
     {
@@ -110,27 +133,6 @@ export const mockAPIRequests = async (page: Page) => {
       response: { json: '1.0.0' },
     },
     {
-      pattern: '*/**/api/plugins/theme/',
-      response: {
-        json: {
-          name: 'theme',
-          active: true,
-          border_radius: null,
-          flat_cards: false,
-          light: {
-            logo_url: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_rgb.png',
-            logo_url_small: 'https://logos.vorausrobotik.com/v_rgb.png',
-            palette: {},
-          },
-          dark: {
-            logo_url: 'https://logos.vorausrobotik.com/voraus-robotik_farbig_negativ_rgb.png',
-            logo_url_small: 'https://logos.vorausrobotik.com/v_rgb.png',
-            palette: {},
-          },
-        },
-      },
-    },
-    {
       pattern: '*/**/api/plugins/site/',
       response: {
         json: {
@@ -140,6 +142,7 @@ export const mockAPIRequests = async (page: Page) => {
           description: null,
           long_description: null,
           show_on_landing_page: true,
+          theme: 'default',
         },
       },
     },

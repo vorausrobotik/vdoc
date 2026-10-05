@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import testIDs from '@/interfacesAndTypes/testIDs'
-import test, { prepareTestSuite } from './base'
+import test, { mockedProjects, prepareTestSuite } from './base'
 import { assertIndexPage, assertVersionDropdown, assertVersionOverview } from './helpers'
 
 await prepareTestSuite(test)
@@ -25,9 +25,7 @@ test('Test navigation index to documentation to version overview', async ({ page
 
   await expect(versionDropdown).not.toBeVisible()
   await expect(docIframe).not.toBeVisible()
-  const documentationButton = projectCards
-    .nth(0)
-    .getByTestId(testIDs.landingPage.projectCategories.projectCategory.projects.projectCard.actions.documentationLink)
+  const documentationButton = projectCards.nth(0)
   await expect(documentationButton).toBeVisible()
   await expect(latestVersionWarningBanner).not.toBeVisible()
 
@@ -84,8 +82,8 @@ test('Test project overview on no projects', async ({ page }) => {
   await page.route('*/**/api/projects/', (route) =>
     route.fulfill({
       json: [
-        { name: 'test-01', display_name: 'Test 01', category_id: null },
-        { name: 'test-02', display_name: 'Test 02', category_id: null },
+        { ...mockedProjects[0], name: 'test-01', display_name: 'Test 01', category_id: null },
+        { ...mockedProjects[0], name: 'test-02', display_name: 'Test 02', category_id: null },
       ],
     })
   )

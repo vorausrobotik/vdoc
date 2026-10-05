@@ -1,6 +1,7 @@
-import { AppBar, Box, type SelectChangeEvent, Slide, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material'
-import { getRouteApi, useNavigate, useParams } from '@tanstack/react-router'
+import { Box, type SelectChangeEvent, Slide, Typography, useTheme } from '@mui/material'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useBrand } from '@/brands/Brand'
 import { useContentInset } from '@/contexts/ContentInsetContext'
 import { fetchAppVersion, fetchPluginConfig, fetchProjectVersion, fetchProjectVersions } from '@/helpers/APIFunctions'
 import type OramaPluginT from '@/interfacesAndTypes/plugins/OramaPluginT'
@@ -8,42 +9,6 @@ import testIDs from '@/interfacesAndTypes/testIDs'
 import ColorModeToggle from './ColorModeToggle'
 import { OramaSearchPlugin } from './plugins/OramaSearchPlugin'
 import VersionDropdown from './VersionDropdown'
-
-const route = getRouteApi('__root__')
-
-function LeftGroup() {
-  const theme = useTheme()
-  const useSmallLogo = useMediaQuery(theme.breakpoints.down('lg'))
-  // Taken from the root loader, which resolves it before the first paint, rather than fetched here
-  const { themePluginConfig } = route.useLoaderData()
-
-  const logoUrl = useMemo(() => {
-    const smallLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url_small
-    const largeLogoUrl = themePluginConfig?.[theme.palette.mode]?.logo_url
-
-    if (useSmallLogo && smallLogoUrl) {
-      return smallLogoUrl
-    }
-    return largeLogoUrl ?? smallLogoUrl ?? null
-  }, [themePluginConfig, useSmallLogo, theme.palette.mode])
-
-  return (
-    <Box
-      sx={{ display: 'flex', alignItems: 'center', flexGrow: 0, mr: 2, cursor: 'pointer' }}
-      data-testid={testIDs.header.logo.main}
-      component="a"
-      href="/"
-    >
-      {logoUrl ? (
-        <img data-testid={testIDs.header.logo.image} src={logoUrl} alt="logo" style={{ maxHeight: 34 }} />
-      ) : (
-        <Typography data-testid={testIDs.header.logo.text} variant="h6" sx={{ color: theme.palette.text.primary }}>
-          vdoc
-        </Typography>
-      )}
-    </Box>
-  )
-}
 
 function MiddleGroup() {
   const [oramaPluginConfig, setOramaPluginConfig] = useState<OramaPluginT | null>(null)
@@ -69,7 +34,6 @@ function RightGroup() {
   useEffect(() => {
     fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
   }, [])
-
   useEffect(() => {
     const fetchData = async (name: string): Promise<[string[], string]> => {
       return await Promise.all([fetchProjectVersions(name), fetchProjectVersion(name, 'latest')])
@@ -159,64 +123,35 @@ export default function MenuBar({
   onHeightChange?: (height: number) => void
 }) {
   const theme = useTheme()
-
+  const { Header } = useBrand()
   const { setContentInset } = useContentInset()
-  const toolbarRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
 
   // Report where vdoc's own header content starts, so the framed documentation can line its header
   // up with it, and how tall the bar is, so the page below can leave that much room. Measured rather
-  // than derived from the theme: gutter and height are MUI's responsive `Toolbar` defaults today, and
-  // a second copy of those rules would be a second thing to keep in step. Observed rather than read
-  // once, because both change with the breakpoint - and the height also with the orientation.
+  // than derived, because each brand's bar sets its own gutter and height, and both change with the
+  // breakpoint. The start is the mark linking to `/`, which every brand's bar leads with.
   useEffect(() => {
-    const toolbar = toolbarRef.current
-    if (toolbar === null) {
+    const bar = barRef.current
+    if (bar === null) {
       return
     }
     const report = () => {
-      setContentInset(Number.parseFloat(window.getComputedStyle(toolbar).paddingLeft) || 0)
-      onHeightChange?.(toolbar.getBoundingClientRect().height)
+      const home = bar.querySelector('a[href="/"]')
+      setContentInset(home ? home.getBoundingClientRect().left - bar.getBoundingClientRect().left : 0)
+      onHeightChange?.(bar.getBoundingClientRect().height)
     }
     report()
     const observer = new ResizeObserver(report)
-    observer.observe(toolbar)
+    observer.observe(bar)
     return () => observer.disconnect()
   }, [setContentInset, onHeightChange])
 
   return (
     <Slide appear={false} direction="down" in={!hide}>
-      <AppBar
-        position="fixed"
-        data-testid={testIDs.header.main}
-        sx={{
-          background: theme.palette.background.default,
-        }}
-        elevation={0}
-      >
-        <Toolbar ref={toolbarRef}>
-          {/* The outer groups take the width their content needs and the search bar takes what is
-              left, so no breakpoint has to guess a column split for them. A twelfth of a phone's
-              width is not enough for a logo, which is what a fixed split gave it. */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-            {/* Logo and/or Text */}
-            <Box id="appBarLeftGroup" sx={{ display: 'flex', flexShrink: 0 }}>
-              <LeftGroup />
-            </Box>
-            {/* Searchbar. `minWidth` lets it shrink below its content rather than push the groups
-                beside it off the bar. */}
-            <Box id="appBarMiddleGroup" sx={{ display: 'flex', flex: 1, minWidth: 0, justifyContent: 'center' }}>
-              <MiddleGroup />
-            </Box>
-            {/* vdoc version, color mode toggle and the optional version dropdown */}
-            <Box
-              id="appBarRightGroup"
-              sx={{ display: 'flex', flexShrink: 0, justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}
-            >
-              <RightGroup />
-            </Box>
-          </Box>
-        </Toolbar>
-      </AppBar>
+      <Box ref={barRef} sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: theme.zIndex.appBar }}>
+        <Header data-testid={testIDs.header.main} search={<MiddleGroup />} actions={<RightGroup />} />
+      </Box>
     </Slide>
   )
 }
