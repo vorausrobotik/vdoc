@@ -103,9 +103,10 @@ and both delete the files as well.
 
 **Categories** creates, renames and deletes the categories, each shown in a color of its own. The
 list shows them in the order of the landing page and `llms.txt`, and its arrows move a category up or
-down. A new category comes last, and the projects without one always follow all of them. A category can also be created
-right from a project's category field, by typing a name that does not exist yet. Deleting a category
-moves its projects to _Misc_.
+down. A new category comes last, and the projects without one always follow all of them. Within a
+category, the projects are sorted alphabetically by their display name, or by the project name if
+they have none. A category can also be created right from a project's category field, by typing a
+name that does not exist yet. Deleting a category moves its projects to _Misc_.
 
 Opening an admin page leads to a login page first, which takes the API credentials. The login ends
 with **Logout** in the user menu at the top right, after eight hours without use, or when vdoc

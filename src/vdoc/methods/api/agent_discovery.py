@@ -68,18 +68,14 @@ def _sections(projects: Sequence[Project]) -> list[tuple[str, list[Project]]]:
     instance still lists all of them.
 
     Args:
-        projects: The projects to group.
+        projects: The projects to group, in the order each section lists them.
 
     Returns:
         The title of each section and the projects in it, skipping the sections no project belongs to.
     """
 
     def members(category_id: int | None) -> list[Project]:
-        # By display name, because that is the name the reader sees in the list
-        return sorted(
-            (project for project in projects if project.category_id == category_id),
-            key=lambda project: project.title,
-        )
+        return [project for project in projects if project.category_id == category_id]
 
     sections = [(category.name, members(category_id=category.id)) for category in ProjectCategory.all()]
     sections.append((_UNCATEGORIZED_SECTION_TITLE, members(category_id=None)))

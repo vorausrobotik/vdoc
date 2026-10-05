@@ -94,6 +94,17 @@ def test_all_projects_by_visibility(dummy_projects_dir: Path) -> None:  # noqa: 
     assert Project.is_published(name="dummy-project-01", version="1.0.0")
 
 
+def test_all_projects_by_title(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    Project(name="dummy-project-01", display_name="Zebra").save()
+    Project(name="dummy-project-02", display_name="alpha").save()
+
+    assert [project.title for project in Project.all(visibility=ProjectVisibility)] == [
+        "alpha",
+        "dummy-project-03",
+        "Zebra",
+    ]
+
+
 def test_list_project_versions(dummy_projects_dir: Path) -> None:  # noqa: ARG001
     assert [published.version for published in Project(name="dummy-project-03").versions] == [
         "1.0.0",
