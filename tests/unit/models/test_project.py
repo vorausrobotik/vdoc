@@ -5,8 +5,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from sqlalchemy import update
+from sqlalchemy.exc import IntegrityError
 
 from tests.conftest import DUMMY_DOCS_STRUCTURE
+from vdoc.db import session
+from vdoc.db.tables import ProjectRow
 from vdoc.exceptions import CategoryNotFound, InvalidVersion, ProjectNotFound, ProjectVersionNotFound
 from vdoc.models.project import Project
 from vdoc.models.project_category import ProjectCategory
@@ -34,6 +38,27 @@ def test_project_save(dummy_projects_dir: Path) -> None:  # noqa: ARG001
 def test_project_save_unknown_category(dummy_projects_dir: Path) -> None:  # noqa: ARG001
     with pytest.raises(CategoryNotFound):
         Project(name="dummy-project-01", category_id=42).save()
+
+
+def test_featuring_a_project_takes_the_mark_off_the_other(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    Project(name="dummy-project-01", featured=True).save()
+    Project(name="dummy-project-02", featured=True).save()
+
+    assert Project.get(name="dummy-project-01").featured is False
+    assert Project.get(name="dummy-project-02").featured is True
+
+
+def test_a_blank_featured_label_is_unset(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    """Unset, the button falls back to its own wording rather than showing an empty label."""
+    Project(name="dummy-project-01", featured=True, featured_label="  ").save()
+
+    assert Project.get(name="dummy-project-01").featured_label is None
+
+
+def test_the_database_holds_at_most_one_featured_project(dummy_projects_dir: Path) -> None:  # noqa: ARG001
+    """The rule holds below the model too, for any writer that skips ``save``."""
+    with session() as db, pytest.raises(IntegrityError):
+        db.execute(update(ProjectRow).values(featured=True))
 
 
 def test_project_category_deleted(dummy_projects_dir: Path) -> None:  # noqa: ARG001
