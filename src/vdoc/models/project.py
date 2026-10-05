@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from packaging.version import InvalidVersion as PackagingInvalidVersion
 from packaging.version import Version
 from pydantic import BaseModel, ConfigDict, computed_field, field_validator
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 
 from vdoc.constants import LATEST_VERSION_ALIAS
@@ -109,7 +109,7 @@ class Project(BaseModel):
 
     @classmethod
     def all(cls, visibility: Iterable[ProjectVisibility] = (ProjectVisibility.LISTED,)) -> list[Project]:
-        """Returns every project with one of the given visibilities, sorted by name.
+        """Returns every project with one of the given visibilities, sorted by the title a reader is shown.
 
         Args:
             visibility: The visibilities to return. By default, only the listed projects.
@@ -117,7 +117,10 @@ class Project(BaseModel):
         Returns:
             The projects.
         """
-        query = select(ProjectRow).where(ProjectRow.visibility.in_(visibility)).order_by(ProjectRow.name)
+        title = func.coalesce(ProjectRow.display_name, ProjectRow.name)
+        query = (
+            select(ProjectRow).where(ProjectRow.visibility.in_(visibility)).order_by(func.lower(title), ProjectRow.name)
+        )
         with session() as db:
             return [cls.model_validate(row) for row in db.scalars(query)]
 

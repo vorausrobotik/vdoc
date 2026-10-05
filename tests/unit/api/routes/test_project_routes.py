@@ -22,8 +22,9 @@ def test_list_projects_route(dummy_projects_dir: Path, api: TestClient) -> None:
 
     response = api.get("/api/projects/")
 
-    listed, other = response.json()
-    assert (listed["name"], other["name"]) == ("dummy-project-01", "dummy-project-03")
+    # By title, so "One" follows "dummy-project-03"
+    other, listed = response.json()
+    assert (other["name"], listed["name"]) == ("dummy-project-03", "dummy-project-01")
     assert listed["display_name"] == "One"
     assert listed["description"] == "The first"
     assert listed["category_id"] is None
