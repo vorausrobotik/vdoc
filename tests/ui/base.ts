@@ -88,8 +88,8 @@ export const mockAPIRequests = async (page: Page) => {
       pattern: '*/**/api/project_categories/',
       response: {
         json: [
-          { id: 0, name: 'General' },
-          { id: 1, name: 'Extensions' },
+          { id: 0, name: 'General', position: 0 },
+          { id: 1, name: 'Extensions', position: 1 },
         ],
       },
     },

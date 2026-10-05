@@ -22,4 +22,6 @@ export interface Project {
 export interface ProjectCategory {
   id: number
   name: string
+  /** Where the landing page shows it. The API lists the categories in this order. */
+  position: number
 }

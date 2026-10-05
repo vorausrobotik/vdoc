@@ -191,6 +191,20 @@ test('Admin categories list counts their projects', async ({ page }) => {
   await expect(page.getByRole('row', { name: /General/ })).toContainText('1')
 })
 
+test('Admin categories list moves a category without opening it', async ({ page }) => {
+  await mockAdminAPI(page, { loggedIn: true })
+  await page.route('*/**/api/project_categories/order', (route) => route.fulfill({ json: [] }))
+
+  await page.goto('/admin/categories')
+  await expect(page.getByRole('button', { name: 'Move up General' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Move down Extensions' })).toBeDisabled()
+
+  const reorder = page.waitForRequest((request) => request.url().endsWith('/api/project_categories/order'))
+  await page.getByRole('button', { name: 'Move down General' }).click()
+  expect((await reorder).postDataJSON()).toEqual({ category_ids: [1, 0] })
+  await expect(page).toHaveURL(/\/admin\/categories$/)
+})
+
 test('Admin project page creates a category from what was typed', async ({ page }) => {
   await mockAdminAPI(page, { loggedIn: true })
 

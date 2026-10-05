@@ -47,8 +47,8 @@ describe('groupProjectsByCategories', () => {
   ]
 
   const baseCategories: ProjectCategory[] = [
-    { id: 1, name: 'Category 1' },
-    { id: 2, name: 'Category 2' },
+    { id: 1, name: 'Category 1', position: 0 },
+    { id: 2, name: 'Category 2', position: 1 },
   ]
 
   test('should group projects correctly by category', () => {
@@ -72,9 +72,9 @@ describe('groupProjectsByCategories', () => {
     expect(result).toEqual({ 'Category 1': [baseProjects[0]] })
   })
 
-  test("should return projects sorted by category_id, with 'Misc' at the end", () => {
-    const result = Object.keys(groupProjectsByCategories(baseProjects, baseCategories))
-    expect(result).toEqual(['Category 1', 'Category 2', 'Misc'])
+  test("should keep the order of the categories, with 'Misc' at the end", () => {
+    const result = Object.keys(groupProjectsByCategories(baseProjects, [...baseCategories].reverse()))
+    expect(result).toEqual(['Category 2', 'Category 1', 'Misc'])
   })
 
   test('should correctly handle additional categories and projects dynamically', () => {
@@ -101,7 +101,7 @@ describe('groupProjectsByCategories', () => {
       },
     ]
 
-    const extraCategories: ProjectCategory[] = [...baseCategories, { id: 3, name: 'Category 3' }]
+    const extraCategories: ProjectCategory[] = [...baseCategories, { id: 3, name: 'Category 3', position: 2 }]
 
     const result = groupProjectsByCategories([...baseProjects, ...extraProjects], extraCategories)
 

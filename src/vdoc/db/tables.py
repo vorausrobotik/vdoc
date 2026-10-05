@@ -31,6 +31,8 @@ class CategoryRow(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+    # Not unique: a reorder rewrites every position at once, and SQLite cannot defer the check to the commit
+    position: Mapped[int]
 
 
 class ProjectRow(Base):
