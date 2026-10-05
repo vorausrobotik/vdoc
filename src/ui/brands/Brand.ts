@@ -14,7 +14,7 @@ export const COLOR_SCHEME_ATTRIBUTE = 'data-theme'
 export interface HeaderProps {
   /** The search, where one is configured */
   search: ReactNode
-  /** The controls on the right: the version, the color mode and the app's own version */
+  /** The controls on the right: the version of a documentation and the color mode */
   actions: ReactNode
   'data-testid'?: string
 }

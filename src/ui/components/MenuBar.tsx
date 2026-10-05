@@ -1,9 +1,9 @@
-import { Box, type SelectChangeEvent, Slide, Typography, useTheme } from '@mui/material'
+import { Box, type SelectChangeEvent, Slide, useTheme } from '@mui/material'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useBrand } from '@/brands/Brand'
 import { useContentInset } from '@/contexts/ContentInsetContext'
-import { fetchAppVersion, fetchPluginConfig, fetchProjectVersion, fetchProjectVersions } from '@/helpers/APIFunctions'
+import { fetchPluginConfig, fetchProjectVersion, fetchProjectVersions } from '@/helpers/APIFunctions'
 import type OramaPluginT from '@/interfacesAndTypes/plugins/OramaPluginT'
 import testIDs from '@/interfacesAndTypes/testIDs'
 import ColorModeToggle from './ColorModeToggle'
@@ -29,11 +29,6 @@ function RightGroup() {
 
   const [projectVersions, setProjectVersions] = useState<string[] | undefined>(undefined)
   const [latestVersion, setLatestVersion] = useState<string | undefined>(undefined)
-  const [appVersion, setAppVersion] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    fetchAppVersion().then((appVersion) => setAppVersion(appVersion))
-  }, [])
   useEffect(() => {
     const fetchData = async (name: string): Promise<[string[], string]> => {
       return await Promise.all([fetchProjectVersions(name), fetchProjectVersion(name, 'latest')])
@@ -89,27 +84,6 @@ function RightGroup() {
       {/* Right of the version dropdown rather than left of it, because the dropdown is only there
           for a documentation: anything placed before it moves as soon as one is opened. */}
       <ColorModeToggle />
-      {/* Stacked rather than written out on one line, so that naming the app costs no width next to
-          the project version. The color goes through ``sx``, because the app bar hands its children
-          the contrast text color and ``Typography``'s own ``color`` prop takes a palette name
-          (``textSecondary``) rather than a path. */}
-      <Box
-        data-testid={testIDs.header.appVersion}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          color: 'text.secondary',
-          lineHeight: 1.2,
-        }}
-      >
-        <Typography variant="caption" sx={{ fontSize: '0.65rem', lineHeight: 1.2 }} noWrap>
-          vdoc
-        </Typography>
-        <Typography variant="caption" sx={{ fontSize: '0.65rem', lineHeight: 1.2 }} noWrap>
-          {appVersion ?? 'N/A'}
-        </Typography>
-      </Box>
     </>
   )
 }
