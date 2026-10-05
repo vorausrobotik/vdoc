@@ -13,23 +13,19 @@ export const projectTitle = (project: Project): string => project.display_name |
 export const latestVersion = (project: Project): ProjectVersion | undefined =>
   project.versions[project.versions.length - 1]
 
+/** Groups the projects in the order the categories are given, with the projects without one last, under Misc. */
 export function groupProjectsByCategories(
   projects: Project[],
   projectCategories: ProjectCategory[]
 ): Record<string, Project[]> {
   const grouped: Record<string, Project[]> = {}
-  const categoriesCopy = [...projectCategories, { id: null, name: 'Misc' }].sort((a, b) => {
-    if (a.id === null) return 1
-    if (b.id === null) return -1
-    return a.id - b.id
-  })
 
-  categoriesCopy.forEach((category) => {
+  for (const category of [...projectCategories, { id: null, name: 'Misc' }]) {
     const filteredProjects = projects.filter((project) => project.category_id === category.id)
     if (filteredProjects.length > 0) {
       grouped[category.name] = filteredProjects
     }
-  })
+  }
 
   return grouped
 }

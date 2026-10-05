@@ -44,8 +44,14 @@ export const createProjectCategory = async (name: string): Promise<ProjectCatego
   return (await axios.post(`/api/project_categories/`, { name })).data
 }
 
-export const renameProjectCategory = async (category: ProjectCategory): Promise<ProjectCategory> => {
+export const renameProjectCategory = async (
+  category: Pick<ProjectCategory, 'id' | 'name'>
+): Promise<ProjectCategory> => {
   return (await axios.put(`/api/project_categories/${category.id}`, { name: category.name })).data
+}
+
+export const reorderProjectCategories = async (categoryIds: number[]): Promise<ProjectCategory[]> => {
+  return (await axios.put(`/api/project_categories/order`, { category_ids: categoryIds })).data
 }
 
 export const deleteProjectCategory = async (id: number): Promise<void> => {

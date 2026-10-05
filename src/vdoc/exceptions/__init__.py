@@ -98,6 +98,16 @@ class CategoryAlreadyExists(VDocException):
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=f"Category '{name}' already exists.")
 
 
+class CategoryOrderIncomplete(VDocException):
+    """Exception when a new order of the project categories does not list each of them exactly once."""
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="The order must list every category exactly once.",
+        )
+
+
 class DefaultCredentialsInUse(VDocException):
     """Exception when an authenticated request arrives while the default credentials are in use."""
 

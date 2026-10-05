@@ -87,13 +87,14 @@ def test_login_cookie_is_secure(configured_api: TestClient) -> None:
 
 
 # Every route that needs authentication, with a body it would otherwise accept
-GUARDED_REQUESTS = [
+GUARDED_REQUESTS: list[tuple[str, str, dict[str, object] | None]] = [
     ("GET", "/api/projects/?include_hidden=true", None),
     ("PUT", "/api/projects/dummy-project-01", {"name": "dummy-project-01"}),
     ("DELETE", "/api/projects/dummy-project-01", None),
     ("DELETE", "/api/projects/dummy-project-01/versions/1.0.0", None),
     ("POST", "/api/projects/dummy-project-01/versions/9.0.0", None),
     ("POST", "/api/project_categories/", {"name": "General"}),
+    ("PUT", "/api/project_categories/order", {"category_ids": []}),
     ("PUT", "/api/project_categories/1", {"name": "General"}),
     ("DELETE", "/api/project_categories/1", None),
     ("GET", "/api/auth/me", None),
@@ -105,7 +106,7 @@ GUARDED_REQUESTS = [
 def test_default_credentials_are_refused(
     method: str,
     path: str,
-    body: dict[str, str] | None,
+    body: dict[str, object] | None,
     dummy_projects_dir: Path,  # noqa: ARG001
     default_credentials_api: TestClient,
 ) -> None:
@@ -122,7 +123,7 @@ def test_default_credentials_are_refused(
 def test_guarded_routes_require_credentials(
     method: str,
     path: str,
-    body: dict[str, str] | None,
+    body: dict[str, object] | None,
     dummy_projects_dir: Path,  # noqa: ARG001
     configured_api: TestClient,
 ) -> None:
