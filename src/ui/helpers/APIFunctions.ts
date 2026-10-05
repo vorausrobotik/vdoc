@@ -36,10 +36,6 @@ export const uploadProjectVersion = async (name: string, version: string, file: 
   await axios.post(`/api/projects/${name}/versions/${version}`, form)
 }
 
-export const fetchAppVersion = async (): Promise<string> => {
-  return (await axios.get('/api/version/')).data
-}
-
 export const fetchProjectCategories = async (): Promise<ProjectCategory[]> => {
   return (await axios.get(`/api/project_categories/`)).data
 }

@@ -146,10 +146,6 @@ export const mockAPIRequests = async (page: Page) => {
         },
       },
     },
-    {
-      pattern: '*/**/api/version/',
-      response: { json: '42.0.42' },
-    },
   ]
   for (const { pattern, response } of routes) {
     await page.route(pattern, (route) => route.fulfill(response))

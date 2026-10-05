@@ -12,7 +12,6 @@ export const testIDs = {
       showAllItem: 'header.versionDropdown.moreItem',
     },
     colorModeToggle: 'header.colorModeToggle',
-    appVersion: 'header.appVersion',
   },
   loadingIndicator: {
     main: 'loadingIndicator',
