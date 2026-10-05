@@ -1,19 +1,18 @@
-import { Box, CardActions, CardContent, Typography } from '@mui/material'
+import { Box } from '@mui/material'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { useBrand } from '@/brands/Brand'
-import { groupProjectsByCategories, latestVersion, PROJECTS_SECTION_ID, projectTitle } from '@/helpers/Projects'
-import { LinkCard } from '@/interfacesAndTypes/LinkCard'
+import { groupProjectsByCategories, PROJECTS_SECTION_ID } from '@/helpers/Projects'
 import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
 import testIDs from '@/interfacesAndTypes/testIDs'
 import { ContentColumn } from './ContentColumn'
+import { ProjectCard } from './ProjectCard'
 import { SitePlugin } from './plugins/SitePlugin'
 
 const route = getRouteApi('/_site/')
 const rootRoute = getRouteApi('__root__')
 
 const categoryIDs = testIDs.landingPage.projectCategories.projectCategory
-const cardIDs = categoryIDs.projects.projectCard
 
 export function LandingPage() {
   const [projects, projectCategories]: readonly [Project[], ProjectCategory[]] = route.useLoaderData()
@@ -46,42 +45,5 @@ export function LandingPage() {
         ))}
       </ContentColumn>
     </Box>
-  )
-}
-
-/**
- * A project as a tile: its title and newest version, its description, then how many versions it has. The
- * whole tile opens the newest version, so it carries no action of its own.
- */
-function ProjectCard({ project }: { project: Project }) {
-  const { VersionBadge } = useBrand()
-  const count = project.versions.length
-  const version = latestVersion(project)?.version
-  return (
-    <LinkCard
-      variant="tile"
-      data-testid={cardIDs.main}
-      to="/$projectName/$version/$"
-      params={{ projectName: project.name, version: 'latest', _splat: '' }}
-    >
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1.75 }}>
-          <Typography variant="h3" data-testid={cardIDs.title}>
-            {projectTitle(project)}
-          </Typography>
-          {version && <VersionBadge version={version} />}
-        </Box>
-        {project.description && (
-          <Typography color="textSecondary" sx={{ mt: 1.5 }} data-testid={cardIDs.description}>
-            {project.description}
-          </Typography>
-        )}
-      </CardContent>
-      <CardActions data-testid={cardIDs.actions.main}>
-        <Typography variant="caption" color="textSecondary">
-          {count} {count === 1 ? 'version' : 'versions'} published
-        </Typography>
-      </CardActions>
-    </LinkCard>
   )
 }
