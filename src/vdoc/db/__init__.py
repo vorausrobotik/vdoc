@@ -53,10 +53,13 @@ def session() -> Session:
     return Session(get_engine(), expire_on_commit=False)
 
 
-def migrate() -> None:
+def migrate(revision: str = "head") -> None:
     """Brings the configured database up to the schema this release expects.
 
     Creates the database first if it does not exist yet, which for SQLite includes its directory.
+
+    Args:
+        revision: The revision to migrate to. Only a test asks for one other than the newest.
 
     Raises:
         RuntimeError: If the directory of an SQLite database cannot be created.
@@ -72,6 +75,6 @@ def migrate() -> None:
 
     config = Config()
     config.set_main_option("script_location", "vdoc.db:migrations")
-    with engine.begin() as connection:
+    with engine.connect() as connection:
         config.attributes["connection"] = connection
-        command.upgrade(config, "head")
+        command.upgrade(config, revision)

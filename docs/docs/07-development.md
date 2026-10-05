@@ -113,6 +113,10 @@ current schema first, which running vdoc once does. The `lint` group provides `r
 the new revision. Read what it wrote before committing it. A test fails as long as the tables and
 the migrations disagree.
 
+On SQLite, the migrations run with the foreign keys off. Alembic alters a table by rebuilding it, and
+dropping the old table would otherwise fire the `ON DELETE` action of every row that references it. A
+migration that leaves a reference pointing nowhere fails, and vdoc rolls it back.
+
 ## Releasing
 
 Releases are automated with [release-please](https://github.com/googleapis/release-please): the
