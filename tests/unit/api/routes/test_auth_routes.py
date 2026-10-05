@@ -36,6 +36,22 @@ def test_login_session_admits_the_admin(configured_api: TestClient) -> None:
     assert configured_api.get("/api/auth/me").status_code == 401
 
 
+def test_login_session_uploads_a_version(
+    configured_api: TestClient,
+    dummy_projects_dir: Path,  # noqa: ARG001
+    example_docs_zip: Path,
+) -> None:
+    """The admin page uploads with its login rather than with Basic credentials."""
+    configured_api.post("/api/auth/login", json=CREDENTIALS)
+
+    response = configured_api.post(
+        "/api/projects/dummy-project-01/versions/9.0.0",
+        files={"file": (example_docs_zip.name, example_docs_zip.read_bytes(), "application/zip")},
+    )
+
+    assert response.status_code == 201
+
+
 def test_login_with_wrong_credentials(configured_api: TestClient) -> None:
     response = configured_api.post("/api/auth/login", json={**CREDENTIALS, "password": "wrong"})
 

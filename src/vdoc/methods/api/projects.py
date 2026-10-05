@@ -72,7 +72,8 @@ def upload_project_version_impl(name: str, version: str, file: UploadFile) -> JS
     if target_path.is_dir():
         raise ProjectVersionAlreadyExists(name=name, version=version)
 
-    if file.content_type != "application/zip":
+    # Browsers on Windows send a ZIP as `application/x-zip-compressed`
+    if file.content_type not in {"application/zip", "application/x-zip-compressed"}:
         msg = "Content type is not 'application/zip'"
         raise UploadedFileInvalid(msg)
     if file.filename is None:

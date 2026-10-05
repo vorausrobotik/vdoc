@@ -1,11 +1,9 @@
 """Contains all projects related REST API routes."""
 
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, Request, UploadFile, status
 from fastapi.responses import JSONResponse
 
-from vdoc.api.dependencies.auth import Credentials, require_admin, require_authentication
+from vdoc.api.dependencies.auth import Credentials, require_admin
 from vdoc.exceptions import InvalidProjectName
 from vdoc.methods.api.projects import (
     get_project_version_impl,
@@ -106,10 +104,8 @@ def get_project_versions(name: str, version: str) -> str:
     return get_project_version_impl(name=name, version=version)
 
 
-@router.post("/{name}/versions/{version}")
-def upload_project_version(
-    name: str, version: str, file: UploadFile, _: Annotated[str, Depends(require_authentication)]
-) -> JSONResponse:
+@router.post("/{name}/versions/{version}", dependencies=[Depends(require_admin)])
+def upload_project_version(name: str, version: str, file: UploadFile) -> JSONResponse:
     """Accepts and processes an uploaded project documentation.
 
     Args:

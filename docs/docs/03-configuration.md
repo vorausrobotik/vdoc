@@ -80,8 +80,9 @@ one opens it, where it is edited:
 - the **category** the landing page groups it under
 - its **visibility**
 
-The same page lists its versions, with a link to each, and deletes a version or the whole project.
-Both ask first, and both delete the files as well.
+The same page lists its versions, with a link to each, and uploads a new version from a ZIP archive
+with **Upload version**. It also deletes a version or the whole project. Both deletions ask first,
+and both delete the files as well.
 
 | Visibility | On the landing page and in `llms.txt` and `sitemap.xml` | At its own address                                |
 | ---------- | ------------------------------------------------------- | ------------------------------------------------- |
