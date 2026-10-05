@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.30.0](https://github.com/vorausrobotik/vdoc/compare/0.29.0...0.30.0) (2026-10-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ui:** The theme plugin is gone, with `plugins.theme` and `/api/plugins/theme/`. Its logo, palette, `border_radius` and `flat_cards` settings are ignored. Set `plugins.site.theme: voraus`, or `VDOC_PLUGINS_SITE_THEME=voraus`, for the voraus look.
+
+### Features
+
+* **admin:** Preview the card and the hero while editing a project ([d753f95](https://github.com/vorausrobotik/vdoc/commit/d753f9563dbbc3080b461e9a0cbe1cef2c67f18f))
+* **api:** Let one project be featured, with a label for its button ([ee21187](https://github.com/vorausrobotik/vdoc/commit/ee21187898ef9bf672e373089d2e513919e37e38))
+* **plugins:** Draw the links of the footer as icons ([a76d22f](https://github.com/vorausrobotik/vdoc/commit/a76d22f6ab2c6812199e5c7159da89a45cde6c42))
+* **ui:** Leave the app version out of the header ([e154e1a](https://github.com/vorausrobotik/vdoc/commit/e154e1a86f32c22b4d40d7e2da7dfd85295a632c))
+* **ui:** Take the look of the voraus design system ([1bca043](https://github.com/vorausrobotik/vdoc/commit/1bca0431213b52cff41887802b255c3cd31ae949))
+
+
+### Continuous Integration
+
+* Raise the minor version for a breaking change before 1.0 ([92a3b42](https://github.com/vorausrobotik/vdoc/commit/92a3b4265d09a6ada6dd907c6abeb96f0647cdc5))
+
 ## [0.29.0](https://github.com/vorausrobotik/vdoc/compare/0.28.0...0.29.0) (2026-10-05)
 
 
