@@ -1,5 +1,5 @@
-import { Box, Button, Container, Divider, Link, Paper, Typography, useTheme } from '@mui/material'
-import { Fragment, useEffect, useState } from 'react'
+import { Box, Container, IconButton, Link, Paper, Tooltip, Typography, useTheme } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { fetchPluginConfig } from '@/helpers/APIFunctions'
 import type FooterPluginT from '@/interfacesAndTypes/plugins/FooterPlugin'
 import { iconMap } from '@/interfacesAndTypes/plugins/FooterPlugin'
@@ -26,76 +26,54 @@ export const FooterPlugin = () => {
       elevation={4}
       sx={{ background: theme.palette.background.default }}
     >
-      {/* Centers content horizontally and restricts the width */}
-      <Container maxWidth="xl" sx={{ py: 1 }}>
-        {/* Wraps rather than overflows: where one row is not enough, the copyright and each link
-            group take a row of their own instead of being squeezed into one. */}
+      <Container maxWidth="xl" sx={{ py: 0.5 }}>
+        {/* Copyright on one side and the links on the other, wrapping onto a second row where both do
+            not fit beside each other */}
         <Box
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            justifyContent: 'center',
-            columnGap: { xs: 2, lg: 6 },
-            rowGap: 1,
+            justifyContent: 'space-between',
+            columnGap: 3,
           }}
         >
-          {/* Copyright */}
           {footerPluginConfig.copyright && (
             <Typography data-testid={testIDs.plugins.footer.copyright} variant="body2" color="text.secondary">
               © {new Date().getFullYear()} {footerPluginConfig.copyright}
             </Typography>
           )}
-          {/* Link groups */}
-          {footerPluginConfig.links.map((linkGroup, index) => {
-            return (
-              <Fragment key={linkGroup.title}>
-                {/* A separator only where everything fits on one row: on a wrapped row it would end
-                    up at the end of a line rather than between two groups. A direct child of the
-                    flex row, because that is what gives `flexItem` a height to stretch to. */}
-                {(index > 0 || footerPluginConfig.copyright) && (
-                  <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', lg: 'block' } }} />
-                )}
-                <Box
-                  data-testid={testIDs.plugins.footer.linkGroup.main}
-                  sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 1,
-                  }}
-                >
-                  {/* Link group title */}
-                  <Typography
-                    data-testid={testIDs.plugins.footer.linkGroup.title}
-                    variant="body2"
-                    color="text.secondary"
-                  >
-                    {linkGroup.title}
-                  </Typography>
-                  {/* Link group links */}
-                  {linkGroup.links.map((link) => {
-                    const LinkIcon = iconMap[link.icon]
-                    return (
-                      <Button
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 2, ml: 'auto' }}>
+            {footerPluginConfig.links.map((linkGroup) => (
+              // The group title is not printed, so it names the group for a screen reader
+              <Box
+                key={linkGroup.title}
+                role="group"
+                aria-label={linkGroup.title}
+                data-testid={testIDs.plugins.footer.linkGroup.main}
+                sx={{ display: 'flex', alignItems: 'center' }}
+              >
+                {linkGroup.links.map((link) => {
+                  const LinkIcon = iconMap[link.icon]
+                  return (
+                    <Tooltip key={link.href} title={link.title}>
+                      <IconButton
                         data-testid={testIDs.plugins.footer.linkGroup.link.main}
-                        key={link.href}
-                        sx={{ textTransform: 'none' }}
+                        aria-label={link.title}
                         component={Link}
                         href={link.href}
                         target={link.target}
-                        startIcon={<LinkIcon />}
-                        variant="outlined"
+                        size="small"
+                        sx={{ color: 'text.secondary' }}
                       >
-                        {link.title}
-                      </Button>
-                    )
-                  })}
-                </Box>
-              </Fragment>
-            )
-          })}
+                        <LinkIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                })}
+              </Box>
+            ))}
+          </Box>
         </Box>
       </Container>
     </Paper>

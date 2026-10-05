@@ -101,9 +101,11 @@ test.describe('Footer plugin tests', () => {
           await expect(copyrightLocator).not.toBeVisible()
         }
 
-        // THEN: All link groups must be visible
+        // THEN: All link groups must be there, named by their titles
         const linkGroups = page.getByTestId(testIDs.plugins.footer.linkGroup.main)
         await expect(linkGroups).toHaveCount(2)
+        await expect(linkGroups.nth(0)).toHaveAccessibleName('Submit Feedback')
+        await expect(linkGroups.nth(1)).toHaveAccessibleName('Links')
 
         // THEN: All links must be visible and have correct values
         const expectedLinks = [
@@ -131,7 +133,8 @@ test.describe('Footer plugin tests', () => {
         const linkLocators = page.getByTestId(testIDs.plugins.footer.linkGroup.link.main)
         await expect(linkLocators).toHaveCount(expectedLinks.length)
         for (const [index, link] of expectedLinks.entries()) {
-          await expect(linkLocators.nth(index)).toHaveText(link.title)
+          // An icon alone, so the title is its accessible name
+          await expect(linkLocators.nth(index)).toHaveAccessibleName(link.title)
           await expect(linkLocators.nth(index)).toHaveAttribute('href', link.href)
           await expect(linkLocators.nth(index)).toHaveAttribute('target', link.target)
           if (link.target === '_blank') {
