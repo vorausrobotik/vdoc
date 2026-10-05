@@ -1,11 +1,11 @@
 import { Box, CssBaseline, Slide, ThemeProvider, useColorScheme } from '@mui/material'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import { getRouteApi, Outlet } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { COLOR_SCHEME_ATTRIBUTE } from '@/brands/Brand'
 import { ContentInsetProvider } from '@/contexts/ContentInsetProvider'
 import { useIFrameScroll } from '@/contexts/IFrameScrollContext'
 import { IFrameScrollProvider } from '@/contexts/IFrameScrollProvider'
-import { buildTheme } from '@/helpers/Theme'
 import MenuBar from './MenuBar'
 import { FooterPlugin } from './plugins/FooterPlugin'
 import ScrollToTop from './ScrollToTop'
@@ -128,13 +128,12 @@ export function SiteLayout() {
 
 /** What every page shares: the theme and the color mode. The layout comes from the route below it. */
 export function RootComponent() {
-  const { themePluginConfig } = route.useLoaderData()
-  const theme = useMemo(() => buildTheme(themePluginConfig), [themePluginConfig])
+  const { brand } = route.useLoaderData()
 
   return (
-    <ThemeProvider theme={theme} defaultMode="system">
+    <ThemeProvider theme={brand.theme} defaultMode="system">
       <CssBaseline />
-      <InitColorSchemeScript />
+      <InitColorSchemeScript attribute={COLOR_SCHEME_ATTRIBUTE} />
       <IFrameScrollProvider>
         <ContentInsetProvider>
           <Outlet />

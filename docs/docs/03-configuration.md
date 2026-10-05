@@ -52,7 +52,7 @@ Reading configuration from '/srv/vdoc/vdoc.yaml'. Environment variables override
 
 A setting whose value is a list or a mapping has to be written as JSON in a variable, on a single
 line, which is the reason the file is worth having. A setting that holds a structure of its own is
-addressed with `__` between the levels, for example `VDOC_PLUGINS_THEME_LIGHT__LOGO_URL`.
+addressed with `__` between the levels, for example `VDOC_PLUGINS_ORAMA_DICTIONARY__DISCLAIMER`.
 
 ## Settings
 
@@ -79,6 +79,13 @@ one opens it, where it is edited:
 - a **description** in plain text, shown on the project's card on the landing page
 - the **category** the landing page groups it under
 - its **visibility**
+- whether it is **featured**: the landing page then offers a button to start with it
+- the **button label** of that button, such as _Start with the Software Manual_. Left empty, it says
+  _Start with_ and the title
+
+Featured is also the star in front of each project in the list. Only one project is featured at a
+time, so starring one takes the star off the other. A featured project that is not listed offers no
+button, since the landing page does not show it.
 
 The same page lists its versions, with a link to each, and uploads a new version from a ZIP archive
 with **Upload version**. It also deletes a version or the whole project. Both deletions ask first,

@@ -11,6 +11,8 @@ const projects: Project[] = [
     description: null,
     category_id: 0,
     visibility: 'listed',
+    featured: false,
+    featured_label: null,
     versions: [
       { version: '1.0.0', published_at: '2026-01-01T10:00:00' },
       { version: '2.0.0', published_at: '2026-02-01T10:00:00' },
@@ -22,6 +24,8 @@ const projects: Project[] = [
     description: null,
     category_id: null,
     visibility: 'locked',
+    featured: false,
+    featured_label: null,
     versions: [{ version: '0.1.0', published_at: '2025-01-01T10:00:00' }],
   },
 ]
@@ -86,6 +90,19 @@ test('Admin project page saves the presentation', async ({ page }) => {
   await page.getByRole('button', { name: 'Save' }).click()
 
   expect((await update).postDataJSON()).toMatchObject({ name: 'example-project-01', description: 'What it is' })
+})
+
+test('Admin projects list features a project with its star', async ({ page }) => {
+  await mockAdminAPI(page, { loggedIn: true })
+
+  await page.goto('/admin/projects')
+  const star = page.getByRole('row', { name: /One/ }).getByRole('button', { name: 'Feature on the landing page' })
+  const update = page.waitForRequest((request) => request.method() === 'PUT')
+  await star.click()
+
+  expect((await update).postDataJSON()).toMatchObject({ name: 'example-project-01', featured: true })
+  // The star is not the row, so starring a project does not open it
+  await expect(page).toHaveURL(/\/admin\/projects$/)
 })
 
 test('Admin project page deletes a version after asking', async ({ page }) => {

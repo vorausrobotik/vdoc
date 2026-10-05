@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>vdoc</title>
+  <!-- The same drawing as `VdocLogo`. A browser tab has no theme to inherit, so the colors follow the
+       system's color scheme here instead. -->
+  <style>
+    .outline { stroke: #1b2330; }
+    .front { fill: #1976d2; }
+    .lines { stroke: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .outline { stroke: #e8edf4; }
+      .front { fill: #90caf9; }
+      .lines { stroke: #121212; }
+    }
+  </style>
+  <rect class="outline" x="12" y="3" width="16" height="20" rx="3" fill="none" stroke-width="2" opacity="0.3"/>
+  <rect class="outline" x="8.5" y="6" width="16" height="20" rx="3" fill="none" stroke-width="2" opacity="0.6"/>
+  <rect class="front" x="5" y="9" width="16" height="20" rx="3"/>
+  <path class="lines" d="M9 16h8M9 21h5" fill="none" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -3,7 +3,6 @@ export const testIDs = {
     main: 'header',
     logo: {
       main: 'header.logo',
-      image: 'header.logo.image',
       text: 'header.logo.text',
     },
     versionDropdown: {
@@ -35,8 +34,6 @@ export const testIDs = {
             description: 'landingPage.projectCategories.projectCategory.projects.projectCard.description',
             actions: {
               main: 'landingPage.projectCategories.projectCategory.projects.projectCard.actions',
-              documentationLink:
-                'landingPage.projectCategories.projectCategory.projects.projectCard.actions.openDocumentation',
             },
           },
         },
@@ -77,6 +74,7 @@ export const testIDs = {
       title: 'plugins.site.title',
       description: 'plugins.site.description',
       longDescription: 'plugins.site.longDescription',
+      featuredProject: 'plugins.site.featuredProject',
     },
     footer: {
       main: 'footer',

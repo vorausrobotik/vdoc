@@ -1,23 +1,15 @@
 import SentimentDissatisfied from '@mui/icons-material/SentimentDissatisfied'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import ErrorComponent from '@/components/ErrorComponent'
-import { fetchPluginConfig, fetchProjectCategories, fetchProjects } from '@/helpers/APIFunctions'
-import type SitePluginT from '@/interfacesAndTypes/plugins/SitePlugin'
+import { fetchProjectCategories, fetchProjects } from '@/helpers/APIFunctions'
 
 export const Route = createFileRoute('/_site/')({
   loader: async () => {
-    const [projects, projectCategories, sitePluginConfig] = await Promise.all([
-      fetchProjects(),
-      fetchProjectCategories(),
-      // In the loader so the banner is part of the first paint rather than arriving after it and
-      // pushing the projects down. Caught, because the projects are what the page is for: a plugin
-      // that cannot be read costs the introduction, not the page.
-      fetchPluginConfig<SitePluginT>('site').catch(() => null),
-    ])
+    const [projects, projectCategories] = await Promise.all([fetchProjects(), fetchProjectCategories()])
     if (projects.length === 0) {
       throw new Error('No projects found')
     }
-    return [projects, projectCategories, sitePluginConfig] as const
+    return [projects, projectCategories] as const
   },
   errorComponent: ({ error }) => {
     const ErrorComponentWithRouter = () => {

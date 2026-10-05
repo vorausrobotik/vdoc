@@ -1,5 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import StarIcon from '@mui/icons-material/Star'
+import StarBorderIcon from '@mui/icons-material/StarBorder'
 import UploadIcon from '@mui/icons-material/Upload'
 import {
   Box,
@@ -7,6 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Button as MuiButton,
   Tooltip,
   Typography,
@@ -15,6 +18,7 @@ import { useState } from 'react'
 import {
   ArrayField,
   AutocompleteInput,
+  BooleanInput,
   Button,
   Confirm,
   DataTable,
@@ -26,6 +30,7 @@ import {
   Form,
   FunctionField,
   List,
+  type RaRecord,
   ReferenceField,
   ReferenceInput,
   required,
@@ -40,14 +45,14 @@ import {
   useRecordContext,
   useRedirect,
   useRefresh,
+  useUpdate,
 } from 'react-admin'
 import { deleteProjectVersion, uploadProjectVersion } from '@/helpers/APIFunctions'
+import { latestVersion } from '@/helpers/Projects'
 import type { Project, ProjectCategory, ProjectVersion } from '@/interfacesAndTypes/Project'
 import { withHttpErrors } from './dataProvider'
 import { CategoryChip, CategoryOption, VisibilityChip, VisibilityOption } from './fields'
 import { VISIBILITY_CHOICES } from './visibility'
-
-const latestVersion = (project: Project) => project.versions[project.versions.length - 1]
 
 export const ProjectList = () => (
   <List
@@ -57,6 +62,12 @@ export const ProjectList = () => (
     perPage={25}
   >
     <DataTable rowClick="edit" bulkActionButtons={false} size="medium">
+      <DataTable.Col
+        source="featured"
+        label=""
+        disableSort
+        render={(project: Project & RaRecord) => <FeaturedToggle project={project} />}
+      />
       <DataTable.Col source="name" label="Project" />
       <DataTable.Col source="display_name" label="Display name" />
       <DataTable.Col
@@ -90,6 +101,43 @@ export const ProjectList = () => (
     </DataTable>
   </List>
 )
+
+/**
+ * The star that features a project on the landing page. Starring one takes the star off the other, so
+ * the list is reloaded afterwards rather than only this row.
+ */
+function FeaturedToggle({ project }: { project: Project & RaRecord }) {
+  const [update, { isPending }] = useUpdate()
+  const notify = useNotify()
+  const refresh = useRefresh()
+  const label = project.featured ? 'Featured on the landing page' : 'Feature on the landing page'
+
+  return (
+    <Tooltip title={label}>
+      <IconButton
+        size="small"
+        aria-label={label}
+        aria-pressed={project.featured}
+        disabled={isPending}
+        onClick={(event) => {
+          // The row opens the project's page on a click, which this one is not meant for
+          event.stopPropagation()
+          update(
+            'projects',
+            { id: project.id, data: { ...project, featured: !project.featured }, previousData: project },
+            {
+              mutationMode: 'pessimistic',
+              onSuccess: () => refresh(),
+              onError: (error) => notify((error as Error).message, { type: 'error' }),
+            }
+          )
+        }}
+      >
+        {project.featured ? <StarIcon color="warning" /> : <StarBorderIcon />}
+      </IconButton>
+    </Tooltip>
+  )
+}
 
 /** Picks the category by searching for it, and creates it from what was typed if it does not exist. */
 function CategoryInput() {
@@ -275,6 +323,18 @@ export const ProjectEdit = () => (
         optionText={<VisibilityOption />}
         validate={required()}
         fullWidth
+      />
+      <BooleanInput
+        source="featured"
+        label="Featured"
+        helperText="Offered on the landing page as the project to start with. Featuring this one takes the mark off any other."
+      />
+      <TextInput
+        source="featured_label"
+        label="Button label"
+        fullWidth
+        placeholder="Start with the Software Manual"
+        helperText="The text of the start button while the project is featured. Left empty, it says Start with and the title."
       />
     </SimpleForm>
     <Versions />

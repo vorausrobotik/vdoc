@@ -10,6 +10,8 @@ describe('groupProjectsByCategories', () => {
       category_id: 1,
       description: null,
       visibility: 'listed',
+      featured: false,
+      featured_label: null,
       versions: [],
     },
     {
@@ -18,6 +20,8 @@ describe('groupProjectsByCategories', () => {
       category_id: 2,
       description: null,
       visibility: 'listed',
+      featured: false,
+      featured_label: null,
       versions: [],
     },
     {
@@ -26,6 +30,8 @@ describe('groupProjectsByCategories', () => {
       category_id: null,
       description: null,
       visibility: 'listed',
+      featured: false,
+      featured_label: null,
       versions: [],
     },
     {
@@ -34,6 +40,8 @@ describe('groupProjectsByCategories', () => {
       category_id: 1,
       description: null,
       visibility: 'listed',
+      featured: false,
+      featured_label: null,
       versions: [],
     },
   ]
@@ -77,6 +85,8 @@ describe('groupProjectsByCategories', () => {
         category_id: 3,
         description: null,
         visibility: 'listed',
+        featured: false,
+        featured_label: null,
         versions: [],
       },
       {
@@ -85,6 +95,8 @@ describe('groupProjectsByCategories', () => {
         category_id: null,
         description: null,
         visibility: 'listed',
+        featured: false,
+        featured_label: null,
         versions: [],
       },
     ]

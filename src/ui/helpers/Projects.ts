@@ -1,7 +1,14 @@
-import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
+import type { Project, ProjectCategory, ProjectVersion } from '@/interfacesAndTypes/Project'
+
+/** Where the landing page lists the projects, for the hero to scroll to. */
+export const PROJECTS_SECTION_ID = 'projects'
 
 /** The name a reader is shown: the display name if one is set, otherwise the project name. */
 export const projectTitle = (project: Project): string => project.display_name ?? project.name
+
+/** The newest version of a project, or undefined for one that has none. */
+export const latestVersion = (project: Project): ProjectVersion | undefined =>
+  project.versions[project.versions.length - 1]
 
 export function groupProjectsByCategories(
   projects: Project[],

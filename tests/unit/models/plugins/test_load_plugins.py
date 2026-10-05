@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from vdoc.constants import CONFIG_ENV_PREFIX_PLUGINS
-from vdoc.models.plugins import FooterPlugin, OramaPlugin, SitePlugin, ThemePlugin
+from vdoc.models.plugins import FooterPlugin, OramaPlugin, SitePlugin
 from vdoc.models.plugins.base import Plugin
 
 
@@ -15,7 +15,7 @@ def test_load_plugins_defaults(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"):
         plugins = list(Plugin.load_plugins())
 
-    assert len(plugins) == 4
+    assert len(plugins) == 3
 
     assert isinstance(plugins[0], FooterPlugin)
     assert plugins[0].active is False
@@ -23,20 +23,17 @@ def test_load_plugins_defaults(caplog: pytest.LogCaptureFixture) -> None:
     assert plugins[1].active is False
     assert isinstance(plugins[2], SitePlugin)
     assert plugins[2].active is False
-    assert isinstance(plugins[3], ThemePlugin)
-    assert plugins[3].active is True
 
     assert caplog.messages == [
         "Loaded plugin: 'FooterPlugin'",
         "Loaded plugin: 'OramaPlugin'",
         "Loaded plugin: 'SitePlugin'",
-        "Loaded plugin: 'ThemePlugin'",
     ]
 
 
 def test_plugin_router_is_registered_once() -> None:
     """Reading the router must not register the plugin's routes again."""
-    plugin = ThemePlugin()
+    plugin = SitePlugin()
 
     assert len(plugin.router.routes) == 1
     assert len(plugin.router.routes) == 1
@@ -55,7 +52,7 @@ def test_load_plugins_orama_active(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level("INFO"):
         plugins = list(Plugin.load_plugins())
 
-    assert len(plugins) == 4
+    assert len(plugins) == 3
 
     assert isinstance(plugins[0], FooterPlugin)
     assert plugins[0].active is True
@@ -63,30 +60,20 @@ def test_load_plugins_orama_active(caplog: pytest.LogCaptureFixture) -> None:
     assert plugins[1].active is True
     assert isinstance(plugins[2], SitePlugin)
     assert plugins[2].active is False
-    assert isinstance(plugins[3], ThemePlugin)
-    assert plugins[3].active is True
 
     assert caplog.messages == [
         "Loaded plugin: 'FooterPlugin'",
         "Loaded plugin: 'OramaPlugin'",
         "Loaded plugin: 'SitePlugin'",
-        "Loaded plugin: 'ThemePlugin'",
     ]
 
 
-@patch.dict(
-    os.environ,
-    {
-        f"{CONFIG_ENV_PREFIX_PLUGINS}THEME_LIGHT__LOGO_URL": "this-is-not-a-valid-url",
-    },
-)
+@patch.dict(os.environ, {f"{CONFIG_ENV_PREFIX_PLUGINS}SITE_THEME": "not-a-theme"})
 def test_load_plugins_error(caplog: pytest.LogCaptureFixture) -> None:
-    with caplog.at_level("INFO"), pytest.raises(ValidationError, match="Input should be a valid URL"):
+    with caplog.at_level("INFO"), pytest.raises(ValidationError, match="Input should be 'voraus' or 'default'"):
         list(Plugin.load_plugins())
     assert caplog.messages[0] == "Loaded plugin: 'FooterPlugin'"
     assert caplog.messages[1] == "Loaded plugin: 'OramaPlugin'"
-    assert caplog.messages[2] == "Loaded plugin: 'SitePlugin'"
-    assert caplog.messages[3].startswith(
-        "Failed to load plugin 'ThemePlugin': "
-        "1 validation error for ThemePlugin\nlight.logo_url\n  Input should be a valid URL"
+    assert caplog.messages[2].startswith(
+        "Failed to load plugin 'SitePlugin': 1 validation error for SitePlugin\ntheme\n  Input should be"
     )

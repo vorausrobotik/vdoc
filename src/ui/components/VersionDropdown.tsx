@@ -39,7 +39,8 @@ export default function VersionDropdown({
         value={selectedVersion === 'latest' ? latestVersion : selectedVersion}
         onChange={onChange}
         renderValue={renderVersion}
-        label="Select version..."
+        // The same text as the `InputLabel`: Material UI sizes the gap in the outline after this one
+        label="Version"
         sx={{ minWidth: '160px', mr: 1 }}
       >
         <MenuItem key="empty" value="" data-testid={testIDs.header.versionDropdown.emptyItem}></MenuItem>

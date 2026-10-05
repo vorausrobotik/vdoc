@@ -14,7 +14,8 @@ test('Requesting non existing versions must be handled properly with automatic r
   await expect(page).toHaveURL(`${BASE_URL}/example-project-01/42.0.0`)
 
   await expect(page.getByTestId(testIDs.project.documentation.documentationIframe)).not.toBeVisible()
-  await expect(page.getByTestId(testIDs.header.versionDropdown.main)).toHaveText('Select version...')
+  // A version the project does not have selects none, so the picker shows no version number
+  await expect(page.getByTestId(testIDs.header.versionDropdown.main)).not.toContainText(/\d/)
 
   await assertErrorComponent(page, {
     title: "Project 'example-project-01' doesn't have a documentation for version '42.0.0'",
