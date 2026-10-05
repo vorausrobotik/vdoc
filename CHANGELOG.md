@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.29.0](https://github.com/vorausrobotik/vdoc/compare/0.28.0...0.29.0) (2026-10-05)
+
+
+### Features
+
+* **admin:** Upload a version from the project's admin page ([4072c6e](https://github.com/vorausrobotik/vdoc/commit/4072c6e693c9feff773c6294f1399162dbc01176))
+
+
+### Code Refactoring
+
+* **ui:** Import from the frontend root through an `@/` alias ([fab9914](https://github.com/vorausrobotik/vdoc/commit/fab99146d00b74a2662f4563b0b28b724ccdc619))
+
+
+### Build System
+
+* **deps:** Update all dependencies ([67ed9d0](https://github.com/vorausrobotik/vdoc/commit/67ed9d04e426041006027eb88dddfcf9a83615d6))
+* **deps:** Update dockerfile dependencies ([1fc9b0b](https://github.com/vorausrobotik/vdoc/commit/1fc9b0b74190df7ccf8dde1e78599d044549ebf7))
+
+
+### Continuous Integration
+
+* Keep the build green when the Codecov upload fails ([df7048f](https://github.com/vorausrobotik/vdoc/commit/df7048f2f53ba237ceb704e908d718da19566c7c))
+
 ## [0.28.0](https://github.com/vorausrobotik/vdoc/compare/0.27.1...0.28.0) (2026-09-30)
 
 
