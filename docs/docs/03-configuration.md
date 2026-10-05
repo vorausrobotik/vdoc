@@ -87,6 +87,10 @@ Featured is also the star in front of each project in the list. Only one project
 time, so starring one takes the star off the other. A featured project that is not listed offers no
 button, since the landing page does not show it.
 
+While you edit, a preview shows the project's card as the landing page draws it, and, while the project
+is featured, the hero with its button. It follows the form as you type and changes nothing until you
+save. On a wide screen it stands beside the fields.
+
 The same page lists its versions, with a link to each, and uploads a new version from a ZIP archive
 with **Upload version**. It also deletes a version or the whole project. Both deletions ask first,
 and both delete the files as well.

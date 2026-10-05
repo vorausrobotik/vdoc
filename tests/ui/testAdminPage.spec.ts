@@ -1,8 +1,11 @@
 import { expect, type Page } from '@playwright/test'
 import type { Project } from '@/interfacesAndTypes/Project'
+import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from './base'
 
 await prepareTestSuite(test)
+
+const cardIDs = testIDs.landingPage.projectCategories.projectCategory.projects.projectCard
 
 const projects: Project[] = [
   {
@@ -103,6 +106,66 @@ test('Admin projects list features a project with its star', async ({ page }) =>
   expect((await update).postDataJSON()).toMatchObject({ name: 'example-project-01', featured: true })
   // The star is not the row, so starring a project does not open it
   await expect(page).toHaveURL(/\/admin\/projects$/)
+})
+
+test('Admin project page previews the card with what the form holds', async ({ page }) => {
+  await mockAdminAPI(page, { loggedIn: true })
+  let saved = false
+  page.on('request', (request) => {
+    saved ||= request.method() === 'PUT'
+  })
+
+  await page.goto('/admin/projects/example-project-01')
+  await expect(page.getByText('Preview - Save to apply')).toBeVisible()
+  const card = page.getByTestId(cardIDs.main)
+  await expect(card.getByTestId(cardIDs.title)).toHaveText('One')
+
+  await page.getByLabel('Display name').fill('The first one')
+  await page.getByLabel('Description').fill('What it is')
+
+  await expect(card.getByTestId(cardIDs.title)).toHaveText('The first one')
+  await expect(card.getByTestId(cardIDs.description)).toHaveText('What it is')
+  // Emptied, the title falls back to the project name, as it will once saved
+  await page.getByLabel('Display name').fill('')
+  await expect(card.getByTestId(cardIDs.title)).toHaveText('example-project-01')
+  expect(saved).toBe(false)
+})
+
+test('Admin project page previews the hero while the project is featured', async ({ page }) => {
+  await mockAdminAPI(page, { loggedIn: true })
+  await page.route('*/**/api/plugins/site/', (route) =>
+    route.fulfill({
+      json: {
+        name: 'site',
+        active: true,
+        title: 'Software documentation',
+        description: null,
+        long_description: null,
+        show_on_landing_page: true,
+        theme: 'default',
+      },
+    })
+  )
+
+  await page.goto('/admin/projects/example-project-01')
+  const start = page.getByTestId(testIDs.plugins.site.featuredProject)
+  await expect(start).toHaveCount(0)
+
+  await page.getByLabel('Featured').check()
+  await expect(start).toHaveText('Start with One')
+  await page.getByLabel('Button label').fill('Start with the first one')
+  await expect(start).toHaveText('Start with the first one')
+})
+
+test('Admin project page says why a featured project gets no hero', async ({ page }) => {
+  // The site plugin of the shared mocks sets nothing, so the landing page has no hero
+  await mockAdminAPI(page, { loggedIn: true })
+
+  await page.goto('/admin/projects/example-project-01')
+  await page.getByLabel('Featured').check()
+
+  await expect(page.getByText('The landing page shows no hero')).toBeVisible()
+  await expect(page.getByTestId(testIDs.plugins.site.featuredProject)).toHaveCount(0)
 })
 
 test('Admin project page deletes a version after asking', async ({ page }) => {

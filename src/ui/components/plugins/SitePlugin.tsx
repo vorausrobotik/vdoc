@@ -2,6 +2,7 @@ import { Box, Button, Link } from '@mui/material'
 import Markdown, { type Components } from 'react-markdown'
 import { useBrand } from '@/brands/Brand'
 import { PROJECTS_SECTION_ID, projectTitle } from '@/helpers/Projects'
+import { showsHero } from '@/helpers/Site'
 import { LinkButton } from '@/interfacesAndTypes/LinkButton'
 import type { Project } from '@/interfacesAndTypes/Project'
 import type SitePluginT from '@/interfacesAndTypes/plugins/SitePlugin'
@@ -34,7 +35,7 @@ type Props = { config: SitePluginT | null; projects: Project[] }
 /** What this instance of vdoc is, above the projects it serves, in the brand's hero. */
 export const SitePlugin = ({ config, projects }: Props) => {
   const { Hero, primaryButton } = useBrand()
-  if (config == null || !config.active || !config.show_on_landing_page) {
+  if (!showsHero(config)) {
     return null
   }
   // Only listed projects reach the landing page, so a featured project that is hidden offers no button
@@ -54,7 +55,7 @@ export const SitePlugin = ({ config, projects }: Props) => {
               to="/$projectName/$version/$"
               params={{ projectName: featured.name, version: 'latest', _splat: '' }}
             >
-              {featured.featured_label ?? `Start with ${projectTitle(featured)}`}
+              {featured.featured_label || `Start with ${projectTitle(featured)}`}
             </LinkButton>
             <Button
               variant="outlined"

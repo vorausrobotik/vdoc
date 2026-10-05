@@ -11,10 +11,12 @@ import {
   DialogTitle,
   IconButton,
   Button as MuiButton,
+  Stack,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
+import { getRouteApi } from '@tanstack/react-router'
+import { type ReactNode, useState } from 'react'
 import {
   ArrayField,
   AutocompleteInput,
@@ -28,6 +30,7 @@ import {
   FileField,
   FileInput,
   Form,
+  FormDataConsumer,
   FunctionField,
   List,
   type RaRecord,
@@ -47,8 +50,11 @@ import {
   useRefresh,
   useUpdate,
 } from 'react-admin'
+import { ProjectCard } from '@/components/ProjectCard'
+import { SitePlugin } from '@/components/plugins/SitePlugin'
 import { deleteProjectVersion, uploadProjectVersion } from '@/helpers/APIFunctions'
 import { latestVersion } from '@/helpers/Projects'
+import { showsHero } from '@/helpers/Site'
 import type { Project, ProjectCategory, ProjectVersion } from '@/interfacesAndTypes/Project'
 import { withHttpErrors } from './dataProvider'
 import { CategoryChip, CategoryOption, VisibilityChip, VisibilityOption } from './fields'
@@ -289,6 +295,52 @@ function Versions() {
   )
 }
 
+const rootRoute = getRouteApi('__root__')
+
+/** A preview stands apart from the form, and does not navigate, since a click would leave the form. */
+function Preview({ children }: { children: ReactNode }) {
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Typography variant="overline" color="text.secondary">
+        Preview - Save to apply
+      </Typography>
+      <Box inert sx={{ border: 1, borderColor: 'divider', p: 2 }}>
+        {children}
+      </Box>
+    </Box>
+  )
+}
+
+/** The project as the landing page would show it with what the form holds, before it is saved. */
+function ProjectPreview() {
+  const { sitePluginConfig } = rootRoute.useLoaderData()
+  return (
+    <FormDataConsumer<Project>>
+      {({ formData }) => (
+        <Stack spacing={3} sx={{ mt: { xs: 2, lg: 0 } }}>
+          <Preview>
+            <Box sx={{ maxWidth: 380 }}>
+              <ProjectCard project={formData} />
+            </Box>
+          </Preview>
+          {formData.featured && (
+            <Preview>
+              {showsHero(sitePluginConfig) ? (
+                <SitePlugin config={sitePluginConfig} projects={[formData]} />
+              ) : (
+                <Typography color="text.secondary">
+                  The landing page shows no hero, so it offers no button: the site plugin sets no title or description,
+                  or hides them from the landing page.
+                </Typography>
+              )}
+            </Preview>
+          )}
+        </Stack>
+      )}
+    </FormDataConsumer>
+  )
+}
+
 const ProjectEditToolbar = () => (
   <Toolbar sx={{ justifyContent: 'space-between' }}>
     <SaveButton />
@@ -303,39 +355,53 @@ const ProjectEditToolbar = () => (
 export const ProjectEdit = () => (
   <Edit mutationMode="pessimistic">
     {/* Spaced, because the outlined labels of vdoc's theme otherwise run into the helper text above */}
-    <SimpleForm toolbar={<ProjectEditToolbar />} sx={{ maxWidth: 800, '& .ra-input': { mb: 1.5 } }}>
-      <TextInput
-        source="display_name"
-        fullWidth
-        helperText="Shown instead of the project name. Left empty, the project name is shown."
-      />
-      <TextInput
-        source="description"
-        fullWidth
-        multiline
-        minRows={3}
-        helperText="Shown on the project's card on the landing page."
-      />
-      <CategoryInput />
-      <SelectInput
-        source="visibility"
-        choices={VISIBILITY_CHOICES}
-        optionText={<VisibilityOption />}
-        validate={required()}
-        fullWidth
-      />
-      <BooleanInput
-        source="featured"
-        label="Featured"
-        helperText="Offered on the landing page as the project to start with. Featuring this one takes the mark off any other."
-      />
-      <TextInput
-        source="featured_label"
-        label="Button label"
-        fullWidth
-        placeholder="Start with the Software Manual"
-        helperText="The text of the start button while the project is featured. Left empty, it says Start with and the title."
-      />
+    <SimpleForm toolbar={<ProjectEditToolbar />} sx={{ '& .ra-input': { mb: 1.5 } }}>
+      {/* The preview beside the fields where the screen has room for both, below them where it has not */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 800px) minmax(0, 1fr)' },
+          columnGap: 4,
+          alignItems: 'start',
+          width: '100%',
+        }}
+      >
+        <Box>
+          <TextInput
+            source="display_name"
+            fullWidth
+            helperText="Shown instead of the project name. Left empty, the project name is shown."
+          />
+          <TextInput
+            source="description"
+            fullWidth
+            multiline
+            minRows={3}
+            helperText="Shown on the project's card on the landing page."
+          />
+          <CategoryInput />
+          <SelectInput
+            source="visibility"
+            choices={VISIBILITY_CHOICES}
+            optionText={<VisibilityOption />}
+            validate={required()}
+            fullWidth
+          />
+          <BooleanInput
+            source="featured"
+            label="Featured"
+            helperText="Offered on the landing page as the project to start with. Featuring this one takes the mark off any other."
+          />
+          <TextInput
+            source="featured_label"
+            label="Button label"
+            fullWidth
+            placeholder="Start with the Software Manual"
+            helperText="The text of the start button while the project is featured. Left empty, it says Start with and the title."
+          />
+        </Box>
+        <ProjectPreview />
+      </Box>
     </SimpleForm>
     <Versions />
   </Edit>
