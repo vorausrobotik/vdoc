@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test'
 import { type ColorMode, colorModeCycle, type EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
 import testIDs from '@/interfacesAndTypes/testIDs'
 import test, { prepareTestSuite } from './base'
@@ -76,4 +77,39 @@ test.describe('Color schemes tests', () => {
       })
     })
   })
+})
+
+test('The frame stays hidden until the documentation loaded in the requested mode', async ({ page }) => {
+  // GIVEN: Documentation that vdoc switches to dark mode itself, once the frame reports `load`, and an
+  // image that keeps that event from firing until the test releases it
+  let releaseImage = () => {}
+  const imageReleased = new Promise<void>((resolve) => {
+    releaseImage = resolve
+  })
+  await page.route(/\/static\/projects\/example-project-01\/.*held\.png/, async (route) => {
+    await imageReleased
+    await route.fulfill({ status: 404 })
+  })
+  await page.route(/\/static\/projects\/example-project-01\/(?!.*held\.png)/, (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><html lang="en"><body><h1>Documentation</h1><img src="held.png"></body></html>',
+    })
+  )
+  await page.emulateMedia({ colorScheme: 'dark' })
+
+  // WHEN: The reader opens it while the image is still loading
+  await page.goto('/example-project-01/3.2.0')
+  const frame = page.getByTestId(testIDs.project.documentation.documentationIframe)
+  const documentation = frame.contentFrame().locator('html')
+  await expect(documentation.locator('h1')).toBeAttached()
+
+  // THEN: The frame is not shown yet, so the documentation cannot appear in light mode first
+  await expect(frame).toBeHidden()
+  await expect(documentation).not.toHaveClass(/dark/)
+
+  // AND: Once it loaded, the frame shows it, already in dark mode
+  releaseImage()
+  await expect(frame).toBeVisible()
+  await expect(documentation).toHaveClass(/dark/)
 })
