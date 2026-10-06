@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.31.0](https://github.com/vorausrobotik/vdoc/compare/0.30.0...0.31.0) (2026-10-06)
+
+
+### Features
+
+* **admin:** Put the project categories in order ([e5b1800](https://github.com/vorausrobotik/vdoc/commit/e5b180008e25555a4e60da4f91d0c58224925ba4))
+* **ui:** Sort the projects in a category by their title ([03ee490](https://github.com/vorausrobotik/vdoc/commit/03ee490d992c3b80fcf38e53a9c4c0389de0707d))
+
+
+### Bug Fixes
+
+* **db:** Keep the references to a table a migration rebuilds ([b718f7d](https://github.com/vorausrobotik/vdoc/commit/b718f7df470015faecc67c30611b50a8c04912e5))
+* **deps:** Build against TanStack Router's `unknown` error type ([c218561](https://github.com/vorausrobotik/vdoc/commit/c21856126ca40023ab5f6ab90abf749c4320c98e))
+* **deps:** Update `@voraus/mui-theme` to 0.3.2 ([5e8db6f](https://github.com/vorausrobotik/vdoc/commit/5e8db6f3e5b0666a0719194413617a5788c5ec24))
+* **ui:** Draw the old-version banner as a warning alert ([db0c73d](https://github.com/vorausrobotik/vdoc/commit/db0c73d322ee3b89d2e80250cb34e58f6b1d428f))
+* **ui:** Load the documentation frame only after the header was measured ([9b85105](https://github.com/vorausrobotik/vdoc/commit/9b8510507bae8bdd73a32ab1baed3d4fddf57b01))
+
+
+### Build System
+
+* **deps:** Lock file maintenance ([c373163](https://github.com/vorausrobotik/vdoc/commit/c373163fb12da5fa39e574a5dbab28d3b947624e))
+* **deps:** Update all dependencies ([af53ff9](https://github.com/vorausrobotik/vdoc/commit/af53ff9ab933c35ad39d90dd47fedafc0fe48b4e))
+* **deps:** Update github-actions dependencies ([ad795d3](https://github.com/vorausrobotik/vdoc/commit/ad795d343689f2098f57f69a8aea0083fc7e9d93))
+* **docker:** Start each preview deployment from a copy of production ([57e8ecd](https://github.com/vorausrobotik/vdoc/commit/57e8ecd608c40496c2961a4376627250fb67357e))
+
+
+### Continuous Integration
+
+* Reference same-repository workflows and actions with `$/` ([7c1795d](https://github.com/vorausrobotik/vdoc/commit/7c1795d6dd137ef8ece760ba989ae6942414cfab))
+* **zizmor:** Ignore false cache-poisoning finding for setup-uv ([a5e7dcb](https://github.com/vorausrobotik/vdoc/commit/a5e7dcb144e622c4526b318e7c0c649f8f8c431f))
+
 ## [0.30.0](https://github.com/vorausrobotik/vdoc/compare/0.29.0...0.30.0) (2026-10-05)
 
 
