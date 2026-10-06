@@ -52,7 +52,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
   // The handlers installed on the framed window outlive the render that installed them - they stay
   // attached for the lifetime of the framed document - so they read these through refs rather than
   // closing over a value that goes stale on the next render.
-  const frameParams: FrameParams = { mode: effectiveColorMode, inset: contentInset }
+  const frameParams: FrameParams = { mode: effectiveColorMode, inset: contentInset ?? undefined }
   const frameParamsRef = useRef(frameParams)
   frameParamsRef.current = frameParams
   const scrollYRef = useRef(scrollY)
@@ -265,9 +265,12 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
   // a value force-loads the wrong document and bounces the iframe back to the
   // previous page (BUGS-7690). Only sync once the router has settled.
   const isNavigationPending = useRouterState({ select: (state) => state.status === 'pending' })
+  // The frame reads the inset from its address once, so loading it before the header was measured
+  // would leave it without one until the next navigation.
+  const isInsetMeasured = contentInset !== null
 
   useEffect(() => {
-    if (isNavigationPending) {
+    if (isNavigationPending || !isInsetMeasured) {
       return
     }
     // Compared through `normalizeIFrameSrc`, the same way `report()` records where the frame is:
@@ -285,7 +288,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
     iframeRef.current?.contentWindow?.location.replace(
       composeIFrameSrc(`${window.location.origin}${src}`, frameParamsRef.current)
     )
-  }, [src, isNavigationPending])
+  }, [src, isNavigationPending, isInsetMeasured])
 
   return (
     <iframe
