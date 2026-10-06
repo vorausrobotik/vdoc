@@ -40,18 +40,17 @@ jobs:
           with:
             persist-credentials: false
 
+        # Since zizmor 1.30.0, the `cache-poisoning` audit no longer evaluates expressions
+        # in `enable-cache` for setup-uv. It reports every expression as a possibly
+        # enabled cache, including the tag guard below. The ignore covers only this
+        # audit on this step. Remove it once zizmor evaluates the guard again.
         - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
           with:
             # Cache on pull request and main builds, but never on tag builds. A tag run
             # can restore the default branch's cache, so a poisoned main cache could
-            # otherwise reach a release; skipping the cache on `refs/tags/*` closes that
+            # otherwise reach a release. Skipping the cache on `refs/tags/*` closes that
             # path while keeping the cache everywhere it pays off.
-            #
-            # This exact spelling matters: it is the shape zizmor's `cache-poisoning`
-            # audit recognizes as a legitimate opt-out. Equivalent-looking alternatives
-            # such as `github.ref_type != 'tag'`, or dropping the trailing slash from
-            # `refs/tags/`, are NOT recognized and re-trigger the finding.
-            enable-cache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+            enable-cache: ${{ !startsWith(github.ref, 'refs/tags/') }} # zizmor: ignore[cache-poisoning]
 
         - name: Verify uv.lock is up to date
           # Re-resolves in memory and writes nothing. Fails if the lockfile is stale;
