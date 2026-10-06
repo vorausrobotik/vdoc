@@ -5,7 +5,7 @@
 
 import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useContentInset } from '@/contexts/ContentInsetContext'
 import { useIFrameScroll } from '@/contexts/IFrameScrollContext'
 import { hookFramedDocument } from '@/helpers/FramedDocument'
@@ -66,6 +66,11 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
   const reloadedForModeRef = useRef<EffectiveColorMode | null>(null)
   /** Scroll position to restore after a reload a color mode change triggered. */
   const restoreScrollYRef = useRef<number | null>(null)
+  /**
+   * Whether the frame has finished loading a document of its own. Until then the frame stays hidden
+   * and vdoc's background shows through, because some browsers paint the empty frame white.
+   */
+  const [hasLoadedDocument, setHasLoadedDocument] = useState(false)
 
   /**
    * Bring the framed documentation to `requestedMode`.
@@ -123,6 +128,9 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
     // below is already on its way out and there is nothing worth reporting about it.
     if (applyColorMode(frameParamsRef.current.mode)) {
       return
+    }
+    if (iframeRef.current.contentDocument?.URL !== 'about:blank') {
+      setHasLoadedDocument(true)
     }
 
     // Set up scroll listener
@@ -294,7 +302,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
     <iframe
       ref={iframeRef}
       data-testid={testIDs.project.documentation.documentationIframe}
-      style={{ border: 0, width: '100%', height: '100%' }}
+      style={{ border: 0, width: '100%', height: '100%', visibility: hasLoadedDocument ? 'visible' : 'hidden' }}
       title="docs"
       onLoad={onIframeLoad}
     />
