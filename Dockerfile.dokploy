@@ -42,7 +42,12 @@ FROM python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d75060
 ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8080
-ENTRYPOINT [ "vdoc" ]
+# A preview deployment mounts the production data and docs under /srv/vdoc/seed
+# instead of on the default directories. Each container start copies them into
+# its own filesystem, so a preview's migrations and uploads never reach
+# production or another preview, and the copy is gone with the container.
+# Production mounts no seed directory and starts unchanged.
+ENTRYPOINT [ "/bin/sh", "-c", "set -e; for dir in data docs; do if [ -d \"/srv/vdoc/seed/$dir\" ]; then cp -a \"/srv/vdoc/seed/$dir/.\" \"/srv/vdoc/$dir/\"; fi; done; exec vdoc \"$@\"", "vdoc" ]
 CMD ["run"]
 
 RUN --mount=type=bind,from=py-build,source=/dist,target=/pip-packages/ \
@@ -50,5 +55,6 @@ RUN --mount=type=bind,from=py-build,source=/dist,target=/pip-packages/ \
     --no-cache-dir \
     --no-compile \
     /pip-packages/*.whl \
-    # Default projects and database directories (mount a volume on each in Dokploy)
+    # Default projects and database directories (mount a volume on each in Dokploy,
+    # or the production ones under /srv/vdoc/seed for a preview, see ENTRYPOINT)
     && mkdir -p /srv/vdoc/docs /srv/vdoc/data
