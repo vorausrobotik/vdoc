@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-jfrog
+      - uses: $/.github/actions/setup-jfrog
 
       - name: Add Git info to build
         run: jf rt build-add-git
@@ -89,7 +89,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-jfrog
+      - uses: $/.github/actions/setup-jfrog
 
       - name: Add environment and git information to build info
         run: |
