@@ -208,6 +208,7 @@ lint.select = ["ALL"]
 lint.ignore = [
     "COM812",   # Recommended to ignore when using the ruff formatter
     "ISC001",   # Recommended to ignore when using the ruff formatter
+    "CPY001",   # The project has no copyright header convention
 ]
 lint.flake8-type-checking.runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 lint.pep8-naming.extend-ignore-names = ["is_[A-Z]*", "on_enter_[A-Z]*"]
@@ -225,6 +226,8 @@ lint.pydocstyle.convention = "google"
     "T201",     # Allow print in tests as this is preferred over logging
     "PLR2004",  # Allow "magic value comparison", e.g. "assert len(list) == 5"
     "S106",     # Tests authenticate with made-up credentials
+    "S603",     # Tests run sphinx-build and the vdoc server as subprocesses with fixed arguments
+    "PLR0917",  # pytest injects fixtures and parameters by name, so their count is no API concern
 ]
 "src/vdoc/db/migrations/versions/**" = [
     "D400",     # The first docstring line is the revision message, which Alembic writes without a period
