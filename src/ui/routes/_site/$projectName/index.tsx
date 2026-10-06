@@ -5,7 +5,6 @@ import ErrorComponent from '@/components/ErrorComponent'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ProjectVersionsOverview } from '@/components/ProjectVersionsOverview'
 import { fetchProjectVersion, fetchProjectVersions } from '@/helpers/APIFunctions'
-import type { FastAPIAxiosErrorT } from '@/interfacesAndTypes/Error'
 
 export const Route = createFileRoute('/_site/$projectName/')({
   component: ProjectVersionsOverview,
@@ -20,7 +19,7 @@ export const Route = createFileRoute('/_site/$projectName/')({
         router.history.back()
       }, [router])
 
-      return <ErrorComponent iconClass={SearchOffIcon} error={error as FastAPIAxiosErrorT} onAction={handleGoBack} />
+      return <ErrorComponent iconClass={SearchOffIcon} error={error} onAction={handleGoBack} />
     }
 
     return <ErrorComponentWithRouter />

@@ -20,7 +20,7 @@ def _cli_run(
         int,
         typer.Option(help="Application bind port."),
     ] = get_settings().bind_port,
-) -> None:  # noqa: disable=D103
+) -> None:
     try:
         run_impl(bind_address=bind_address, bind_port=bind_port)
     except KeyboardInterrupt as error:
