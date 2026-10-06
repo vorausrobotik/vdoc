@@ -5,7 +5,6 @@ import ErrorComponent from '@/components/ErrorComponent'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { fetchProjectVersion } from '@/helpers/APIFunctions'
 import { sanitizeDocuUri } from '@/helpers/RouteHelpers'
-import type { FastAPIAxiosErrorT } from '@/interfacesAndTypes/Error'
 
 const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown
@@ -51,7 +50,7 @@ export const Route = createFileRoute('/_site/$projectName/$version')({
         router.history.back()
       }, [router])
 
-      return <ErrorComponent iconClass={SearchOffIcon} error={error as FastAPIAxiosErrorT} onAction={handleGoBack} />
+      return <ErrorComponent iconClass={SearchOffIcon} error={error} onAction={handleGoBack} />
     }
 
     return <ErrorComponentWithRouter />

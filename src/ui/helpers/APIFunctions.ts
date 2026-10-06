@@ -1,10 +1,14 @@
 import axios from 'axios'
-import type { FastAPIAxiosErrorT } from '@/interfacesAndTypes/Error'
+import type { FastAPIErrorResponse } from '@/interfacesAndTypes/Error'
 import type { Project, ProjectCategory } from '@/interfacesAndTypes/Project'
 
 /** The message vdoc answered an API error with, or the error's own message if it did not answer. */
-export const apiErrorMessage = (error: unknown): string =>
-  (error as FastAPIAxiosErrorT).response?.data?.message ?? (error as Error).message
+export const apiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError<FastAPIErrorResponse>(error) && error.response?.data?.message) {
+    return error.response.data.message
+  }
+  return error instanceof Error ? error.message : 'An unknown error occurred.'
+}
 
 export const fetchProjectVersion = async (projectName: string, version: string): Promise<string> => {
   return (await axios.get(`/api/projects/${projectName}/versions/${version}`)).data

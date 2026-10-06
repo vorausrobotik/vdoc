@@ -2,14 +2,14 @@ import { Box, Button, SvgIcon, Typography } from '@mui/material'
 import type { SvgIconProps } from '@mui/material/SvgIcon'
 import type { TypographyVariant } from '@mui/material/styles'
 import type { BoxProps } from '@mui/system'
-import { AxiosError } from 'axios'
 import { type ElementType, useEffect, useState } from 'react'
+import { apiErrorMessage } from '@/helpers/APIFunctions'
 import testIDs from '@/interfacesAndTypes/testIDs'
 
 type SvgIconColor = SvgIconProps['color']
 
 interface ErrorComponentVisualProps extends BoxProps {
-  error?: AxiosError | Error
+  error?: unknown
   timerSeconds?: number
   actionText?: string
   title?: string
@@ -52,18 +52,6 @@ const ErrorComponent = ({
     }
   }, [timer, onAction, timerSeconds])
 
-  const getErrorMessage = (error: AxiosError | Error | undefined, title: string | undefined) => {
-    if (error) {
-      if (error instanceof AxiosError) {
-        return error.response?.data?.message
-      }
-      return error.message ?? 'An unknown error occurred.'
-    } else if (title) {
-      return title
-    }
-    return 'An unknown error occurred.'
-  }
-
   const getDescription = (): string | undefined => {
     return timerSeconds ? `Returning to previous page in ${timer} second${timer === 1 ? '' : 's'}...` : undefined
   }
@@ -89,7 +77,7 @@ const ErrorComponent = ({
         sx={{ fontSize: iconFontSize }}
       />
       <Typography variant={titleVariant} sx={{ marginTop: 2 }} data-testid={testIDs.errorComponent.title}>
-        {getErrorMessage(error, title)}
+        {error === undefined && title ? title : apiErrorMessage(error)}
       </Typography>
       <Typography
         variant={descriptionVariant}
