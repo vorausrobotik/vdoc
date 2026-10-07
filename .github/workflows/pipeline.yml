@@ -14,65 +14,13 @@ on:
       - "*"
 
 jobs:
-    setup:
-      permissions:
-        contents: read
-      uses: $/.github/workflows/setup.yml
-      with:
-        package_name: 'vdoc'
-        project: 'bypass'
-        scope: 'public'
-        maturity: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && 'production' || 'testing' }}
-        location: 'cloud'
-        registry: 'voraus.jfrog.io'
-
-    # Fast-feedback check only. Every job that installs anything already passes
-    # `--locked` to `uv sync`/`uv run`, so a stale lockfile can never cause a re-resolve
-    # regardless of this job. It exists to surface that failure within seconds, with an
-    # unambiguous message, instead of midway through a build. It therefore runs
-    # independently: no other job needs it, so it never serialises the pipeline.
-    verify-lock:
-      runs-on: ubuntu-latest
-      permissions:
-        contents: read
-      steps:
-        - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-          with:
-            persist-credentials: false
-
-        # Since zizmor 1.30.0, the `cache-poisoning` audit no longer evaluates expressions
-        # in `enable-cache` for setup-uv. It reports every expression as a possibly
-        # enabled cache, including the tag guard below. The ignore covers only this
-        # audit on this step. Remove it once zizmor evaluates the guard again.
-        - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-          with:
-            # Cache on pull request and main builds, but never on tag builds. A tag run
-            # can restore the default branch's cache, so a poisoned main cache could
-            # otherwise reach a release. Skipping the cache on `refs/tags/*` closes that
-            # path while keeping the cache everywhere it pays off.
-            enable-cache: ${{ !startsWith(github.ref, 'refs/tags/') }} # zizmor: ignore[cache-poisoning]
-
-        - name: Verify uv.lock is up to date
-          # Re-resolves in memory and writes nothing. Fails if the lockfile is stale;
-          # the fix is to run `uv lock` locally and commit the result.
-          run: uv lock --check
-
     build:
-      needs:
-        - setup
       permissions:
         contents: read
-        id-token: write # JFrog CLI OIDC auth (setup-jfrog)
         pages: read # Reading the Pages URL the docs site is built for (configure-pages)
       uses: $/.github/workflows/build.yml
       secrets:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      with:
-        vpu_docker_registry: ${{ needs.setup.outputs.vpu_docker_registry }}
-        vpu_docker_image_name: ${{ needs.setup.outputs.vpu_docker_image_name }}
-        vpu_docker_repositories: ${{ needs.setup.outputs.vpu_docker_repositories }}
-        build_name: ${{ needs.setup.outputs.build_name }}
-        build_number: ${{ needs.setup.outputs.build_number }}
 
     tests-and-coverage:
       permissions:
@@ -89,8 +37,6 @@ jobs:
       permissions:
         contents: read
       uses: $/.github/workflows/lint.yml
-      needs:
-        - setup
 
     # Keep PyPI Trusted Publishing in the top-level workflow because
     # reusable workflows are not officially supported by PyPI Trusted Publishing.
@@ -116,30 +62,102 @@ jobs:
           env:
             url: https://pypi.org/p/vdoc
 
-    publish:
+    # Builds and pushes the image and publishes its build-info. `vpu` derives the repository, the
+    # image tag (the git tag) and the build name from `.vpu.yml` and the tag build, and requires
+    # `vpu jf init`, the push and `vpu jf build-publish` to run in the same job.
+    release-image:
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
       needs:
-      - setup
       - build
       - tests-and-coverage
       - lint
+      runs-on: ubuntu-latest
       permissions:
         contents: read
-        id-token: write # JFrog CLI OIDC auth (setup-jfrog) and GitHub Pages deployment
-        pages: write # GitHub Pages docs deployment
-      uses: $/.github/workflows/publish.yml
-      with:
-        vpu_docker_registry: ${{ needs.setup.outputs.vpu_docker_registry }}
-        vpu_docker_image_name: ${{ needs.setup.outputs.vpu_docker_image_name }}
-        vpu_docker_repositories: ${{ needs.setup.outputs.vpu_docker_repositories }}
-        pypi_deploy_repo: ${{ needs.setup.outputs.pypi_deploy_repo }}
-        build_name: ${{ needs.setup.outputs.build_name }}
-        build_number: ${{ needs.setup.outputs.build_number }}
+        id-token: write # JFrog OIDC
+      env:
+        VPU_ARTIFACTORY__MATURITY: production
+        VPU_DOCKER_IMAGE_NAME: vdoc
+      steps:
+        - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+          with:
+            fetch-depth: 0 # `vpu jf build-publish` records the git revision
+            persist-credentials: false
 
+        - name: Read the platform URL from `.vpu.yml`
+          run: |
+            echo "JF_URL=$(sed -n 's/^  url: //p' .vpu.yml)" >> "$GITHUB_ENV"
+
+        - uses: jfrog/setup-jfrog-cli@68c0efdc951dd2359bbbfa15c48bc67b3ae8e4d6 # v5.2.0
+          id: jfrog
+          with:
+            # The action's default CLI lacks subcommands `vpu` uses.
+            version: 2.124.0
+            oidc-provider-name: voraus-github-organization
+            disable-auto-build-publish: "true"
+
+        # A tag build never restores a cache, so a poisoned cache from main cannot reach a release.
+        - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+          with:
+            enable-cache: false
+
+        - name: Install VPU
+          run: uv sync --locked --only-group ci
+
+        - name: Download python artifacts
+          uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+          with:
+            name: dist
+            path: dist
+
+        - name: Initialize the JFrog CLI
+          id: jf-init
+          env:
+            JF_ACCESS_TOKEN: ${{ steps.jfrog.outputs.oidc-token }}
+            # The token's user, which `vpu` logs the docker client in with
+            JF_USER: ${{ steps.jfrog.outputs.oidc-user }}
+          run: uv run --no-sync vpu jf init
+
+        - name: Build the image
+          run: uv run --no-sync vpu docker build --target wheel
+
+        - name: Push the image
+          run: uv run --no-sync vpu docker push
+
+        # Also after a failure, so an image that was pushed is never missing from a build-info.
+        - name: Publish the build-info
+          if: ${{ always() && steps.jf-init.conclusion == 'success' }}
+          run: uv run --no-sync vpu jf build-publish
+
+    # The Pages artifact is built and uploaded by `build.yml`, which is where the site knows
+    # the URL it is served from. Nothing is left to do here but deploy that artifact.
+    publish-docs:
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      needs:
+        - release-image
+      runs-on: ubuntu-latest
+      permissions:
+        pages: write # GitHub Pages deployment
+        id-token: write # GitHub Pages deployment
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+      steps:
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+    # Points the production application at the image this release pushed, by its version, and
+    # deploys it. Through the API rather than Dokploy's deploy webhook, because the webhook would
+    # redeploy whatever image the application already names.
+    #
+    # Needs the organization variable `DOKPLOY_URL`, and in the `production` environment, which
+    # only release tags may use, the variable `DOKPLOY_APPLICATION_ID` and the secret
+    # `DOKPLOY_API_KEY`.
     deploy:
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
       needs:
-        - publish
+        - release-image
         - publish-pypi
       runs-on: ubuntu-latest
       permissions:
@@ -147,18 +165,39 @@ jobs:
       environment:
         name: production
         url: https://docs.vorausrobotik.com
+      env:
+        DOKPLOY_URL: ${{ vars.DOKPLOY_URL }}
+        DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+        DOKPLOY_APPLICATION_ID: ${{ vars.DOKPLOY_APPLICATION_ID }}
+        IMAGE: voraus.jfrog.io/docker/vdoc:${{ github.ref_name }}
       steps:
+        # The registry fields are empty because the image is public. The call replaces all of
+        # them, so leaving them out would not keep an earlier value either.
+        - name: Point production at the released image
+          run: |
+            jq -n --arg applicationId "$DOKPLOY_APPLICATION_ID" --arg dockerImage "$IMAGE" \
+              '{$applicationId, $dockerImage, username: "", password: "", registryUrl: ""}' |
+            curl --fail --silent --show-error --max-time 30 \
+              --request POST "$DOKPLOY_URL/api/application.saveDockerProvider" \
+              --header "x-api-key: $DOKPLOY_API_KEY" \
+              --header "Content-Type: application/json" \
+              --data @-
+
         - name: Trigger Dokploy deployment
-          run: curl --fail --silent --show-error --max-time 30 "$DOKPLOY_WEBHOOK_URL"
-          env:
-            DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+          run: |
+            jq -n --arg applicationId "$DOKPLOY_APPLICATION_ID" '{$applicationId}' |
+            curl --fail --silent --show-error --max-time 30 \
+              --request POST "$DOKPLOY_URL/api/application.deploy" \
+              --header "x-api-key: $DOKPLOY_API_KEY" \
+              --header "Content-Type: application/json" \
+              --data @-
 
         - name: Verify deployed version
           run: |
             for attempt in $(seq 1 12); do
               sleep 5
               # /api/version/ returns the version as a JSON string, e.g. "0.24.0"
-              deployed="$(curl -fsSL --max-time 10 http://docs.vorausrobotik.com/api/version/ | tr -d '"')" || deployed="<unreachable>"
+              deployed="$(curl -fsSL --max-time 10 https://docs.vorausrobotik.com/api/version/ | tr -d '"')" || deployed="<unreachable>"
               echo "Attempt ${attempt}/12: Deployed version is '${deployed}', expecting '${EXPECTED_VERSION}'"
               if [ "$deployed" = "$EXPECTED_VERSION" ]; then
                 exit 0

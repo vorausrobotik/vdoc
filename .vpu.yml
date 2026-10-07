@@ -1,0 +1,10 @@
+# Where `vpu` publishes this repository's image. It derives the repository names from these
+# values and the maturity, which the pipeline sets per build.
+artifactory:
+  url: https://voraus.jfrog.io
+  project: bypass
+  scope: public
+  location: cloud
+package:
+  # The wheel goes to pypi.org via Trusted Publishing, not to Artifactory.
+  managers: [docker]

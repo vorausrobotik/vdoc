@@ -2,22 +2,6 @@ name: Build
 
 on:
   workflow_call:
-    inputs:
-      vpu_docker_registry:
-        required: true
-        type: string
-      vpu_docker_image_name:
-        required: true
-        type: string
-      vpu_docker_repositories:
-        required: true
-        type: string
-      build_name:
-        required: true
-        type: string
-      build_number:
-        required: true
-        type: string
     secrets:
       CODECOV_TOKEN:
         required: false
@@ -114,36 +98,16 @@ jobs:
         with:
           path: docs/build
 
+  # Checks that the image builds from the wheel above. The release pipeline builds and pushes it
+  # again with `vpu`, which needs the Artifactory credentials only a tag build gets.
   build-docker:
     needs:
       - build-python
     runs-on: ubuntu-latest
-    env:
-      VPU_DOCKER_REGISTRY: ${{ inputs.vpu_docker_registry }}
-      VPU_DOCKER_IMAGE_NAME: ${{ inputs.vpu_docker_image_name }}
-      VPU_DOCKER_REPOSITORIES: ${{ inputs.vpu_docker_repositories }}
-      COLUMNS: 160
-      JFROG_CLI_BUILD_NAME: ${{ inputs.build_name }}
-      JFROG_CLI_BUILD_NUMBER: ${{ inputs.build_number }}
-      JFROG_CLI_TEMP_DIR: ${{ github.workspace }}/.jfrog-build"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
-
-      - uses: $/.github/actions/setup-jfrog
-
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-
-      - name: Install VPU
-        # Installs the `ci` dependency group at the versions pinned in `uv.lock`.
-        # `--only-group` omits the project and its runtime dependencies, which VPU
-        # does not need.
-        run: uv sync --locked --only-group ci
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Download python artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -151,15 +115,5 @@ jobs:
           name: dist
           path: dist
 
-      - name: Build Docker Image(s)
-        run: uv run --no-sync vpu docker build
-
-      - name: Save Docker Image(s)
-        run: uv run --no-sync vpu docker save --output docker-images.tar
-
-      - name: Upload docker images
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: docker-images
-          path: docker-images.tar
-
+      - name: Build Docker image
+        run: docker build --target wheel .
