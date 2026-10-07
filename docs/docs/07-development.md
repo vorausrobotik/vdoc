@@ -124,5 +124,8 @@ commit messages on `main` decide the next version, and merging the release pull 
 The pipeline then builds the wheel, the Docker image and this site, publishes them, and deploys
 [docs.vorausrobotik.com](https://docs.vorausrobotik.com/).
 
+The image is tagged with the version alone, such as `voraus.jfrog.io/docker/vdoc:1.2.3`. There is no
+`latest` tag, and docs.vorausrobotik.com runs the exact version it was deployed with.
+
 So commit messages matter — [Conventional Commits](https://www.conventionalcommits.org/), with
 `feat:` and `fix:` being what moves the version.

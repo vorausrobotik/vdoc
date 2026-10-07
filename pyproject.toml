@@ -160,9 +160,11 @@ doc-template = [
 build-template = [
     "build[uv]~=1.0"
 ]
+# Deliberately diverges from the template, which is still on vpu 0.x: the pipeline uses the
+# vpu 1.0 publishing model, and PyPI publishing goes through Trusted Publishing, so twine is
+# not needed. Exact while vpu 1.0 is a release candidate. Renovate bumps it.
 ci-template = [
-    "voraus-pipeline-utils~=0.0",
-    "twine~=7.0"
+    "voraus-pipeline-utils==1.0.0rc12",
 ]
 
 ########################################
