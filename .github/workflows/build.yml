@@ -152,7 +152,7 @@ jobs:
           path: dist
 
       - name: Build Docker Image(s)
-        run: uv run --no-sync vpu docker build -f Dockerfile.prod
+        run: uv run --no-sync vpu docker build
 
       - name: Save Docker Image(s)
         run: uv run --no-sync vpu docker save --output docker-images.tar
