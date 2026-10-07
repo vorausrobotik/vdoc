@@ -1,12 +1,5 @@
-import type { RefObject } from 'react'
 import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
-import { FRAME_PATH_PREFIX, VDOC_THEME_PARAM } from './RouteHelpers'
-
-/** Where the frame is, as far as vdoc has to tell pages apart. */
-export interface IFrameLocation {
-  page: string
-  title: string
-}
+import { VDOC_THEME_PARAM } from './DocumentationAddress'
 
 /**
  * How vdoc's own router should record a page change reported by the frame.
@@ -48,37 +41,5 @@ export function toggleDocumentationColorScheme(
   // https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually
   else {
     documentElement.classList.toggle('dark', mode === 'dark')
-  }
-}
-
-export function parseIFrameHref(iframeRef: RefObject<HTMLIFrameElement | null>): IFrameLocation | null {
-  const iframeHref = iframeRef.current?.contentDocument?.location.href
-  if (iframeHref == null) {
-    return null
-  }
-
-  if (!iframeHref.includes(FRAME_PATH_PREFIX)) {
-    return null
-  }
-
-  try {
-    const url = new URL(iframeHref)
-
-    // Extract path after the prefix
-    const pathAfterPrefix = url.pathname.split(FRAME_PATH_PREFIX)[1]
-    if (!pathAfterPrefix) {
-      return null
-    }
-
-    // Split into: name/version/rest-of-path
-    const [, , ...pageParts] = pathAfterPrefix.split('/')
-
-    return {
-      page: pageParts.join('/'),
-      title: iframeRef.current?.contentDocument?.title ?? '',
-    }
-  } catch {
-    console.error(`Unable to parse IFrame location ${iframeHref}`)
-    return null
   }
 }

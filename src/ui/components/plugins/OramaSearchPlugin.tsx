@@ -1,6 +1,6 @@
 import { Box, useColorScheme } from '@mui/material'
 import { OramaSearchBox, OramaSearchButton } from '@orama/react-components'
-import { sanitizeDocuUri } from '@/helpers/RouteHelpers'
+import { DocumentationAddress } from '@/helpers/DocumentationAddress'
 import type OramaPluginT from '@/interfacesAndTypes/plugins/OramaPluginT'
 import testIDs from '@/interfacesAndTypes/testIDs'
 
@@ -44,20 +44,16 @@ export const OramaSearchPlugin = (config: OramaPluginT) => {
         dictionary={configurationDict}
         facetProperty={config.facet_property as string | undefined}
         chatMarkdownLinkHref={({ href }) => {
-          try {
-            // Orama sometimes returns relative URLs prefixed with http:// or https://
-            // We need to remove these prefixes to properly sanitize the URL.
-            for (const word of ['http://', 'https://']) {
-              href = href.replace(word, '')
-            }
-            return sanitizeDocuUri(href).href
-          } catch {
-            return href
+          // Orama sometimes returns relative URLs prefixed with http:// or https://
+          // We need to remove these prefixes to properly sanitize the URL.
+          for (const word of ['http://', 'https://']) {
+            href = href.replace(word, '')
           }
+          return DocumentationAddress.parse(href)?.readableHref ?? href
         }}
         resultMap={{
           path: (doc) => {
-            return sanitizeDocuUri(doc.path).href
+            return DocumentationAddress.parse(doc.path)?.readableHref ?? doc.path
           },
           description: 'content',
           title: 'title',

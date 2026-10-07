@@ -5,30 +5,18 @@
 
 import { useColorScheme } from '@mui/material'
 import { useRouterState } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useContentInset } from '@/contexts/ContentInsetContext'
 import { useIFrameScroll } from '@/contexts/IFrameScrollContext'
+import { DocumentationAddress, type FrameParams, toReadableHref } from '@/helpers/DocumentationAddress'
 import { hookFramedDocument } from '@/helpers/FramedDocument'
-import {
-  type IFrameHistoryMode,
-  parseIFrameHref,
-  toggleDocumentationColorScheme,
-  VDOC_THEME_ATTRIBUTE,
-} from '@/helpers/IFrame'
-import {
-  composeIFrameSrc,
-  type FrameParams,
-  normalizeIFrameSrc,
-  sanitizeDocuUri,
-  toFrameHref,
-  toReadableHref,
-} from '@/helpers/RouteHelpers'
+import { type IFrameHistoryMode, toggleDocumentationColorScheme, VDOC_THEME_ATTRIBUTE } from '@/helpers/IFrame'
 import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
 import { testIDs } from '@/interfacesAndTypes/testIDs'
 
 interface Props {
-  src: string
-  /** The frame reached `href`, the address that reaches the file. */
+  src: DocumentationAddress
+  /** The frame reached `href`, vdoc's readable address of the page. */
   onLocationChanged: (href: string) => void
   onTitleChanged: (title: string) => void
   onNotFound: () => void
@@ -40,9 +28,8 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
   const { scrollY, setScrollY } = useIFrameScroll()
   const { contentInset } = useContentInset()
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  const sourceRef = useRef<string | undefined>(null)
-
-  const currentProjectName = useMemo(() => sanitizeDocuUri(src).projectName, [src])
+  /** The page vdoc believes the frame shows, or is about to show. */
+  const sourceRef = useRef<DocumentationAddress | null>(null)
 
   // MUI resolves `colorScheme` for us, but it is undefined until the color scheme has been
   // initialized, so fall back to the raw setting and resolve `system` here.
@@ -105,11 +92,14 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
       return false
     }
 
+    const current = DocumentationAddress.parseFrame(frameWindow.location.href)
+    if (current === null) {
+      return false
+    }
     reloadedForModeRef.current = requestedMode
     restoreScrollYRef.current = scrollYRef.current
-    const target = composeIFrameSrc(frameWindow.location.href, { ...frameParamsRef.current, mode: requestedMode })
-    sourceRef.current = normalizeIFrameSrc(target)
-    frameWindow.location.replace(target)
+    sourceRef.current = current
+    frameWindow.location.replace(current.frameUrl({ ...frameParamsRef.current, mode: requestedMode }))
     return true
   }, [])
 
@@ -164,9 +154,9 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
      * the frame performs on its own.
      */
     const report = (historyMode: IFrameHistoryMode): void => {
-      const frameLocation = parseIFrameHref(iframeRef)
-      const frameHref = iframeRef.current?.contentWindow?.location.href
-      if (frameLocation == null || frameHref == null) {
+      const frameDocument = iframeRef.current?.contentDocument
+      const address = frameDocument ? DocumentationAddress.parseFrame(frameDocument.location.href) : null
+      if (frameDocument == null || address === null) {
         return
       }
 
@@ -176,22 +166,22 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
       // Keep the source in sync with where the frame actually is. Without this the effect at the
       // bottom of this component would see a stale source after a client-side navigation and
       // force-load the frame, throwing away the page the reader just navigated to.
-      sourceRef.current = normalizeIFrameSrc(frameHref)
+      sourceRef.current = address
 
       // A new page starts at the top, just like a document load does. A hash change does not:
       // jumping to the top is precisely the opposite of what the reader asked for.
-      if (frameLocation.page !== reportedPageRef.current) {
-        reportedPageRef.current = frameLocation.page
+      if (address.page !== reportedPageRef.current) {
+        reportedPageRef.current = address.page
         setScrollY(0)
       }
 
-      onLocationChanged(frameHref)
-      reportedTitleRef.current = frameLocation.title ?? ''
+      onLocationChanged(address.readableHref)
+      reportedTitleRef.current = frameDocument.title
       onTitleChanged(reportedTitleRef.current)
     }
 
-    const iframeLocation = parseIFrameHref(iframeRef)
-    if (iframeLocation == null) {
+    const frameHref = iframeRef.current.contentDocument?.location.href
+    if (frameHref == null || DocumentationAddress.parseFrame(frameHref) === null) {
       console.warn('IFrame onload event triggered, but url is null')
       return
     }
@@ -206,7 +196,12 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
       hookFramedDocument(frameWindow, {
         onNavigated: report,
 
-        onHashChanged: (): void => onLocationChanged(frameWindow.location.href),
+        onHashChanged: (): void => {
+          const address = DocumentationAddress.parseFrame(frameWindow.location.href)
+          if (address !== null) {
+            onLocationChanged(address.readableHref)
+          }
+        },
 
         onTitleChanged: (title: string): void => {
           if (title !== reportedTitleRef.current) {
@@ -215,26 +210,18 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
           }
         },
 
-        isAlreadyRecorded: (href: string): boolean => normalizeIFrameSrc(href) === sourceRef.current,
+        isAlreadyRecorded: (href: string): boolean => {
+          const address = DocumentationAddress.parse(href)
+          return address !== null && sourceRef.current !== null && address.isSamePage(sourceRef.current)
+        },
 
         displayHref: (href: string): string => toReadableHref(href),
 
         /**
-         * A link leads out of the frame when its origin differs, or when it leads to a different
-         * project's documentation than the one that is currently open.
+         * A link leads out of the frame when it names no documentation page of vdoc's origin, or a
+         * page of a different project than the one that is currently open.
          */
-        leadsOutOfTheFrame: (href: string): boolean => {
-          if (!href.startsWith(window.location.origin)) {
-            return true
-          }
-          let linkProjectName: string | undefined
-          // The href might be external or something else. The function is allowed to fail at this point.
-          /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
-          try {
-            linkProjectName = sanitizeDocuUri(href).projectName
-          } catch {}
-          return linkProjectName !== currentProjectName
-        },
+        leadsOutOfTheFrame: (href: string): boolean => DocumentationAddress.parse(href)?.project !== src.project,
 
         /**
          * The anchor carries the readable address, so this resolves the one that reaches the file
@@ -246,9 +233,13 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
          * From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
          */
         followInTheFrame: (href: string): void => {
-          const frameHref = toFrameHref(href)
-          sourceRef.current = normalizeIFrameSrc(frameHref)
-          frameWindow.location.replace(composeIFrameSrc(frameHref, frameParamsRef.current))
+          const target = DocumentationAddress.parse(href)
+          if (target === null) {
+            frameWindow.location.replace(href)
+            return
+          }
+          sourceRef.current = target
+          frameWindow.location.replace(target.frameUrl(frameParamsRef.current))
         },
 
         /**
@@ -281,21 +272,15 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
     if (isNavigationPending || !isInsetMeasured) {
       return
     }
-    // Compared through `normalizeIFrameSrc`, the same way `report()` records where the frame is:
-    // if the two composed the address differently, every client-side navigation would look like a
-    // stale source here and be force-loaded away.
-    const normalizedSrc = normalizeIFrameSrc(src)
-    if (sourceRef.current === normalizedSrc) {
+    // A client-side navigation in the frame reaches vdoc's router as well, and comes back here as a
+    // new `src` for the page the frame already shows. Loading it again would undo that navigation.
+    if (sourceRef.current?.isSamePage(src)) {
       return
     }
-    sourceRef.current = normalizedSrc
-    // Requested with the address exactly as vdoc's router holds it, not with the normalized one:
-    // what may be ignored when comparing two addresses must still be requested faithfully. The
-    // color mode is deliberately not a dependency of this effect - switching it must not reload
+    sourceRef.current = src
+    // The color mode is deliberately not a dependency of this effect - switching it must not reload
     // frames that apply it in place. `applyColorMode` reloads the ones that need it.
-    iframeRef.current?.contentWindow?.location.replace(
-      composeIFrameSrc(`${window.location.origin}${src}`, frameParamsRef.current)
-    )
+    iframeRef.current?.contentWindow?.location.replace(src.frameUrl(frameParamsRef.current))
   }, [src, isNavigationPending, isInsetMeasured])
 
   return (

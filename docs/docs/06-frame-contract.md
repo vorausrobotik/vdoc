@@ -163,7 +163,7 @@ not decoration: a relative link inside `/static/projects/proj/1.0/page.html` res
 own, a click inside the frame would load vdoc's application _into_ the frame, recursively.
 
 So every page has two addresses, and mapping between them is a pure function in both directions
-(`toReadableHref` and `toFrameHref` in `src/ui/helpers/RouteHelpers.ts`):
+(`DocumentationAddress` in `src/ui/helpers/DocumentationAddress.ts`):
 
 |                                                           | Address                               |
 | --------------------------------------------------------- | ------------------------------------- |

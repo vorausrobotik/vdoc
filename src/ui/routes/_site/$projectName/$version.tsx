@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import ErrorComponent from '@/components/ErrorComponent'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { fetchProjectVersion } from '@/helpers/APIFunctions'
-import { sanitizeDocuUri } from '@/helpers/RouteHelpers'
+import { DocumentationAddress } from '@/helpers/DocumentationAddress'
 
 const fetchVersionAndLatestVersion = async (projectName: string, version: string): Promise<string> => {
   // Check if requested version is available. If not, the loader throws an error and the error component is shown
@@ -34,7 +34,7 @@ export const Route = createFileRoute('/_site/$projectName/$version')({
           version: latestVersion,
           // The page to land on is not in this route's params, so it is read back out of the
           // address being resolved.
-          _splat: sanitizeDocuUri(location.pathname)._splat,
+          _splat: DocumentationAddress.parse(location.pathname)?.page ?? '',
         },
         hash: true, // Preserve the hash from the original URL
         search: true, // Preserve the search params from the original URL
