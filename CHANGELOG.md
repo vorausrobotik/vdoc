@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.31.1](https://github.com/vorausrobotik/vdoc/compare/0.31.0...0.31.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **docker:** Trust the forwarded headers of a reverse proxy ([7ec3cc4](https://github.com/vorausrobotik/vdoc/commit/7ec3cc4df9ae67e1e69055c1522c27ec4db12477))
+* **ui:** Keep the documentation frame hidden until it loaded a document ([ba84ebe](https://github.com/vorausrobotik/vdoc/commit/ba84ebe31c67ce2a51e80f0cfa6d4b1662c65d67))
+
+
+### Code Refactoring
+
+* **docker:** Build both images from one `Dockerfile` ([46fed9c](https://github.com/vorausrobotik/vdoc/commit/46fed9cf273fdce6536ffd9bde83b6e813e832e9))
+
+
+### Tests
+
+* **ui:** Stop waiting for the held frame before checking it is hidden ([b5dbd04](https://github.com/vorausrobotik/vdoc/commit/b5dbd04afc71444aaacec4353ffe135c827f0700))
+
+
+### Build System
+
+* **docker:** Install vdoc with uv at the versions in `uv.lock` ([e290e38](https://github.com/vorausrobotik/vdoc/commit/e290e3801bdd8cecf3b797a33f63aa1a3f0e8f8e))
+* **tox:** Pass only `CI` through to the environments ([b5ba2bc](https://github.com/vorausrobotik/vdoc/commit/b5ba2bcc885e01b4ff626643c67563aec3b96be9))
+
+
+### Continuous Integration
+
+* Publish the image with vpu 1.0 and deploy the released version ([2c7098a](https://github.com/vorausrobotik/vdoc/commit/2c7098aab0016d3111dd58c92e177044c4c8a09d))
+
 ## [0.31.0](https://github.com/vorausrobotik/vdoc/compare/0.30.0...0.31.0) (2026-10-06)
 
 
