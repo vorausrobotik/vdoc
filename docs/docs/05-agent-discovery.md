@@ -111,8 +111,9 @@ still renders, under a generic heading.
 ## Absolute URLs and reverse proxies
 
 All three files list absolute URLs, so that they keep working once copied away from the site they came
-from. The host is taken from the request, honoring `X-Forwarded-Proto` and `X-Forwarded-Host` so that a
-**vdoc** behind a reverse proxy names the address readers actually use rather than its own container.
+from. The host and scheme are taken from the request, so a **vdoc** behind a reverse proxy names the
+address readers actually use. That needs the proxy setup described under
+[Running behind a reverse proxy](03-configuration.md#running-behind-a-reverse-proxy).
 
 The `Link` header names a path rather than a URL, which a client resolves against the address it just
 requested.

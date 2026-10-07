@@ -69,6 +69,29 @@ settings are documented on their own pages under [Plugins](04-plugins/index.mdx)
 | `bind_address` | The application bind address.                                                                                                                                  | `0.0.0.0`                          | `127.0.0.1`                       |
 | `bind_port`    | The application bind port.                                                                                                                                     | `8080`                             | `1337`                            |
 
+## Running behind a reverse proxy
+
+**vdoc** expects a reverse proxy in front of it that terminates HTTPS. The proxy tells **vdoc** the
+original scheme in `X-Forwarded-Proto`, and **vdoc** needs it to build its own URLs. One example is the
+redirect from `/static/projects/<project>/<version>/<page>` to `<page>/` for a page that is published
+as a directory. With the wrong scheme, that redirect points to `http://`, and the browser refuses to
+load it into the documentation frame.
+
+**vdoc** reads these headers only from the addresses in `FORWARDED_ALLOW_IPS`. The container image
+sets it to loopback and every private network:
+
+```text
+10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.0/8,fc00::/7,::1
+```
+
+That covers a proxy on the same host and on any Docker network, whatever subnet it gets. Narrow it to
+the proxy's address or subnet if other hosts on the private network should not be trusted. Never set it
+to `*` unless **vdoc**'s port is unreachable for anyone but the proxy. Outside the container image, it
+defaults to `127.0.0.1`.
+
+The host is taken from the `Host` header, which most proxies pass through unchanged. Traefik does so by
+default.
+
 ## Projects and categories
 
 The admin pages at `/admin` set how each project is presented, and keep it in the database. The menu
