@@ -1,0 +1,9 @@
+# `.git` and `dist/` stay in the context: the `source` target restores the tree from
+# `.git`, and the `wheel` target installs from `dist/`.
+**/node_modules
+**/__pycache__
+.venv
+build
+reports
+test-results
+playwright-report

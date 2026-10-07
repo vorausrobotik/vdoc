@@ -1,10 +1,11 @@
-# Dockerfile for Dokploy preview deployments.
-#
-# Unlike Dockerfile.prod, which installs a pre-built wheel from CI, this builds
-# everything needed directly from a git checkout. Kept to the bare minimum:
-# - The tsc type-check from `npm run build` is skipped; CI gates types.
-# - The version is derived by setuptools_scm from the git metadata in the
-#   build context (Dokploy builds from a full git clone).
+# One image, two ways to build it:
+# - `source` builds everything from a git checkout. Dokploy builds it with
+#   "Docker Build Stage" set to `source`, and so does `docker build --target source .`.
+# - `wheel` installs the wheel CI built into `dist/`, so the image ships exactly the
+#   published package. It is the last stage and so the default, because
+#   `vpu docker build` cannot pass `--target` before voraus-pipeline-utils 1.0.
+
+FROM python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72 AS python
 
 # --- Build the web UI ---------------------------------------------------------
 FROM node:lts-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS ui-build
@@ -15,10 +16,11 @@ RUN npm ci
 
 COPY vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json ./
 COPY src/ui/ src/ui/
+# The tsc type-check of `npm run build` is skipped. CI gates types.
 RUN npx vite build
 
 # --- Build the python wheel ---------------------------------------------------
-FROM python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72 AS py-build
+FROM python AS py-build
 WORKDIR /build
 
 # Restore the tracked working tree from the git metadata instead of copying
@@ -36,8 +38,8 @@ RUN git remote set-url origin https://github.com/vorausrobotik/vdoc.git \
 COPY --from=ui-build /build/src/vdoc/webapp/ src/vdoc/webapp/
 RUN pip wheel --no-deps --no-cache-dir --wheel-dir /dist .
 
-# --- Runtime (mirrors Dockerfile.prod) -----------------------------------------
-FROM python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+# --- Runtime ------------------------------------------------------------------
+FROM python AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 # Trust the forwarded headers of a reverse proxy on loopback or on any private network, where Docker puts it.
@@ -53,11 +55,15 @@ EXPOSE 8080
 ENTRYPOINT [ "/bin/sh", "-c", "set -e; for dir in data docs; do if [ -d \"/srv/vdoc/seed/$dir\" ]; then cp -a \"/srv/vdoc/seed/$dir/.\" \"/srv/vdoc/$dir/\"; fi; done; exec vdoc \"$@\"", "vdoc" ]
 CMD ["run"]
 
+# Default projects and database directories (mount a volume on each,
+# or the production ones under /srv/vdoc/seed for a preview, see ENTRYPOINT)
+RUN mkdir -p /srv/vdoc/docs /srv/vdoc/data
+
+# --- Targets ------------------------------------------------------------------
+FROM runtime AS source
 RUN --mount=type=bind,from=py-build,source=/dist,target=/pip-packages/ \
-    pip install \
-    --no-cache-dir \
-    --no-compile \
-    /pip-packages/*.whl \
-    # Default projects and database directories (mount a volume on each in Dokploy,
-    # or the production ones under /srv/vdoc/seed for a preview, see ENTRYPOINT)
-    && mkdir -p /srv/vdoc/docs /srv/vdoc/data
+    pip install --no-cache-dir --no-compile /pip-packages/*.whl
+
+FROM runtime AS wheel
+RUN --mount=type=bind,source=./dist/,target=/pip-packages/ \
+    pip install --no-cache-dir --no-compile /pip-packages/*.whl
