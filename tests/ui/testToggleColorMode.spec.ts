@@ -98,8 +98,9 @@ test('The frame stays hidden until the documentation loaded in the requested mod
   )
   await page.emulateMedia({ colorScheme: 'dark' })
 
-  // WHEN: The reader opens it while the image is still loading
-  await page.goto('/example-project-01/3.2.0')
+  // WHEN: The reader opens it while the image is still loading. The page's `load` event can wait for the
+  // frame, and so for the held image, which would block `goto` until the test times out.
+  await page.goto('/example-project-01/3.2.0', { waitUntil: 'domcontentloaded' })
   const frame = page.getByTestId(testIDs.project.documentation.documentationIframe)
   const documentation = frame.contentFrame().locator('html')
   await expect(documentation.locator('h1')).toBeAttached()
