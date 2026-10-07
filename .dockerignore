@@ -1,8 +1,10 @@
-# `.git` and `dist/` stay in the context: the `source` target restores the tree from
-# `.git`, and the `wheel` target installs from `dist/`.
+# `dist/` stays in the context, the `wheel` target installs from it.
+.git
+.venv
 **/node_modules
 **/__pycache__
-.venv
+# A local frontend build, which would leave stale hashed assets next to the image's own
+src/vdoc/webapp
 build
 reports
 test-results
