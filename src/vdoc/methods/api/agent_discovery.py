@@ -40,12 +40,8 @@ def get_public_base_url(request: Request) -> str:
     """Returns the absolute base URL this vdoc instance is reached under, without a trailing slash.
 
     Both documents list absolute URLs, so that they keep working once copied away from the site they were
-    fetched from. Only the request knows which host that is, and behind a reverse proxy only its
-    forwarded headers do.
-
-    Those headers are attacker-controlled, which is harmless here: they are used for nothing but
-    composing self-references into the very response the sender receives, so a forged host misleads no
-    one but its sender.
+    fetched from. Behind a reverse proxy, uvicorn takes the scheme from the proxy's forwarded headers, but
+    only from the addresses ``FORWARDED_ALLOW_IPS`` trusts.
 
     Args:
         request: The incoming request.
@@ -53,12 +49,7 @@ def get_public_base_url(request: Request) -> str:
     Returns:
         The base URL of this instance.
     """
-    forwarded_proto = request.headers.get("x-forwarded-proto")
-    forwarded_host = request.headers.get("x-forwarded-host")
-    scheme = forwarded_proto.split(",")[0].strip() if forwarded_proto else request.url.scheme
-    host = forwarded_host.split(",")[0].strip() if forwarded_host else request.url.netloc
-
-    return f"{scheme}://{host}"
+    return str(request.base_url).rstrip("/")
 
 
 def _sections(projects: Sequence[Project]) -> list[tuple[str, list[Project]]]:

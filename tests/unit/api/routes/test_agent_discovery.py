@@ -61,8 +61,8 @@ def test_llms_txt_uses_the_site_plugin(dummy_projects_dir: Path, request: pytest
     assert "- **example.core**\n- **example.pioneer**" in body
 
 
-def test_llms_txt_uses_the_forwarded_host_and_scheme(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
-    body = api.get("/llms.txt", headers={"x-forwarded-proto": "https", "x-forwarded-host": "docs.example.com"}).text
+def test_llms_txt_uses_the_requested_host_and_scheme(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
+    body = api.get("https://docs.example.com/llms.txt").text
 
     assert "https://docs.example.com/static/projects/dummy-project-01/2.0.0/index.html" in body
     assert "testserver" not in body
@@ -175,8 +175,8 @@ def test_robots_txt_allows_everything_and_points_at_llms_txt(api: TestClient) ->
     assert "Disallow" not in response.text
 
 
-def test_robots_txt_uses_the_forwarded_host(api: TestClient) -> None:
-    body = api.get("/robots.txt", headers={"x-forwarded-proto": "https", "x-forwarded-host": "docs.example.com"}).text
+def test_robots_txt_uses_the_requested_host_and_scheme(api: TestClient) -> None:
+    body = api.get("https://docs.example.com/robots.txt").text
 
     assert "https://docs.example.com/llms.txt" in body
     assert "https://docs.example.com/sitemap.xml" in body
@@ -226,8 +226,8 @@ def test_sitemap_xml_skips_a_version_without_a_page_to_enter_at(dummy_projects_d
     assert not any("dummy-project-02" in location for location in _sitemap_locations(api.get("/sitemap.xml")))
 
 
-def test_sitemap_xml_uses_the_forwarded_host_and_scheme(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
-    response = api.get("/sitemap.xml", headers={"x-forwarded-proto": "https", "x-forwarded-host": "docs.example.com"})
+def test_sitemap_xml_uses_the_requested_host_and_scheme(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
+    response = api.get("https://docs.example.com/sitemap.xml")
 
     assert _sitemap_locations(response)[0].startswith("https://docs.example.com/")
     assert "testserver" not in response.text
