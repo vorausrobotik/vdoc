@@ -101,6 +101,35 @@ test.describe('Scroll behavior', () => {
     active: false,
   }
 
+  test('should keep the app bar on a page only slightly taller than the frame', async ({ page }) => {
+    await page.route('*/**/api/plugins/footer/', (route) => route.fulfill({ json: footerEnabledMock }))
+    await page.goto('/example-project-01/1.0.0/')
+    await waitForIframeReady(iframe)
+
+    // Hiding the app bar and the footer would grow the frame by more than the room this page has
+    // left to scroll, so the scroll position would be clamped back up.
+    const scrolledTo = await test.step('scroll just past the hide threshold of a short page', async () => {
+      return await iframe.evaluate((el: HTMLIFrameElement) => {
+        const frameWindow = el.contentWindow!
+        const body = frameWindow.document.body
+        const overflow = Math.floor(frameWindow.innerHeight * 0.1) + 10
+        const filler = frameWindow.document.createElement('div')
+        filler.style.height = `${frameWindow.innerHeight + overflow}px`
+        body.style.margin = '0'
+        body.replaceChildren(filler)
+        frameWindow.scrollTo(0, overflow)
+        return frameWindow.scrollY
+      })
+    })
+
+    await test.step('verify the app bar and the scroll position stay', async () => {
+      await page.waitForTimeout(1000)
+      await expectHeaderVisible(header)
+      expect(await iframe.evaluate((el: HTMLIFrameElement) => el.contentWindow!.scrollY)).toBe(scrolledTo)
+    })
+
+  })
+
   test('content padding should match app bar and footer height when footer is enabled', async ({ page }) => {
     await page.route('*/**/api/plugins/footer/', (route) => route.fulfill({ json: footerEnabledMock }))
     await page.goto('/example-project-01/1.0.0/')
