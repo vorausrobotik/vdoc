@@ -217,6 +217,11 @@ describe('DocumentationAddress.isSamePage', () => {
       other: '/static/projects/proj/1.0.0/p.html?vdoc-theme=light&vdoc-inset=24',
     },
     {
+      description: 'a bare fragment, which the router drops, and no fragment',
+      one: '/static/projects/proj/1.0.0/page#',
+      other: '/proj/1.0.0/page',
+    },
+    {
       description: 'a query the router serialized again',
       one: '/static/projects/proj/1.0.0/page?_highlight=alpha&tab=api&_highlight=beta%20gamma',
       other: `/proj/1.0.0/page${stringifySearch(parseSearch('_highlight=alpha&tab=api&_highlight=beta%20gamma'))}`,

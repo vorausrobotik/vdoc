@@ -77,6 +77,13 @@ describe('FrameNavigator.expects', () => {
     expect(navigator.expects(address('/proj/1.0.0/guide'))).toBe(true)
   })
 
+  test('expects nothing of a frame that does not exist yet, so the move is tried again', () => {
+    const navigator = new FrameNavigator(() => null)
+
+    expect(navigator.navigate(address('/proj/1.0.0/guide'), params)).toBe('load')
+    expect(navigator.expects(address('/proj/1.0.0/guide'))).toBe(false)
+  })
+
   test('expects nothing before anything happened', () => {
     const { navigator } = frameAt('/static/projects/proj/1.0.0/guide')
 
