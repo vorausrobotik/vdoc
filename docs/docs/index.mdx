@@ -5,13 +5,25 @@ title: Introduction
 # prefix, because its file name is what makes it the site's landing page, so it says where it
 # belongs instead - without this it sorts after the numbers rather than ahead of them.
 sidebar_position: 0
+# The hero renders the page's `h1`, so Docusaurus must not render a second one from `title`.
+hide_title: true
 ---
 
-# vdoc
+<Hero
+  title="vdoc"
+  lead="Documentation for many projects, at many versions, in one place."
+  actions={
+    <>
+      <Button href="/getting-started">Get started</Button>
+      <Button variant="outlined" href="/publishing">
+        Publish documentation
+      </Button>
+    </>
+  }
+/>
 
-vdoc hosts documentation for many projects, at many versions, in one place. A project builds its
-documentation, uploads the result as a ZIP, and vdoc serves it at `/<project>/<version>/` with a
-landing page, a version picker and its own header around it.
+A project builds its documentation, uploads the result as a ZIP, and vdoc serves it at
+`/<project>/<version>/` with a landing page, a version picker and its own header around it.
 
 It builds nothing itself and does not care what did. Sphinx, Docusaurus, Doxygen and a hand-written
 `index.html` all publish the same way: a directory of files with an `index.html` in it.
@@ -41,5 +53,5 @@ minutes. From there, [Configuration](03-configuration.md) is the reference for e
 instance can be told.
 
 If you are building a documentation site that vdoc will serve,
-[`@voraus/docusaurus-theme`](https://vorausrobotik.github.io/voraus-docusaurus-theme/) implements
+[`@voraus/docusaurus-theme`](https://www.npmjs.com/package/@voraus/docusaurus-theme) implements
 [the frame contract](06-frame-contract.md) already.
