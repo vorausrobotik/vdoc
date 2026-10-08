@@ -146,9 +146,18 @@ export class DocumentationAddress {
     return this.documentKey === other.documentKey
   }
 
-  /** Whether `other` is the same document at the same fragment. */
+  /**
+   * Whether `other` is the same document at the same fragment.
+   *
+   * A bare `#` counts as no fragment: both name the top of the page, and vdoc's router drops the
+   * bare one, so the frame reports `#` where the router hands back nothing.
+   */
   isSamePage(other: DocumentationAddress): boolean {
-    return this.isSameDocument(other) && this.hash === other.hash
+    return this.isSameDocument(other) && this.fragmentKey === other.fragmentKey
+  }
+
+  private get fragmentKey(): string {
+    return this.hash === '#' ? '' : this.hash
   }
 
   private get documentKey(): string {

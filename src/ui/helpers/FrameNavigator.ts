@@ -42,11 +42,11 @@ export class FrameNavigator {
    *   caller has to.
    */
   navigate(target: DocumentationAddress, params: FrameParams): FrameMove {
-    this.expected = target
     const frameWindow = this.frameWindow()
     if (frameWindow == null) {
       return 'load'
     }
+    this.expected = target
     if (target.hash !== '' && DocumentationAddress.parseFrame(frameWindow.location.href)?.isSameDocument(target)) {
       // The frame's own address rather than the target's: a client-side router may have dropped
       // vdoc's parameters or written the path in another form, and any difference beyond the

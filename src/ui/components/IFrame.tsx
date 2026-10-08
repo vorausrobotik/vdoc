@@ -231,14 +231,15 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
          * The anchor carries the readable address, so this resolves the page out of it. A new
          * document is requested with the color mode - without the parameter it would not declare the
          * attribute, and the frame would drop out of the contract mid-navigation.
+         *
+         * Only a link to a page of this project arrives here: `leadsOutOfTheFrame` takes every other
+         * one in the capture phase, so the address always parses.
          */
         followInTheFrame: (href: string): void => {
           const target = DocumentationAddress.parse(href)
-          if (target === null) {
-            frameWindow.location.replace(href)
-            return
+          if (target !== null) {
+            moveFrame(target)
           }
-          moveFrame(target)
         },
 
         /**
