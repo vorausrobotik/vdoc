@@ -5,9 +5,11 @@ import testIDs from '@/interfacesAndTypes/testIDs'
 interface ScrollToTopProps {
   visible: boolean
   onScrollToTop: () => void
+  /** Height of what is fixed to the bottom edge below the button, such as the footer. */
+  bottomOffset?: number
 }
 
-export default function ScrollToTop({ visible, onScrollToTop }: ScrollToTopProps) {
+export default function ScrollToTop({ visible, onScrollToTop, bottomOffset = 0 }: ScrollToTopProps) {
   const theme = useTheme()
 
   return (
@@ -20,7 +22,7 @@ export default function ScrollToTop({ visible, onScrollToTop }: ScrollToTopProps
         aria-label="scroll to top"
         sx={{
           position: 'fixed',
-          bottom: theme.spacing(2),
+          bottom: `calc(${bottomOffset}px + ${theme.spacing(2)})`,
           right: theme.spacing(2),
         }}
       >

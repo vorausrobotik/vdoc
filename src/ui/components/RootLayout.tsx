@@ -127,7 +127,11 @@ export function SiteLayout() {
           <FooterPlugin />
         </Box>
       </Slide>
-      <ScrollToTop visible={showScrollToTop} onScrollToTop={handleScrollToTop} />
+      <ScrollToTop
+        visible={showScrollToTop}
+        onScrollToTop={handleScrollToTop}
+        bottomOffset={hideElements ? 0 : footerHeight}
+      />
     </Box>
   )
 }

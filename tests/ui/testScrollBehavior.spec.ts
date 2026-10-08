@@ -128,6 +128,18 @@ test.describe('Scroll behavior', () => {
       expect(await iframe.evaluate((el: HTMLIFrameElement) => el.contentWindow!.scrollY)).toBe(scrolledTo)
     })
 
+    await test.step('verify the scroll-to-top button is not covered by the footer', async () => {
+      const scrollToTopButton = page.getByTestId(testIDs.scrollToTop)
+      await expect(scrollToTopButton).toBeVisible()
+      const buttonBox = (await scrollToTopButton.boundingBox())!
+      const footerBox = (await page.getByTestId(testIDs.plugins.footer.main).boundingBox())!
+      expect(buttonBox.y + buttonBox.height).toBeLessThanOrEqual(footerBox.y)
+
+      await scrollToTopButton.click()
+      await expect
+        .poll(() => iframe.evaluate((el: HTMLIFrameElement) => el.contentWindow!.scrollY), { timeout: 3000 })
+        .toBe(0)
+    })
   })
 
   test('content padding should match app bar and footer height when footer is enabled', async ({ page }) => {
