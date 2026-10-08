@@ -8,8 +8,10 @@ import {
   assertTheme,
   BASE_URL,
   openProjectDocumentation,
+  recordFrameDocumentLoads,
   scrollIframeBelowHideThreshold,
   switchColorMode,
+  waitUntilQuiet,
 } from './helpers'
 
 await prepareTestSuite(test)
@@ -195,28 +197,6 @@ const recordVersionLookups = (page: Page): string[] => {
   return lookups
 }
 
-/** Every document the frame requests, as opposed to the pages a client-side router renders in place. */
-const recordFrameDocumentLoads = (page: Page): string[] => {
-  const loads: string[] = []
-  page.on('request', (request) => {
-    if (request.resourceType() === 'document' && request.url().includes('/static/projects/')) {
-      loads.push(request.url())
-    }
-  })
-  return loads
-}
-
-/** Waits until `requests` stopped growing, so that a request that arrives late is counted too. */
-const waitUntilQuiet = async (page: Page, requests: string[]) => {
-  await expect
-    .poll(async () => {
-      const before = requests.length
-      await page.waitForTimeout(500)
-      return requests.length === before
-    })
-    .toBe(true)
-}
-
 test('Client-side navigation does not look the version up again', async ({ page }) => {
   // GIVEN: An open single page documentation
   const documentation = await openSinglePageApp(page)
@@ -345,24 +325,43 @@ test('Foreign links of a single page app open in a new tab', async ({ page }) =>
   await expect(renderedPage(documentation)).toHaveAttribute('data-page', 'index.html')
 })
 
-const GUIDE = `${BASE_PATH}/guide.html`
+/**
+ * vdoc's address of the page at `path` below the version, with or without the trailing slash a page
+ * published as a directory is served at.
+ */
+const addressOf = (path: string, hash = ''): RegExp => {
+  const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${literal(`${BASE_PATH}/${path}`)}/?${literal(hash)}$`)
+}
 
 /**
  * The ways a reader reaches the guide. Each one leaves the frame at a differently shaped address,
  * which is where link handling has broken before: only a document vdoc loaded itself carries vdoc's
- * frame parameters.
+ * frame parameters, and a page published as a directory, the way Docusaurus publishes every page,
+ * ends up at an address with a trailing slash that vdoc's own address bar does not have.
  */
-const arrivals: { name: string; reachGuide: (page: Page) => Promise<Locator> }[] = [
+const arrivals: { name: string; guide: string; reachGuide: (page: Page) => Promise<Locator> }[] = [
   {
     name: 'opened directly',
+    guide: 'guide.html',
     reachGuide: async (page) => {
       await serveSinglePageApp(page)
-      await page.goto(GUIDE)
+      await page.goto(`${BASE_PATH}/guide.html`)
+      return framedDocument(page)
+    },
+  },
+  {
+    name: 'published as a directory and opened directly',
+    guide: 'guide',
+    reachGuide: async (page) => {
+      await serveSinglePageApp(page)
+      await page.goto(`${BASE_PATH}/guide`)
       return framedDocument(page)
     },
   },
   {
     name: 'reached client-side',
+    guide: 'guide.html',
     reachGuide: async (page) => {
       const documentation = await openSinglePageApp(page)
       await documentation.getByRole('link', { name: 'Go to the guide' }).click()
@@ -371,6 +370,7 @@ const arrivals: { name: string; reachGuide: (page: Page) => Promise<Locator> }[]
   },
   {
     name: 'reached through a plain link',
+    guide: 'guide.html',
     reachGuide: async (page) => {
       const documentation = await openSinglePageApp(page)
       await documentation.getByRole('link', { name: 'Open the guide with a plain link' }).click()
@@ -379,10 +379,11 @@ const arrivals: { name: string; reachGuide: (page: Page) => Promise<Locator> }[]
   },
   {
     name: 'reached by going back',
+    guide: 'guide.html',
     reachGuide: async (page) => {
       const documentation = await openSinglePageApp(page)
       await documentation.getByRole('link', { name: 'Go to the guide' }).click()
-      await expect(page).toHaveURL(GUIDE)
+      await expect(page).toHaveURL(addressOf('guide.html'))
       await documentation.getByRole('link', { name: 'Go to the API' }).click()
       await expect(page).toHaveURL(`${BASE_PATH}/api.html`)
       await page.goBack()
@@ -396,7 +397,7 @@ const linkKinds = [
   {
     name: 'a fragment link',
     link: 'Jump to chapter 2',
-    target: `${GUIDE}#chapter2`,
+    target: (guide: string) => addressOf(guide, '#chapter2'),
     renders: 'guide.html',
     onScreen: '#chapter2',
     documentLoads: 0,
@@ -404,7 +405,7 @@ const linkKinds = [
   {
     name: 'a link the application routes itself',
     link: 'Go to the API',
-    target: `${BASE_PATH}/api.html`,
+    target: () => addressOf('api.html'),
     renders: 'api.html',
     onScreen: 'h1',
     documentLoads: 0,
@@ -412,7 +413,7 @@ const linkKinds = [
   {
     name: 'a plain link to another page',
     link: 'Open the API with a plain link',
-    target: `${BASE_PATH}/api.html`,
+    target: () => addressOf('api.html'),
     renders: 'api.html',
     onScreen: 'h1',
     documentLoads: 1,
@@ -426,7 +427,7 @@ for (const arrival of arrivals) {
     }) => {
       // GIVEN: A reader on the guide, with the frame settled
       const documentation = await arrival.reachGuide(page)
-      await expect(page).toHaveURL(GUIDE)
+      await expect(page).toHaveURL(addressOf(arrival.guide))
       await expect(renderedPage(documentation)).toHaveAttribute('data-page', 'guide.html')
       const documentLoads = recordFrameDocumentLoads(page)
       await waitUntilQuiet(page, documentLoads)
@@ -436,7 +437,7 @@ for (const arrival of arrivals) {
       await documentation.getByRole('link', { name: kind.link }).click()
 
       // THEN: They see the target, and vdoc's address bar names it
-      await expect(page).toHaveURL(kind.target)
+      await expect(page).toHaveURL(kind.target(arrival.guide))
       await expect(renderedPage(documentation)).toHaveAttribute('data-page', kind.renders)
       await expect(documentation.locator(kind.onScreen)).toBeInViewport()
 
@@ -447,8 +448,32 @@ for (const arrival of arrivals) {
 
       // AND: The link added exactly one step to the history, so a single back returns to the guide
       await page.goBack()
-      await expect(page).toHaveURL(GUIDE)
+      await expect(page).toHaveURL(addressOf(arrival.guide))
       await expect(renderedPage(documentation)).toHaveAttribute('data-page', 'guide.html')
     })
   }
+}
+
+for (const arrival of arrivals) {
+  test(`Going back between two fragments of a page ${arrival.name} loads no document`, async ({ page }) => {
+    // GIVEN: A reader who jumped to two chapters of the guide, one after the other
+    const documentation = await arrival.reachGuide(page)
+    await expect(page).toHaveURL(addressOf(arrival.guide))
+    await documentation.getByRole('link', { name: 'Jump to chapter 2' }).click()
+    await expect(page).toHaveURL(addressOf(arrival.guide, '#chapter2'))
+    await documentation.getByRole('link', { name: 'Jump to chapter 3' }).click()
+    await expect(page).toHaveURL(addressOf(arrival.guide, '#chapter3'))
+    const documentLoads = recordFrameDocumentLoads(page)
+    await waitUntilQuiet(page, documentLoads)
+    documentLoads.length = 0
+
+    // WHEN: They go back
+    await page.goBack()
+
+    // THEN: They are at the first chapter again, without a document load in between
+    await expect(page).toHaveURL(addressOf(arrival.guide, '#chapter2'))
+    await expect(documentation.locator('#chapter2')).toBeInViewport()
+    await waitUntilQuiet(page, documentLoads)
+    expect(documentLoads).toHaveLength(0)
+  })
 }

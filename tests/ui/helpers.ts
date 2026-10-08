@@ -442,3 +442,25 @@ export async function getContentPadding(page: Page) {
   const paddingBottom = await contentBox.evaluate((el) => parseFloat(getComputedStyle(el).paddingBottom))
   return { paddingTop, paddingBottom }
 }
+
+/** Every document the frame requests, as opposed to the pages a client-side router renders in place. */
+export const recordFrameDocumentLoads = (page: Page): string[] => {
+  const loads: string[] = []
+  page.on('request', (request) => {
+    if (request.resourceType() === 'document' && request.url().includes('/static/projects/')) {
+      loads.push(request.url())
+    }
+  })
+  return loads
+}
+
+/** Waits until `requests` stopped growing, so that a request that arrives late is counted too. */
+export const waitUntilQuiet = async (page: Page, requests: string[]) => {
+  await expect
+    .poll(async () => {
+      const before = requests.length
+      await page.waitForTimeout(500)
+      return requests.length === before
+    })
+    .toBe(true)
+}

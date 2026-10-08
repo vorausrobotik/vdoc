@@ -108,7 +108,8 @@ the frame triggers itself starts a new document, which sees no parameter, declar
 drops back to the legacy path -- a visible flash of the wrong mode with vdoc's own elements duplicated
 inside the frame.
 
-vdoc composes the parameters for the navigations it performs on the frame's behalf.
+vdoc composes the parameters for every document it loads on the frame's behalf. A jump to another
+fragment of the document the frame already shows loads nothing, so it needs none.
 
 ### R8 -- Paint an opaque background
 
@@ -200,6 +201,13 @@ listens for `popstate`, because a single-page generator swaps pages without a do
 neither method emits an event. That is how vdoc's address bar follows client-side routing. It also
 watches the framed `<head>`, since a client-side router sets the title after navigating.
 
+Every navigation vdoc performs on the frame uses `location.replace`, so the frame adds no session
+history entry. vdoc's own router adds the one entry, and the back button takes one click per step.
+When the target is another fragment of the document the frame already shows, vdoc changes only the
+fragment of the frame's current address. Any other difference, such as vdoc's parameters that a
+client-side router dropped or the trailing slash of a page published as a directory, would make the
+browser load the document again.
+
 **Links.** Clicks are handled by two delegated listeners on the framed document, never per anchor, so
 that links rendered after the document loaded are covered too:
 
@@ -211,7 +219,9 @@ flowchart TD
     O -->|yes| N["vdoc opens the readable<br/>address in a new tab"]
     O -->|no| P{"Did the framework call<br/>preventDefault()?"}
     P -->|yes| R[The framework routes it itself]
-    P -->|no| F[vdoc navigates the frame]
+    P -->|no| D{"Another fragment of the<br/>document the frame shows?"}
+    D -->|yes| H["vdoc moves the frame<br/>to the fragment"]
+    D -->|no| F[vdoc navigates the frame]
 ```
 
 ## Adopting the contract
