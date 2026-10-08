@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.31.2](https://github.com/vorausrobotik/vdoc/compare/0.31.1...0.31.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* **ui:** Jump to a fragment without reloading the frame ([f208ec4](https://github.com/vorausrobotik/vdoc/commit/f208ec49b19a877c80f75b64ecf862ac7e744c9f))
+* **ui:** Keep the app bar on pages too short to hide it ([bc2503b](https://github.com/vorausrobotik/vdoc/commit/bc2503b60a56473a8d23f91532351f25c6d34fd4))
+* **ui:** Lift the scroll-to-top button above the footer ([8cb07ea](https://github.com/vorausrobotik/vdoc/commit/8cb07ea59b30b730e7145633693516d601939907))
+* **ui:** Treat a bare fragment as the top of the page ([e312bf0](https://github.com/vorausrobotik/vdoc/commit/e312bf0f458a741802fef4d3282115a7f4dcbee9))
+
+
+### Code Refactoring
+
+* **ui:** Give the address of a documentation page one home ([66d2572](https://github.com/vorausrobotik/vdoc/commit/66d2572229df1b3320761c8651ec666e13e23926))
+
+
+### Documentation
+
+* Open the introduction with the voraus hero ([dc1ba75](https://github.com/vorausrobotik/vdoc/commit/dc1ba75afa2115a66851575731a4a2fcd05f9bf2))
+
+
+### Tests
+
+* **ui:** Check frame navigation invariants across arrivals and link kinds ([a79a001](https://github.com/vorausrobotik/vdoc/commit/a79a00135bf5999611a1928bab17acc85af4298b))
+
+
+### Build System
+
+* **deps:** Update all dependencies ([9256442](https://github.com/vorausrobotik/vdoc/commit/9256442e9f59386d1fce3e024424c8943fc0bfea))
+* **deps:** Update github-actions dependencies ([4f0a8c1](https://github.com/vorausrobotik/vdoc/commit/4f0a8c1107fb08898a63ca1e75cb7453966b2f88))
+
 ## [0.31.1](https://github.com/vorausrobotik/vdoc/compare/0.31.0...0.31.1) (2026-10-07)
 
 
