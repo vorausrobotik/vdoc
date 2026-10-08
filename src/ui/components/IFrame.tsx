@@ -10,6 +10,7 @@ import { useContentInset } from '@/contexts/ContentInsetContext'
 import { useIFrameScroll } from '@/contexts/IFrameScrollContext'
 import { DocumentationAddress, type FrameParams, toReadableHref } from '@/helpers/DocumentationAddress'
 import { hookFramedDocument } from '@/helpers/FramedDocument'
+import { FrameNavigator } from '@/helpers/FrameNavigator'
 import { type IFrameHistoryMode, toggleDocumentationColorScheme, VDOC_THEME_ATTRIBUTE } from '@/helpers/IFrame'
 import type { EffectiveColorMode } from '@/interfacesAndTypes/ColorModes'
 import { testIDs } from '@/interfacesAndTypes/testIDs'
@@ -28,8 +29,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
   const { scrollY, setScrollY } = useIFrameScroll()
   const { contentInset } = useContentInset()
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  /** The page vdoc believes the frame shows, or is about to show. */
-  const sourceRef = useRef<DocumentationAddress | null>(null)
+  const [frameNavigator] = useState(() => new FrameNavigator(() => iframeRef.current?.contentWindow))
 
   // MUI resolves `colorScheme` for us, but it is undefined until the color scheme has been
   // initialized, so fall back to the raw setting and resolve `system` here.
@@ -68,45 +68,92 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
    *
    * @returns whether a reload was started.
    */
-  const applyColorMode = useCallback((requestedMode: EffectiveColorMode): boolean => {
-    const frameWindow = iframeRef.current?.contentWindow
-    const documentElement = iframeRef.current?.contentDocument?.documentElement
-    if (!frameWindow || !documentElement) {
-      return false
-    }
+  const applyColorMode = useCallback(
+    (requestedMode: EffectiveColorMode): boolean => {
+      const documentElement = iframeRef.current?.contentDocument?.documentElement
+      if (!documentElement) {
+        return false
+      }
 
-    const declaredMode = documentElement.getAttribute(VDOC_THEME_ATTRIBUTE)
-    if (declaredMode === null) {
-      toggleDocumentationColorScheme(iframeRef, requestedMode)
-      return false
-    }
+      const declaredMode = documentElement.getAttribute(VDOC_THEME_ATTRIBUTE)
+      if (declaredMode === null) {
+        toggleDocumentationColorScheme(iframeRef, requestedMode)
+        return false
+      }
 
-    if (declaredMode === requestedMode) {
-      // The frame already applied what is being asked for, so there is nothing to reload for.
+      if (declaredMode === requestedMode) {
+        // The frame already applied what is being asked for, so there is nothing to reload for.
+        reloadedForModeRef.current = requestedMode
+        return false
+      }
+      if (reloadedForModeRef.current === requestedMode) {
+        // Already reloaded for this mode and the frame still declares another one. It sets the
+        // attribute but does not honor the parameter; reloading again would only loop.
+        return false
+      }
+
+      if (!frameNavigator.reload({ ...frameParamsRef.current, mode: requestedMode })) {
+        return false
+      }
       reloadedForModeRef.current = requestedMode
-      return false
-    }
-    if (reloadedForModeRef.current === requestedMode) {
-      // Already reloaded for this mode and the frame still declares another one. It sets the
-      // attribute but does not honor the parameter; reloading again would only loop.
-      return false
-    }
-
-    const current = DocumentationAddress.parseFrame(frameWindow.location.href)
-    if (current === null) {
-      return false
-    }
-    reloadedForModeRef.current = requestedMode
-    restoreScrollYRef.current = scrollYRef.current
-    sourceRef.current = current
-    frameWindow.location.replace(current.frameUrl({ ...frameParamsRef.current, mode: requestedMode }))
-    return true
-  }, [])
+      restoreScrollYRef.current = scrollYRef.current
+      return true
+    },
+    [frameNavigator]
+  )
 
   // Update documentation's theme
   useEffect(() => {
     applyColorMode(effectiveColorMode)
   }, [effectiveColorMode, applyColorMode])
+
+  /**
+   * Tell vdoc's own interface where the frame currently is.
+   *
+   * Called for every document load, for every move within a document vdoc performs, and, through
+   * the hooks installed on the framed document, for every navigation the frame performs on its own.
+   */
+  const report = (historyMode: IFrameHistoryMode): void => {
+    const frameDocument = iframeRef.current?.contentDocument
+    const address = frameDocument ? DocumentationAddress.parseFrame(frameDocument.location.href) : null
+    if (frameDocument == null || address === null) {
+      return
+    }
+
+    // Before `onLocationChanged`, which is what triggers the navigation that has to read the mode.
+    onHistoryModeChanged(historyMode)
+
+    // Without this the effect at the bottom of this component would take a client-side
+    // navigation for a stale source and force-load the frame, throwing away the page the reader
+    // just navigated to.
+    frameNavigator.arrived(address)
+
+    // A new page starts at the top, just like a document load does. A hash change does not:
+    // jumping to the top is precisely the opposite of what the reader asked for.
+    if (address.page !== reportedPageRef.current) {
+      reportedPageRef.current = address.page
+      setScrollY(0)
+    }
+
+    onLocationChanged(address.readableHref)
+    reportedTitleRef.current = frameDocument.title
+    onTitleChanged(reportedTitleRef.current)
+  }
+
+  const reportRef = useRef(report)
+  reportRef.current = report
+
+  /** Move the frame to `target`, through the one owner of every move. */
+  const moveFrame = useCallback(
+    (target: DocumentationAddress): void => {
+      if (frameNavigator.navigate(target, frameParamsRef.current) === 'fragment') {
+        // No document load reports this move, and `location.replace` added no session history entry
+        // for it: like a document load, it is vdoc's to record.
+        reportRef.current('push')
+      }
+    },
+    [frameNavigator]
+  )
 
   const onIframeLoad = (): void => {
     if (iframeRef.current === null) {
@@ -147,39 +194,6 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
       contentWindow.addEventListener('scroll', handleScroll, { passive: true })
     }
 
-    /**
-     * Tell vdoc's own interface where the frame currently is.
-     *
-     * Called for every document load and, through the hooks installed below, for every navigation
-     * the frame performs on its own.
-     */
-    const report = (historyMode: IFrameHistoryMode): void => {
-      const frameDocument = iframeRef.current?.contentDocument
-      const address = frameDocument ? DocumentationAddress.parseFrame(frameDocument.location.href) : null
-      if (frameDocument == null || address === null) {
-        return
-      }
-
-      // Before `onLocationChanged`, which is what triggers the navigation that has to read the mode.
-      onHistoryModeChanged(historyMode)
-
-      // Keep the source in sync with where the frame actually is. Without this the effect at the
-      // bottom of this component would see a stale source after a client-side navigation and
-      // force-load the frame, throwing away the page the reader just navigated to.
-      sourceRef.current = address
-
-      // A new page starts at the top, just like a document load does. A hash change does not:
-      // jumping to the top is precisely the opposite of what the reader asked for.
-      if (address.page !== reportedPageRef.current) {
-        reportedPageRef.current = address.page
-        setScrollY(0)
-      }
-
-      onLocationChanged(address.readableHref)
-      reportedTitleRef.current = frameDocument.title
-      onTitleChanged(reportedTitleRef.current)
-    }
-
     const frameHref = iframeRef.current.contentDocument?.location.href
     if (frameHref == null || DocumentationAddress.parseFrame(frameHref) === null) {
       console.warn('IFrame onload event triggered, but url is null')
@@ -194,14 +208,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
     const frameWindow = iframeRef.current.contentWindow
     if (frameWindow != null) {
       hookFramedDocument(frameWindow, {
-        onNavigated: report,
-
-        onHashChanged: (): void => {
-          const address = DocumentationAddress.parseFrame(frameWindow.location.href)
-          if (address !== null) {
-            onLocationChanged(address.readableHref)
-          }
-        },
+        onNavigated: (historyMode: IFrameHistoryMode): void => reportRef.current(historyMode),
 
         onTitleChanged: (title: string): void => {
           if (title !== reportedTitleRef.current) {
@@ -210,10 +217,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
           }
         },
 
-        isAlreadyRecorded: (href: string): boolean => {
-          const address = DocumentationAddress.parse(href)
-          return address !== null && sourceRef.current !== null && address.isSamePage(sourceRef.current)
-        },
+        isAlreadyRecorded: (href: string): boolean => frameNavigator.expects(DocumentationAddress.parse(href)),
 
         displayHref: (href: string): string => toReadableHref(href),
 
@@ -224,13 +228,9 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
         leadsOutOfTheFrame: (href: string): boolean => DocumentationAddress.parse(href)?.project !== src.project,
 
         /**
-         * The anchor carries the readable address, so this resolves the one that reaches the file
-         * back out of it, and requests the color mode along with it - without the parameter the new
-         * document would not declare the attribute, and the frame would drop out of the contract
-         * mid-navigation. `replace` rather than an assignment, so that the framed navigation adds no
-         * session history entry - vdoc's own router adds one for the same navigation, and two would
-         * make the back button need two clicks per page.
-         * From here: https://www.ozzu.com/questions/358584/how-do-you-ignore-iframes-javascript-history
+         * The anchor carries the readable address, so this resolves the page out of it. A new
+         * document is requested with the color mode - without the parameter it would not declare the
+         * attribute, and the frame would drop out of the contract mid-navigation.
          */
         followInTheFrame: (href: string): void => {
           const target = DocumentationAddress.parse(href)
@@ -238,8 +238,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
             frameWindow.location.replace(href)
             return
           }
-          sourceRef.current = target
-          frameWindow.location.replace(target.frameUrl(frameParamsRef.current))
+          moveFrame(target)
         },
 
         /**
@@ -255,7 +254,7 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
 
     // A document load means the frame got here through `location.replace`, which adds no session
     // history entry of its own: this navigation is vdoc's to record.
-    report('push')
+    reportRef.current('push')
   }
 
   // While a navigation is pending, the router state is transiently inconsistent:
@@ -274,14 +273,13 @@ export default function IFrame({ src, onLocationChanged, onTitleChanged, onNotFo
     }
     // A client-side navigation in the frame reaches vdoc's router as well, and comes back here as a
     // new `src` for the page the frame already shows. Loading it again would undo that navigation.
-    if (sourceRef.current?.isSamePage(src)) {
+    if (frameNavigator.expects(src)) {
       return
     }
-    sourceRef.current = src
     // The color mode is deliberately not a dependency of this effect - switching it must not reload
     // frames that apply it in place. `applyColorMode` reloads the ones that need it.
-    iframeRef.current?.contentWindow?.location.replace(src.frameUrl(frameParamsRef.current))
-  }, [src, isNavigationPending, isInsetMeasured])
+    moveFrame(src)
+  }, [src, isNavigationPending, isInsetMeasured, frameNavigator, moveFrame])
 
   return (
     <iframe
