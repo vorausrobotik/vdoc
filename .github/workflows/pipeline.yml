@@ -88,16 +88,16 @@ jobs:
           run: |
             echo "JF_URL=$(sed -n 's/^  url: //p' .vpu.yml)" >> "$GITHUB_ENV"
 
-        - uses: jfrog/setup-jfrog-cli@68c0efdc951dd2359bbbfa15c48bc67b3ae8e4d6 # v5.2.0
+        - uses: jfrog/setup-jfrog-cli@1e584506871998c267b7c100c02628a5b9c81db6 # v5.3.0
           id: jfrog
           with:
             # The action's default CLI lacks subcommands `vpu` uses.
-            version: 2.126.0
+            version: 2.127.0
             oidc-provider-name: voraus-github-organization
             disable-auto-build-publish: "true"
 
         # A tag build never restores a cache, so a poisoned cache from main cannot reach a release.
-        - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
           with:
             enable-cache: false
 
