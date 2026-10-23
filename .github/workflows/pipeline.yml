@@ -58,7 +58,7 @@ jobs:
             path: dist
 
         - name: Publish package distributions to PyPI
-          uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+          uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
           env:
             url: https://pypi.org/p/vdoc
 
@@ -88,16 +88,16 @@ jobs:
           run: |
             echo "JF_URL=$(sed -n 's/^  url: //p' .vpu.yml)" >> "$GITHUB_ENV"
 
-        - uses: jfrog/setup-jfrog-cli@68c0efdc951dd2359bbbfa15c48bc67b3ae8e4d6 # v5.2.0
+        - uses: jfrog/setup-jfrog-cli@1a84ddcff2d475751d8392ef6d7ecb478a7cfe53 # v5.3.1
           id: jfrog
           with:
             # The action's default CLI lacks subcommands `vpu` uses.
-            version: 2.126.0
+            version: 2.128.0
             oidc-provider-name: voraus-github-organization
             disable-auto-build-publish: "true"
 
         # A tag build never restores a cache, so a poisoned cache from main cannot reach a release.
-        - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
           with:
             enable-cache: false
 
