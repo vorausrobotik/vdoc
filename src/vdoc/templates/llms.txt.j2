@@ -40,7 +40,9 @@ The REST API described by `{{ base_url }}/openapi.json` lists projects, versions
 
 {% for project in projects %}
 {% set count = project.versions | length %}
-- [{{ project.title }} {{ project.latest }}]({{ static(project, "index.html") }}): {% if count == 1 %}the only published version{% else %}the newest of {{ count }} published versions{% endif %}
+{% set versions %}{% if count == 1 %}the only published version{% else %}the newest of {{ count }} published versions{% endif %}{% endset %}
+{# The description may span lines, and a line break would end the list item, so it is joined into one #}
+- [{{ project.title }} {{ project.latest }}]({{ static(project, "index.html") }}): {% if project.description %}{{ project.description.split() | join(" ") }} ({{ versions }}){% else %}{{ versions }}{% endif %}
 
 {% endfor %}
 
