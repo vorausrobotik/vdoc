@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.32.0](https://github.com/vorausrobotik/vdoc/compare/0.31.2...0.32.0) (2026-10-26)
+
+
+### Features
+
+* **llms.txt:** Describe each project with its description ([24a0564](https://github.com/vorausrobotik/vdoc/commit/24a0564f0492f28080d2c185f3901edb12f81c4c))
+
+
+### Build System
+
+* **deps:** Lock file maintenance ([da97782](https://github.com/vorausrobotik/vdoc/commit/da9778288ac440fad7fda328fd6d93f05b4e7146))
+
 ## [0.31.2](https://github.com/vorausrobotik/vdoc/compare/0.31.1...0.31.2) (2026-10-08)
 
 
