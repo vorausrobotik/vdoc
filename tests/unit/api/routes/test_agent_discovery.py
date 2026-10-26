@@ -33,6 +33,27 @@ def test_llms_txt_lists_the_newest_version_of_every_project(dummy_projects_dir: 
     assert "the newest of 6 published versions" in body
 
 
+def test_llms_txt_describes_each_project(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
+    """The description is what lets a reader find the right project without opening each one."""
+    Project(name="dummy-project-01", description="Drives the robot.\nIn real time.").save()
+
+    lines = api.get("/llms.txt").text.splitlines()
+
+    # A description spanning lines is joined into one, so the list item stays one item. A project
+    # without a description keeps the plain version note.
+    for expected in (
+        (
+            "- [dummy-project-01 2.0.0](http://testserver/static/projects/dummy-project-01/2.0.0/index.html): "
+            "Drives the robot. In real time. (the newest of 6 published versions)"
+        ),
+        (
+            "- [dummy-project-02 6.0](http://testserver/static/projects/dummy-project-02/6.0/index.html): "
+            "the newest of 4 published versions"
+        ),
+    ):
+        assert expected in lines
+
+
 def test_llms_txt_explains_both_addresses(dummy_projects_dir: Path, api: TestClient) -> None:  # noqa: ARG001
     body = api.get("/llms.txt").text
 

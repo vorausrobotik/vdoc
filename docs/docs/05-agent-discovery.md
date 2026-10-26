@@ -46,7 +46,7 @@ It contains, in this order:
   a version
 - a link to `/openapi.json`, for a client that would rather read JSON
 - every listed project, grouped by its category, linked at the **newest published version** by its
-  static address
+  static address, with its description from the admin pages
 - a `## Page indexes` section listing whatever machine-readable page index each version happens to ship
 
 The page indexes are the part worth knowing about. Rather than crawling a version page by page, a client
