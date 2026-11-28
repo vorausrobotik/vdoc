@@ -162,7 +162,7 @@ build-template = [
 ]
 # Exact while vpu 1.0 is a release candidate. Renovate bumps it.
 ci-template = [
-    "voraus-pipeline-utils==1.0.0rc12",
+    "voraus-pipeline-utils==1.2.0",
 ]
 
 ########################################
